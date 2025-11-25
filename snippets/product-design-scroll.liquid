@@ -35,7 +35,8 @@
                   <div class="design-scroll-card__media media-wrapper of-cover">
                     {%- if related_product.featured_media -%}
                       {%- assign preview_image = related_product.featured_media | default: related_product.featured_image -%}
-                      {{ preview_image | image_url: width: 360 | image_tag: sizes: '(min-width: 769px) 160px, 120px', class: 'media design-scroll-card__image', alt: preview_image.alt | escape, decoding: 'async', loading: 'lazy' }}
+                      {%- assign preview_alt = preview_image.alt | default: related_product.title -%}
+                      {{ preview_image | image_url: width: 360 | image_tag: sizes: '(min-width: 769px) 160px, 120px', class: 'media design-scroll-card__image', alt: preview_alt, decoding: 'async', loading: 'lazy' }}
                     {%- else -%}
                       {{ 'product-1' | placeholder_svg_tag: 'placeholder media design-scroll-card__image' }}
                     {%- endif -%}
