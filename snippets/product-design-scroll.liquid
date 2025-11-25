@@ -15,7 +15,8 @@
         <a class="btn-link design-scroll__view-all" href="{{ view_all_link }}">{{ view_all_label }}</a>
       {%- endif -%}
     </div>
-    <div class="design-scroll__container scrollable scrollable-x disable-scrollbars" role="list" aria-label="{{ heading_text | escape }}">
+    <div class="design-scroll__wrapper">
+      <div class="design-scroll__container scrollable scrollable-x disable-scrollbars" role="list" aria-label="{{ heading_text | escape }}" tabindex="0">
       {%- for related_product in product_cards -%}
         {%- if related_product.id != current_product.id -%}
           {%- assign cards_rendered = cards_rendered | plus: 1 -%}
@@ -34,6 +35,10 @@
           </a>
         {%- endif -%}
       {%- endfor -%}
+      </div>
+      <div class="design-scroll__bar" aria-hidden="true">
+        <span class="design-scroll__bar-progress"></span>
+      </div>
     </div>
   </div>
 
@@ -49,6 +54,10 @@
         min-width: 120px;
         scroll-snap-align: start;
         margin-right: calc(var(--spacing));
+      }
+      .design-scroll__wrapper {
+        position: relative;
+        padding-bottom: var(--spacing);
       }
       .design-scroll-card__media {
         border-radius: 12px;
@@ -71,6 +80,26 @@
         padding-bottom: 8px;
         scroll-snap-type: x proximity;
         overflow-y: hidden;
+        cursor: grab;
+      }
+      .design-scroll__container:active {
+        cursor: grabbing;
+      }
+      .design-scroll__bar {
+        width: 100%;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(var(--color-normal-text-rgb), .12);
+        overflow: hidden;
+      }
+      .design-scroll__bar-progress {
+        display: block;
+        height: 100%;
+        width: 20%;
+        background: rgba(var(--color-normal-text-rgb), .4);
+        transform-origin: left center;
+        transition: transform .2s ease;
+        transform: scaleX(0);
       }
       @media (min-width: 769px) {
         .design-scroll-card {
@@ -78,6 +107,53 @@
         }
       }
     </style>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.design-scroll__container[tabindex="0"]').forEach(function(container) {
+          let isDown = false;
+          let startX;
+          let scrollLeft;
+          const bar = container.closest('.design-scroll__wrapper').querySelector('.design-scroll__bar-progress');
+
+          const updateBar = () => {
+            if (!bar) return;
+            const ratio = container.scrollWidth > container.clientWidth ? container.clientWidth / container.scrollWidth : 1;
+            bar.style.transform = `scaleX(${ratio}) translateX(${(container.scrollLeft / container.scrollWidth) * (1 / ratio)}px)`;
+          };
+
+          const startDrag = (e) => {
+            isDown = true;
+            container.classList.add('is-dragging');
+            startX = e.pageX || e.touches?.[0].pageX;
+            scrollLeft = container.scrollLeft;
+          };
+          const endDrag = () => {
+            isDown = false;
+            container.classList.remove('is-dragging');
+          };
+          const drag = (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX || e.touches?.[0].pageX;
+            const walk = (x - startX);
+            container.scrollLeft = scrollLeft - walk;
+            updateBar();
+          };
+
+          container.addEventListener('mousedown', startDrag);
+          container.addEventListener('mouseleave', endDrag);
+          container.addEventListener('mouseup', endDrag);
+          container.addEventListener('mousemove', drag);
+
+          container.addEventListener('touchstart', startDrag, { passive: true });
+          container.addEventListener('touchend', endDrag);
+          container.addEventListener('touchmove', drag, { passive: false });
+          container.addEventListener('scroll', updateBar);
+          window.addEventListener('resize', updateBar);
+          updateBar();
+        });
+      });
+    </script>
   {%- endunless -%}
 {%- endif -%}
 
