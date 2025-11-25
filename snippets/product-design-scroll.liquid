@@ -15,44 +15,26 @@
         <a class="btn-link design-scroll__view-all" href="{{ view_all_link }}">{{ view_all_label }}</a>
       {%- endif -%}
     </div>
-    <sht-carousel-wrapper
-      data-on-mobile-only="false"
-      data-css-class-on-container="carousel d-flex p-zero m-zero ox-auto disable-scrollbars fw-nowrap scrollable scrollable-x"
-      data-css-class-on-item="carousel__item p-relative scrollable-aln-start">
-      <sht-carousel class="product-design-scroll__carousel p-relative d-block" role="region" aria-label="{{ heading_text | escape }}">
-        <div class="rw gap-unequal js-carousel-items design-scroll__items">
-          {%- for related_product in product_cards -%}
-            {%- if related_product.id != current_product.id -%}
-              {%- assign cards_rendered = cards_rendered | plus: 1 -%}
-              {%- if cards_rendered > design_scroll_limit -%}{% break %}{% endif -%}
-              <sht-carousel-itm
-                role="group"
-                aria-roledescription="Slide"
-                aria-label="{{ 'accessibility.slide' | t }} {{ cards_rendered }}"
-                class="clm js-carousel-item design-scroll__item"
-                style="--w-xs:4;--w-sm:3;--w-md:2;">
-                <a class="design-scroll-card d-flex fd-column" href="{{ related_product.url }}" title="{{ related_product.title | escape }}">
-                  <div class="design-scroll-card__media media-wrapper of-cover">
-                    {%- if related_product.featured_media -%}
-                      {%- assign preview_image = related_product.featured_media | default: related_product.featured_image -%}
-                      {%- assign preview_alt = preview_image.alt | default: related_product.title -%}
-                      {{ preview_image | image_url: width: 360 | image_tag: sizes: '(min-width: 769px) 160px, 120px', class: 'media design-scroll-card__image', alt: preview_alt, decoding: 'async', loading: 'lazy' }}
-                    {%- else -%}
-                      {{ 'product-1' | placeholder_svg_tag: 'placeholder media design-scroll-card__image' }}
-                    {%- endif -%}
-                  </div>
-                  <span class="design-scroll-card__title subtext mt-8">{{ related_product.title }}</span>
-                </a>
-              </sht-carousel-itm>
-            {%- endif -%}
-          {%- endfor -%}
-        </div>
-        <div class="carousel-pagination design-scroll__pagination middle-y w-100 p-absolute d-none-md no-js-hidden zi-1">
-          <button type="button" data-step="1" class="btn btn-primary btn-icon btn-small p-absolute js-carousel-prev-btn" aria-label="{{ 'accessibility.previous_slide' | t }}" name="previous" disabled>{% render 'icon-chevron-left' %}</button>
-          <button type="button" data-step="1" class="btn btn-primary btn-icon btn-small p-absolute js-carousel-next-btn" aria-label="{{ 'accessibility.next_slide' | t }}" name="next" disabled>{% render 'icon-chevron-right' %}</button>
-        </div>
-      </sht-carousel>
-    </sht-carousel-wrapper>
+    <div class="design-scroll__container scrollable scrollable-x disable-scrollbars" role="list" aria-label="{{ heading_text | escape }}">
+      {%- for related_product in product_cards -%}
+        {%- if related_product.id != current_product.id -%}
+          {%- assign cards_rendered = cards_rendered | plus: 1 -%}
+          {%- if cards_rendered > design_scroll_limit -%}{% break %}{% endif -%}
+          <a class="design-scroll-card d-flex fd-column scrollable-aln-start" role="listitem" href="{{ related_product.url }}" title="{{ related_product.title | escape }}">
+            <div class="design-scroll-card__media media-wrapper of-cover">
+              {%- if related_product.featured_media -%}
+                {%- assign preview_image = related_product.featured_media | default: related_product.featured_image -%}
+                {%- assign preview_alt = preview_image.alt | default: related_product.title -%}
+                {{ preview_image | image_url: width: 360 | image_tag: sizes: '(min-width: 769px) 160px, 120px', class: 'media design-scroll-card__image', alt: preview_alt, decoding: 'async', loading: 'lazy' }}
+              {%- else -%}
+                {{ 'product-1' | placeholder_svg_tag: 'placeholder media design-scroll-card__image' }}
+              {%- endif -%}
+            </div>
+            <span class="design-scroll-card__title subtext mt-8">{{ related_product.title }}</span>
+          </a>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
   </div>
 
   {%- unless product_design_scroll_styles_loaded -%}
@@ -64,6 +46,9 @@
       .design-scroll-card {
         gap: 8px;
         text-decoration: none;
+        min-width: 120px;
+        scroll-snap-align: start;
+        margin-right: calc(var(--spacing));
       }
       .design-scroll-card__media {
         border-radius: 12px;
@@ -80,12 +65,16 @@
         display: block;
         text-align: center;
       }
-      .design-scroll__pagination {
-        pointer-events: none;
+      .design-scroll__container {
+        display: flex;
+        gap: calc(var(--spacing));
+        padding-bottom: 8px;
+        scroll-snap-type: x proximity;
+        overflow-y: hidden;
       }
       @media (min-width: 769px) {
-        .design-scroll__item {
-          --w-md: 2;
+        .design-scroll-card {
+          min-width: 160px;
         }
       }
     </style>
