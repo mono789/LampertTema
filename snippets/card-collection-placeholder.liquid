@@ -1,0 +1,15 @@
+{%- liquid
+  assign collection_placeholder = 'collection-1' | placeholder_svg_tag: 'placeholder media of-cover js-image-lazy'
+  assign collection_title      = 'sections.collection_list.collection.title' | t
+  assign media_ratio           = settings.collection_image_ratio
+  assign show_product_count = settings.show_product_count
+-%}
+<div class="card w-100 p-relative sht-mask" style="--overlay: {{ overlay_opacity }}">
+  <a href="#" aria-label="{{ collection_title }}" aria-disabled="true" class="d-block card__media pe-no-link">
+    {% render 'image', image_item: collection_placeholder, ratio: media_ratio %}
+  </a>
+  <div class="card__content card__content--inner p-absolute bottom-0 w-100 zi-1 pe-none wb-break-word">
+    <h3 class="h6 m-zero card__heading">{{ collection_title }}</h3>
+    <div class="subtext mt-6 {{ show_product_count | default: ' d-none-important' | replace: 'true', '' }}">{{ 'general.collection.view_collection' | t: count: '68' }}</div>
+  </div>
+</div>

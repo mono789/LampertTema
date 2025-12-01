@@ -1,0 +1,58 @@
+<div class="o-hidden section {{ section.settings.remove_padding_top | replace: 'true', 'section-top-zero' | replace: section.settings.remove_padding_top, '' }} {{ section.settings.remove_padding_bottom | replace: 'true', 'section-bottom-zero' | replace: section.settings.remove_padding_bottom, '' }} color-{{- section.settings.color_scheme }}" data-ui-component="Apps Section">
+  <div class="{{ section.settings.enable_content_fullwidth | default: 'ctnr' | replace: 'true', '' }} w-100">
+    {%- for block in section.blocks -%}
+      {% render block %}
+    {%- endfor -%}
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "t:sections.apps.name",
+    "settings": [
+      {
+        "type": "header",
+        "content": "t:general.settings.headers.header_general.content"
+      },
+      {
+        "type": "color_scheme",
+        "id": "color_scheme",
+        "label": "t:general.settings.color_scheme.label",
+        "default": "scheme-1"
+      },
+      {
+        "type": "header",
+        "content": "t:general.settings.headers.header_layout.content"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_content_fullwidth",
+        "label": "t:sections.apps.settings.enable_layout_fullwidth.label",
+        "info": "t:sections.apps.settings.enable_layout_fullwidth.info",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "remove_padding_top",
+        "default": false,
+        "label": "t:general.settings.remove_padding_top.label"
+      },
+      {
+        "type": "checkbox",
+        "id": "remove_padding_bottom",
+        "default": false,
+        "label": "t:general.settings.remove_padding_bottom.label"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "@app"
+      }
+    ],
+    "presets": [
+      {
+        "name": "t:sections.apps.name"
+      }
+    ]
+  }
+{% endschema %}

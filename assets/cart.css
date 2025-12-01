@@ -1,0 +1,123 @@
+.cart-item {
+  grid-template-columns: 54px 1fr auto;
+  grid-template-areas:
+    "product product price"
+    " . quantity . ";
+}
+.cart-item__product {
+  grid-template-columns: 54px 1fr;
+  grid-area: product;
+}
+.cart-item__quantity {
+  grid-area: quantity;
+}
+.cart-item__price {
+  grid-area: price;
+}
+.cart-item {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.show_vendor .cart-item__product-vendor {
+  display: block;
+}
+.dynamic-checkout__content .shopify-cleanslate li {
+  flex-basis: 100%!important;
+  border-radius: 100px;
+  overflow: hidden;
+}
+.cart-item__price-wrapper {
+  max-width: 35vw;
+}
+@media (min-width: 459px) {
+  .cart-item__product {
+    grid-template-columns: 80px 1fr;
+  }
+
+  .cart-item {
+    grid-template-columns: 80px 1fr auto;
+  }
+}
+@media (min-width: 769px) {
+  .cart-content__headings {
+    border-bottom: 1px solid var(--color-border);
+  }
+  .cart-item {
+    grid-template-areas: "product product quantity price";
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: var(--gutter);
+  }
+  .cart__note {
+    width: 62.5%;
+  }
+  .cart-item__quantity .field_quantity{
+    margin-inline-end: 16px;
+  }
+  .cart-item__price-wrapper {
+    max-width: unset;
+  }
+}
+.drawer__related-products {
+  padding: 20px;
+  border-top: 1px solid #e5e5e5;
+}
+.drawer__related-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.drawer__related-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.drawer__related-item {
+  width: 48%;
+}
+.drawer__related-item img {
+  width: 100%;
+  border-radius: 6px;
+}
+.drawer__related-item p {
+  margin: 4px 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.drawer__related-products {
+  padding: 20px;
+  border-top: 1px solid #e5e5e5;
+}
+.drawer__related-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.drawer__related-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.drawer__related-item {
+  width: 48%;
+}
+.drawer__related-item img {
+  width: 100%;
+  border-radius: 6px;
+}
+.drawer__related-item p {
+  margin: 4px 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.essential-upsell-cross-sell-block {
+  display: flex;
+  overflow-x: auto;
+  gap: 16px;
+  padding: 16px 0;
+  scroll-snap-type: x mandatory;
+}
+
+.essential-upsell-cross-sell-block > div {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}

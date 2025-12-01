@@ -1,0 +1,47 @@
+{%- liquid
+	assign share_url = shop.url | append: type.url
+	assign share_description = type.content | strip_html | truncatewords: 15 | url_param_escape
+
+  if type == 'article'
+	  assign share_image = type.image | image_url: width: 750 | prepend: 'https: '
+  else
+    assign share_image = type.featured_image | image_url: width: 750 | prepend: 'https: '
+  endif
+  assign action = "javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600');return false;"
+-%}
+
+<ul class="social-share ls-none">
+  <li class="d-block">
+    <a aria-label="Facebook" class="social-share-link d-flex middle-xs bg-transparent pt-12 pr-24 pb-12 pl-24" href="https://www.facebook.com/sharer.php?u={{ share_url }}" onclick="{{ action }}">
+      {%- render 'icon-facebook', class: 'mr-8' -%}
+      Facebook
+    </a>
+  </li>
+  <li class="d-block">
+    <a aria-label="Twitter" class="social-share-link d-flex middle-xs bg-transparent pt-12 pr-24 pb-12 pl-24" href="https://twitter.com/share?text={{ type.title }}&url={{ share_url }}" onclick="{{ action }}">
+      {%- render 'icon-twitter', class: 'mr-8' -%}
+      Twitter
+    </a>
+  </li>
+  <li class="d-block">
+    <a aria-label="Pinterest" class="social-share-link d-flex middle-xs bg-transparent pt-12 pr-24 pb-12 pl-24" href="https://pinterest.com/pin/create/button/?url={{ share_url }}&media={{ share_image }}&description={{ share_description }}" onclick="{{ action }}">
+      {%- render 'icon-pinterest', class: 'mr-8' -%}
+      Pinterest
+    </a>
+  </li>
+  <hr role="listitem">
+  <li class="d-block">
+    <a aria-label="Email" class="social-share-link btn btn-icon btn-small btn-plain" {% unless content_for_header contains 'Shopify.designMode' %} href="mailto:?subject={{ product.title }}&body={{ product.title }}%0D%0A{{ share_url }}" onclick="{{ action }}"{% endunless %}>
+      {%- render 'icon-mail', class: 'mr-8' -%}
+      Email
+    </a>
+  </li>
+  <li class="d-block">
+    <button data-link-copied-to-clipboard="{{ 'general.share.link_copied_to_clipboard' | t }}" class="btn-plain social-share-link d-flex middle-xs w-100 js-social-share-copy-link bg-transparent pt-12 pr-24 pb-12 pl-24 c-pointer fs-body ff-body">
+      {%- render 'icon-link', class: 'mr-8' -%}
+      <span class="js-social-share-copy-link-label">
+        {{ 'general.share.copy_link' | t }}
+      </span>
+    </button>
+  </li>
+</ul>

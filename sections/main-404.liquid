@@ -1,0 +1,183 @@
+<link rel="stylesheet" href="{{ '404.css' | asset_url }}" media="all">
+{% liquid
+  assign image = section.settings.image
+  assign media_alt  = section.settings.image.alt | default: section.settings.image.image | split: '/' | last
+  assign media = image | image_url: width: section.settings.image.width | image_tag: widths: '320, 450, 550, 750, 950, 1024, 1200, 1400, 1600, 1800, 2000', sizes: '(min-width: 769px) calc(100vw/2), 100vw', alt: media_alt, class: 'w-100 h-100 of-cover js-image-lazy media'
+  assign form_align = 'm-auto m-zero-md'
+  assign content_style = '--gc-xs:1/13;--gc-md:1/ span 8;--gr-xs:2;--gr-md:1;'
+  assign content_class = 'ta-center ta-left-md zi-1 m-zero-md'
+  assign description_extra_class = 'm-sides'
+
+  if section.settings.image == blank
+    assign content_style = '--gc-xs:1/13;--gc-md:3/11;--gr-xs:2;--gr-md:1;'
+    assign content_class = content_class | remove: 'ta-left-md '
+    assign form_align = 'm-auto'
+  else
+    assign description_extra_class = 'm-sides section-404__desc'
+  endif
+
+  if section.settings.content_ordering == 'image-first' and section.settings.image != blank
+    assign content_direction = 'd-rtl' 
+    assign col_first_style = '--gc-xs:1/13;--gc-md:7/13;--gr-xs:1;'
+    assign col_second_style = '--gc-xs:1/13;--gc-md:1/7;--gr-xs:2;--gr-md:1;'
+  endif
+%}
+<div class="section section-404 has-animation color-{{ section.settings.color_scheme }} {{ section.settings.remove_padding_top | replace: 'true', 'section-top-zero' | replace: section.settings.remove_padding_top, '' }} {{ section.settings.remove_padding_bottom | replace: 'true', 'section-bottom-zero' | replace: section.settings.remove_padding_bottom, '' }}" data-ui-component="Main 404">
+  <div class="ctnr d-grid c-gap {{ content_direction }}" style="--gtc-equal:12">
+    <div class="{{ content_class }} section-404__content" style="{{ content_style }} {{ col_second_style }}">
+      {% render 'section-header',
+        classes: 's-header s-header--special'
+        subheading: section.settings.subheading,
+        heading: section.settings.heading,
+        description: section.settings.description,
+        heading_classes: 'ts-default',
+        description_extra_class: description_extra_class,
+        section: section
+      %}
+      <div class="s-content js-animate anm" style="--duration: .6s; --delay: .3s;">
+        {% if section.settings.enable_search %}
+          <div class="section-404__form p-relative w-100 {{ form_align }}">
+            <form action="{{ routes.search_url }}">
+              <input
+                id="section404Input"
+                type="text"
+                placeholder="{{ 'general.search.search_the_site' | t }}"
+                name="q"
+                value="{{ search.terms | escape }}"
+                class="field__text field--focus field--hover w-100"
+              >
+              <label class="field__label visually-hidden" for="section404Input">{{ 'general.search.search' | t }}</label>
+              <button type="submit" aria-label="{{ "accessibility.search" | t }}" class="btn btn-icon btn-plain btn-large p-absolute zi-1 right-0 top-0">
+                {% render 'icon-search', size: 20 %}
+              </button>
+            </form>
+          </div>
+        {% endif %}
+        <div class="s-header__buttons gap-12 gap-md-16 d-inline-flex fd-column fd-row-xl fw-wrap center-xs hide-empty">
+          {%- if section.settings.home_page_link_text != blank -%}
+            <a href="{{- routes.root_url -}}" class="btn btn-large btn-secondary hide-empty">
+              {% render 'icon-home', size: 20, class: 'mr-8' %}
+              {{- section.settings.home_page_link_text -}}
+            </a>
+          {%- endif -%}
+          {%- if section.settings.catalogue_link_text != blank -%}
+            <a href="{{- routes.all_products_collection_url -}}" class="btn btn-large btn-secondary hide-empty">
+              {% render 'icon-shop', size: 20, class: 'mr-8' %}
+              {{- section.settings.catalogue_link_text -}}
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+    {% if image %}
+      <div class="p-relative" style="--gc-xs:1/13;--gc-md:7/13;--gr-xs:1;--h-xs:30vh;--h-md:calc(100vh - (var(--header-height) + var(--anno-height))); {{ col_first_style }}">
+        {% render 'image', image_item: media, image_wrap_classes: 'h-100 js-animate anm anm-zoomOut', image_classes: 'h-100' %}
+      </div>
+    {% endif %}
+  </div> 
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.main_404.name",
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_general.content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:general.settings.color_scheme.label",
+      "default": "accent-1"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_layout.content"
+    },
+    {
+      "type": "select",
+      "id": "content_ordering",
+      "label": "t:general.settings.content_ordering_on_desktop.label",
+      "default": "text-first",
+      "options": [
+        {
+          "value": "text-first",
+          "label": "t:general.settings.content_ordering.options.option_text_first.label"
+        },
+        {
+          "value": "image-first",
+          "label": "t:general.settings.content_ordering.options.option_image_first.label"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_top",
+      "label": "t:general.settings.remove_padding_top.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_bottom",
+      "label": "t:general.settings.remove_padding_bottom.label",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_text.content"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "t:general.settings.subheading.label",
+      "default": "404—Page not found"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:general.settings.heading.label",
+      "default": "We're sorry, this page is not available"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "t:general.settings.description.label",
+      "default": "<p>The page URL might be outdated or contain typo errors</p>"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_image.content"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:general.settings.image.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.main_404.settings.headers.header_functions.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_search",
+      "label": "t:sections.main_404.settings.enable_search.label",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "home_page_link_text",
+      "label": "t:sections.main_404.settings.home_page_link_text.label",
+      "info": "t:general.settings.hide_if_empty.info",
+      "default": "Visit our home page"
+    },
+    {
+      "type": "text",
+      "id": "catalogue_link_text",
+      "label": "t:sections.main_404.settings.catalogue_link_text.label",
+      "info": "t:general.settings.hide_if_empty.info",
+      "default": "Browse all products"
+    }
+  ]
+}
+{% endschema %}

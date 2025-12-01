@@ -1,0 +1,216 @@
+{%- comment -%}
+{% render 'card-product',
+  product: block.settings.product,
+  show_vendor: true,
+  show_color_swatch: true,
+  show_sale_badge: true,
+  enable_quick_buy: true,
+  item_per_row: 1,
+  ratio: '100',
+  card_content_inner: boolean
+%}
+{%- endcomment -%}
+
+{%- liquid
+
+    assign loading = "lazy"
+    assign decoding ="async"
+    assign fetchpriority = "auto"
+    if section.index == 1 and is_first
+      assign loading = "eager"
+      assign fetchpriority = "high"
+    endif
+
+  assign section_id = section.id | md5 | truncate: 12, ""
+  assign random_number =  "now" | date: "%N" | append: section_id | append: product.id
+
+  assign product_image_id =  random_number | prepend: 'cardProductImage-'
+  assign product_link_class =  random_number | prepend: 'js-card-product-link-'
+  assign image_width = image_width | default: '320, 450, 550, 750, 950, 1024, 1200, 1400, 1600, 1800, 2000'
+
+  assign sizes = "(min-width: 769px) calc(100vw/4), (min-width: 459px) calc(100vw/2), 100vw"
+  assign product_placeholder = 'product-1' | placeholder_svg_tag: 'js-image-lazy placeholder w-100 h-100 media'
+  assign product_image = product_placeholder
+
+  assign product_img_first_classes = 'js-image-lazy media of-cover img-first w-100 h-100'
+  assign product_img_second_classes = 'js-image-lazy media of-cover img-second w-100 h-100 opacity-0'
+
+  if settings.enable_fit_image_to_container
+    assign product_img_first_classes = 'js-image-lazy media of-contain img-first w-100 h-100'
+    assign product_img_second_classes = 'js-image-lazy media of-contain img-second w-100 h-100 opacity-0'
+  endif
+
+  assign product_image = product.featured_media | image_url: width: product.featured_media.width | image_tag: widths: image_width, sizes: sizes, alt: product.title, class: product_img_first_classes, id: product_image_id, loading: loading, fetchpriority: fetchpriority, decoding: decoding
+  assign secondary_image_class = ' card'
+  if product.media[1] != nil and show_second_image
+    assign product_image_second = product.media[1] | image_url: width: product.featured_image.width | image_tag: widths: image_width, sizes: sizes, alt: product.title, class: product_img_second_classes, loading: "lazy", fetchpriority: "auto", decoding: "async"
+    assign secondary_image_class = ' card--2-images'
+     capture secondary_image
+      render 'image', image_item: product_image_second, image_classes: ' w-100 h-100', image_wrap_classes: 'product__image-second p-absolute top-0 left-0 w-100 h-100', ratio: ratio
+     endcapture
+  endif
+
+  assign card_content_classes = ' card__content--outer'
+  if card_content_inner
+    assign card_content_classes = ' card__content--inner ta-left p-absolute bottom-0 left-0 zi-1'
+    assign card_classes = ' _color-inverse sht-mask'
+    if settings.card_use_text_color
+      assign card_classes = ' sht-mask'
+    endif
+  endif
+
+  assign new_date_limit = settings.product_information_new_in_date_limit
+  assign current_date = 'now' | date: "%s"
+  assign product_create_date = product.published_at | date: "%s"
+  assign product_age_in_days = current_date | minus: product_create_date | divided_by: 86400
+  assign is_new_product = false
+  if product_age_in_days < new_date_limit and new_date_limit != 0
+    assign is_new_product = true
+  endif
+
+  assign badge_style_class = ''
+  if settings.badges_style == 'tilt'
+    assign badge_style_class = 'badge--skew'
+  endif
+
+  assign custom_badge = settings.custom_badge_metafield
+  assign custom_badge_namespace = custom_badge | split: '.' | first
+  assign custom_badge_key = custom_badge | split: '.' | last
+  assign custom_badge_value = product.metafields[custom_badge_namespace][custom_badge_key]
+  assign product_badge_bg_color = settings.custom_badge_background_color
+  assign product_badge_text_color = settings.custom_badge_text_color
+  assign product_badge_text = ''
+  if custom_badge_value.type == 'metaobject_reference'
+    assign product_badge_bg_color = custom_badge_value.value.badge_bg_color | default: settings.custom_badge_background_color
+    assign product_badge_text_color = custom_badge_value.value.badge_text_color | default: settings.custom_badge_text_color
+    assign product_badge_text = custom_badge_value.value.badge_text
+  endif
+  assign badge_position_class = ''
+  if settings.badges_position == 'right'
+    assign badge_position_class = 'bottom-xs'
+  endif
+%}
+
+<div class="product product-card{{ card_classes }}{{ secondary_image_class }} w-100 p-relative bg-transparent" style="--overlay: {{ overlay_opacity }}">
+  <div class="card__badge-container p-absolute top-xs d-flex zi-1 w-100 between-xs {{ settings.badges_position }}">
+    <div class="card__badge product__badge {{ badge_style_class }} {{ settings.badges_position }} d-flex fd-column {{ badge_position_class }}">
+      {%- if settings.show_sold_out_badge and product.available == false -%}
+        <span class="badge badge--oos d-inline-block fw-700">
+          <span class="d-inline-block badge-text">
+            {{ 'products.product.sold_out' | t }}
+          </span>
+        </span>
+      {%- endif -%}
+
+      {%- if settings.show_sale_badge and show_sale_badge and product.compare_at_price != null and product.compare_at_price > product.price -%}
+        <span class="badge badge--sale d-inline-block fw-700">
+          <span class="d-inline-block badge-text">
+            {%- liquid
+              assign save_amount =  product.compare_at_price | minus: product.price | times: 1.0 | divided_by: product.compare_at_price | times: 100 | round
+              if product.has_only_default_variant
+                echo 'products.product.card.save_percent' | t: save_amount: save_amount
+              else
+                assign save_amount = 0
+                for variant in product.variants
+                  assign saving = variant.compare_at_price | minus: variant.price | times: 1.0 | divided_by: variant.compare_at_price | times: 100 | round
+                  assign save_amount = saving | at_least: save_amount
+                endfor
+                echo 'products.product.card.save_percent_up_to' | t: save_amount: save_amount
+              endif
+            -%}
+          </span>
+        </span>
+      {%- endif -%}
+      {%- if settings.show_new_in_badge and is_new_product -%}
+        <span class="badge badge--new d-inline-block fw-700">
+          <span class="d-inline-block badge-text">
+            {{ 'products.product.new_in' | t }}
+          </span>
+        </span>
+      {%- endif -%}
+      {%- if settings.show_custom_badges -%}
+        {%- if custom_badge_value.list? -%}
+          {%- for custom_value in custom_badge_value.value -%}
+            {%- liquid
+                assign list_product_badge_bg_color = custom_value.badge_bg_color | default: settings.custom_badge_background_color
+                assign list_product_badge_text_color = custom_value.badge_text_color | default: settings.custom_badge_text_color
+              if custom_badge_value.type == 'list.metaobject_reference'
+                assign list_product_badge_text = custom_value.badge_text
+              endif
+          -%}
+            <span class="badge badge--custom-list d-inline-block fw-700" 
+              style="--list-product-badge-bg-color: {{ list_product_badge_bg_color }}; 
+              --list-product-badge-text-color: {{ list_product_badge_text_color }}"
+            >
+              <span class="d-inline-block badge-text">
+                {%- if custom_badge_value.type == 'list.metaobject_reference' -%}
+                  {{ list_product_badge_text }}
+                {%- else -%}
+                  {{ custom_value }}
+                {%- endif -%}
+              </span>
+            </span>
+          {%- endfor -%}
+        {%- elsif custom_badge_value.type == 'metaobject_reference' -%}
+          <span class="badge badge--{{ product.id }} badge--custom d-inline-block fw-700 1111"
+          style="
+            --color-custom-badge-background: {{ product_badge_bg_color }};
+            --color-custom-badge-text: {{ product_badge_text_color }};"
+          >
+            <span class="d-inline-block badge-text">
+              {{ product_badge_text }}
+            </span>
+          </span>
+        {%- elsif custom_badge_value.size > 0 -%}
+          <span class="badge badge--custom d-inline-block fw-700 22222"
+          style="
+            --color-custom-badge-background: {{ product_badge_bg_color }};
+            --color-custom-badge-text: {{ product_badge_text_color }};"
+          >
+            <span class="d-inline-block badge-text">
+              {{ custom_badge_value }}
+            </span>
+          </span>
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+
+    {%- if show_ranking -%}
+      <span class="ranking-badge-container flex-auto ranking-badge--{{- ranking_badge_shape }} d-flex middle-xs center-xs badge {{ ranking_badge_color }}">
+        {{ ranking_badge_number }}
+      </span>
+    {%- endif -%}
+  </div>
+  <div class="card__media p-relative o-hidden">
+    <a href="{{- product.url | within: collection | default: '#' -}}" class="d-block w-100 h-100 pe-no-link {{ product_link_class }}" aria-label="{{ product.title | escape }}" tabindex="-1">
+      {% render 'image', image_item: product_image, image_wrap_classes: 'product__image-first', ratio: ratio %}
+      {{ secondary_image }}
+    </a>
+    <div class="product__quickbuy p-absolute zi-1 {{ enable_quick_buy | default: ' d-none' | replace: 'true', ' d-flex' }}">
+      <button class="btn btn-icon btn-secondary btn-small no-js-hidden" aria-label="{{ "products.product.card.quick_shop" | t }}" aria-haspopup="true" type="button" data-product-url="{{ product.url | split: "?" | first }}?view=quick-view" onclick="window.dialogQuickShop.showModal(this);">
+        {% render 'icon-cart' %}
+      </button>
+    </div>
+  </div>
+  <div class="card__content{{ card_content_classes }} w-100 wb-break-word">
+    <div class="color-light subtext mb-4 {{ show_vendor | default: 'd-none' | replace: 'true', '' }}">
+      <span class="visually-hidden">{{ 'accessibility.vendor' | t }}</span>
+      <span>{{ product.vendor }}</span>
+    </div>
+    <h3 class="card__heading h6 mb-4 m-zero">
+      <a href="{{- product.url | within: collection -}}" class="{{ product_link_class }}">{{- product.title -}}</a>
+    </h3>
+    {%- if settings.show_rating -%}
+      {%- render 'product-rating', product: product, star_rating_overlay: star_rating_overlay, star_rating_color: true, quick_buy_star_rating_color: false -%}
+    {%- endif -%}
+    {%- liquid
+      render 'product-price' product: product, target: product, price_class: 'd-block mb-8 mb-md-12'
+
+      if show_color_swatch == true
+        render 'card-product-color-swatch', product: product, product_image_id: product_image_id, product_link_class: product_link_class
+      endif
+    -%}
+  </div>
+</div>
+
+

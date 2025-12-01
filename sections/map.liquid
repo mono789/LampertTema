@@ -1,0 +1,182 @@
+{%- liquid
+  assign loading = "lazy"
+  assign decoding ="async"
+  assign fetchpriority = "auto"
+
+  if section.index == 1
+    assign loading = "eager"
+    assign fetchpriority = "high"
+  endif
+  assign placeholder = 'image' | placeholder_svg_tag: 'placeholder media of-cover w-100 h-100'
+  assign map_media = placeholder
+  assign media_alt = section.settings.image.alt | default: section.settings.image.image | split: '/' | last
+  assign map_media = section.settings.image | image_url: width: section.settings.image.width, height: section.settings.image.height | image_tag: widths: '320, 450, 550, 750, 950, 1024, 1200, 1400, 1600, 1800, 2000', sizes: '(min-width: 769px) calc(100vw / 12 * 7), 100vw', alt: media_alt, class: 'js-image-lazy media of-cover w-100 h-100', loading: loading, fetchpriority: fetchpriority, decoding: decoding
+  assign map_address = section.settings.map_address
+  assign map_media_width = '--w-xs:12'
+-%}
+<div class="section color-{{- section.settings.color_scheme }} {{ section.settings.remove_padding_top | replace: 'true', 'section-top-zero' | replace: section.settings.remove_padding_top, '' }} {{ section.settings.remove_padding_bottom | replace: 'true', 'section-bottom-zero' | replace: section.settings.remove_padding_bottom, '' }} {% render 'animation-loader', section: section %}" data-ui-component="Map Section">
+  <div class="ctnr">
+    <div class="rw r-gap-48 r-gap-sm-64 {{ section.settings.content_ordering }}">
+      {%- if section.blocks.size != 0 -%}
+        {% liquid
+          assign map_media_width = '--w-xs:12;--w-md:6'
+        %}
+        {%- for block in section.blocks -%}
+          <div class="clm" style="--w-xs:12;--w-md:6;direction: ltr;" {{ section.shopify_attributes }}>
+            {% render 'section-header',
+              classes: 'section-map-header',
+              subheading: block.settings.subheading,
+              heading: block.settings.heading,
+              description: block.settings.description,
+              description_extra_class: 'mie-zero',
+              section: section %}
+            {%- unless map_address == blank or block.settings.button_text == blank -%}
+              <div class="s-footer-sm">
+                <a href="{{ map_address | url_encode | prepend: 'https://www.google.com/maps/place/' }}" target="_blank" class="btn btn-primary btn-small">
+                  {{- block.settings.button_text | escape -}}
+                </a>
+              </div>
+            {%- endunless -%}
+          </div>
+        {%- endfor -%}
+      {%- endif -%}
+      <div class="clm" style="{{ map_media_width }}">
+        <div class="map-media" style="--h-xs:35vh;--h-lg:70vh">
+          {%- if section.settings.image != blank or section.settings.image == blank and map_address == blank -%}
+            <div class="h-100 o-hidden">
+              {% render 'image', image_item: map_media, image_wrap_classes: 'h-100', image_classes: 'h-100 js-animate anm anm-zoomOut', media_wrap_style: '--delay: .6s;' %}
+            </div>
+          {%- else -%}
+            <sht-map data-zoom="14" data-type="roadmap" data-location="{{ map_address }}">
+              <iframe defer class="js-map-iframe w-100 h-100 d-block" loading="lazy" scrolling="no" title="Google Map" src="" srcdoc="loading..."></iframe>
+            </sht-map>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% schema %}
+{
+  "name": "t:sections.map.name",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_general.content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:general.settings.color_scheme.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "text",
+      "id": "map_address",
+      "label": "t:sections.map.settings.map_address.label",
+      "info": "t:sections.map.settings.map_address.info",
+      "default": "Brooklyn, NY, USA"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:general.settings.image.label",
+      "info": "t:sections.map.settings.custom_map_image.info"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_layout.content"
+    },
+    {
+      "type": "select",
+      "id": "content_ordering",
+      "label": "t:general.settings.content_ordering_on_desktop.label",
+      "default": "text-first",
+      "options": [
+        {
+          "value": "text-first",
+          "label": "t:general.settings.content_ordering.options.option_text_first.label"
+        },
+        {
+          "value": "d-rtl",
+          "label": "t:general.settings.content_ordering.options.option_map_first.label"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_top",
+      "label": "t:general.settings.remove_padding_top.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_bottom",
+      "label": "t:general.settings.remove_padding_bottom.label",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "type": "content",
+      "name": "t:general.settings.headers.header_content.content",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "header",
+          "content": "t:general.settings.headers.header_text.content"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "t:general.settings.subheading.label",
+          "default": "Location"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:general.settings.heading.label",
+          "default": "Map"
+        },
+        {
+          "type": "richtext",
+          "id": "description",
+          "label": "t:general.settings.description.label",
+          "default": "<p>Write about your physical store locations, opening hours, etc.</p>"
+        },
+        {
+          "type": "header",
+          "content": "t:general.settings.headers.header_button.content"
+        },
+        {
+          "type": "paragraph",
+          "content": "t:sections.map.settings.header_direction_button.content"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "t:general.settings.label.label",
+          "info": "t:general.settings.hide_if_empty.info",
+          "default": "Get direction"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.map.name",
+      "blocks": [
+        {
+          "type": "content"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

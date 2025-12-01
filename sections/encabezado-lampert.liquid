@@ -1,0 +1,91 @@
+{% schema %}
+{
+  "name": "Encabezado Lampert",
+  "settings": [
+    {
+      "type": "text",
+      "id": "main_title",
+      "label": "Título principal",
+      "default": "LOS MAS VENDIDOS"
+    },
+    {
+      "type": "text",
+      "id": "link_text",
+      "label": "Texto del enlace",
+      "default": "Favoritos de la colección"
+    },
+    {
+      "type": "url",
+      "id": "link_url",
+      "label": "URL del enlace"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Padding superior (px)",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Padding inferior (px)",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "s_content_font_size",
+      "label": "Tamaño de fuente del contenido (px)",
+      "min": 10,
+      "max": 50,
+      "step": 1,
+      "default": 21
+    },
+    {
+      "type": "range",
+      "id": "subtext_font_size",
+      "label": "Tamaño de fuente del subtexto (px)",
+      "min": 10,
+      "max": 50,
+      "step": 1,
+      "default": 21
+    }
+  ],
+  "presets": [
+    {
+      "name": "Encabezado de sección Lampert"
+    }
+  ]
+}
+{% endschema %}
+
+<div class="section" data-ui-component="Custom HTML Section" role="region" aria-labelledby="sectionHeading-{{ section.id | md5 | truncate: 12, '' }}">
+  <div class="ctnr" style="padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px;">
+    <div class="s-content">
+      {{ section.settings.main_title }}
+      <u class="subtext">
+        <a href="{{ section.settings.link_url }}">{{ section.settings.link_text }}</a>
+      </u>
+    </div>
+  </div>
+</div>
+
+<style>
+.subtext {
+  margin-left: 30px;
+  font-size: {{ section.settings.subtext_font_size }}px;
+}
+.s-content {
+  font-size: {{ section.settings.s_content_font_size }}px;
+}
+@media (max-width: 630px) {
+  .subtext {
+    margin-left: 3px;
+  }
+}
+</style>

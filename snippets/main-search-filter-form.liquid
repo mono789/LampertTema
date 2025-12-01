@@ -1,0 +1,267 @@
+{%-liquid
+  assign variant_label = 'color,colour,couleur,colore,boja,farbe,색,色,warna,dath,боја,lliw,liw,колір,värvi,värv,գույն,krāsa,màu sắc,màu,cor,cцвят,färg,farve,ngjyrë,kleur,väri,farge,renk,culoare,szín,цвет,kolor,barva,χρώμα,litur,spalva,farba' | split: ','
+
+  capture icon_check
+    render 'icon-check', class: 'icon-checkmark mr-8 field--hover'
+  endcapture
+-%}
+{% capture accordion_icon %}
+  <span class="zi-1 btn btn-small btn-icon">
+    {% render 'icon-plus', class: 'accordion__icon--plus p-absolute' %}
+    {% render 'icon-minus', class: 'accordion__icon--minus p-absolute' %}
+  </span>
+{% endcapture %}
+{% if expand_all_filter %}
+  {% assign open = 'open' %}
+{% endif %}
+{%- assign sort_by = search.sort_by | default: search.default_sort_by -%}
+<sht-srch-fltr-frm>
+  <form id="mainSearchFiltersForm" class="filter-form">
+    {%- if results.terms -%}
+      <input type="hidden" name="q" value="{{ results.terms | escape }}">
+      <input name="options[prefix]" type="hidden" value="last">
+    {%- endif -%}
+      <div class="filter-form-wrapper">
+        {%- unless results.filters == empty -%}
+        <span class="d-none">{{ 'general.search.search_filter' | t }}</span>
+      {%- endunless -%}
+        {%- for filter in results.filters -%}
+          {% liquid
+            assign presentation = filter.presentation | default: 'text'
+          %}
+          {% case filter.type %}
+            {% when 'boolean' or 'list' %}
+              {%- assign filter_name = filter.label | downcase -%}
+              <details class="filter-form__details js-details-filter mb-24" data-index="{{ forloop.index }}" {{ open }}>
+                <summary class="filter-form__summary h6 p-relative d-flex middle-xs between-xs ls-none m-zero pt-16 pb-16 pl-0 pr-0 c-pointer">
+                  {{ filter.label | escape }}
+                  {{ accordion_icon }}
+                </summary>
+                <div class="filter-form__display wb-break-word">
+                  <div class="filter-form__header">
+                    <span class="d-none">{{ 'sections.main_search.filter_form.filters_selected' | t: count: filter.active_values.size }}</span>
+                    <sht-srch-fltr-frm-rst aria-hidden="true" class="d-none">
+                      <a href="{{ filter.url_to_remove }}" class="js-reset-form-btn">
+                        {{ 'sections.main_search.filter_form.reset' | t }}
+                      </a>
+                    </sht-srch-fltr-frm-rst>
+                  </div>
+                  <ul class="d-grid ls-none {% if presentation == 'image' or presentation == 'swatch' %} filter-form__items-swatch {% endif %} r-gap-4 between-xs scrollbars">
+                    {%- for value in filter.values -%}
+                      {%- if presentation == 'image' -%}
+                        {% liquid
+                          assign image_url = ''
+                          assign image_url = value.image | image_url: width: 300
+                          assign image_value = 'url(' | append: image_url | append: ')'
+                        %}
+                        <li class="filter-form__item pt-8 pb-8">
+                          <span class="field__checkbox gap-8 d-flex fd-column middle-xs p-relative {% if value.count == 0 and value.active == false %} disabled filter-form--disabled {% else %} c-pointer{% endif %}">
+                            <input type="checkbox" name="{{ value.param_name }}"
+                              value="{{ value.value }}"
+                              class="input__checkbox p-absolute opacity-0"
+                              id="filter-{{- filter.label -}}-{{- forloop.index -}}"
+                              {% if value.active %}
+                                checked
+                              {% endif %}
+                              {% if value.count == 0 and value.active == false %}
+                                disabled
+                              {% endif %}
+                            >
+                            <span class="swatch checkbox-state__swatch" style="--swatch--background: {{ image_value }};">
+                            </span>
+                            <label for="filter-{{- filter.label -}}-{{- forloop.index -}}" class="flex-1 wb-break-word d-flex fd-column middle-xs center-xs ta-center">
+                              {{ value.label | escape }}
+                              <span>({{ value.count }})</span>
+                            </label>
+                            <span class="visually-hidden">
+                              {{- value.label | escape }} ( {{ value.count }} )
+                            </span>
+                          </span>
+                        </li>
+                      {%- elsif presentation == 'swatch' -%}
+                        {% liquid
+                          assign swatch = value.swatch
+                          if swatch.image
+                            assign image_url = swatch.image | image_url: width: 160
+                            assign swatch_value = 'url(' | append: image_url | append: ')'
+                            assign swatch_focal_point = swatch.image.presentation.focal_point
+                          elsif swatch.color
+                            assign swatch_value = 'rgb(' | append: swatch.color.rgb | append: ')'
+                          endif
+                        %}
+                          <li class="filter-form__item pt-8 pb-8">
+                            <span class="field__checkbox gap-8 d-flex fd-column middle-xs p-relative {% if value.count == 0 and value.active == false %} disabled filter-form--disabled {% else %} c-pointer{% endif %}">
+                              <input type="checkbox" name="{{ value.param_name }}"
+                                value="{{ value.value }}"
+                                class="input__checkbox p-absolute opacity-0"
+                                id="filter-{{- filter.label -}}-{{- forloop.index -}}"
+                                {% if value.active %}
+                                  checked
+                                {% endif %}
+                                {% if value.count == 0 and value.active == false %}
+                                  disabled
+                                {% endif %}
+                              >
+                              <span class="swatch checkbox-state__swatch" style="--swatch--background: {{ swatch_value }}; --swatch_focal_point: {{ swatch_focal_point }}">
+                              </span>
+                              <label for="filter-{{- filter.label -}}-{{- forloop.index -}}" class="flex-1 wb-break-word d-flex fd-column middle-xs center-xs ta-center">
+                                {{ value.label | escape }}
+                                <span>({{ value.count }})</span>
+                              </label>
+                              <span class="visually-hidden">
+                                {{- value.label | escape }} ( {{ value.count }} )
+                              </span>
+                            </span>
+                          </li>
+                      {%- else -%}
+                        <li class="filter-form__item pt-8 pb-8">
+                          <label for="filter-{{ filter.label }}-{{ forloop.index }}" class="d-flex {% if value.count == 0 and value.active == false %}disabled filter-form--disabled {% else %} c-pointer{% endif %}">
+                            <input type="checkbox" name="{{ value.param_name }}"
+                              value="{{ value.value }}"
+                              class="field__checkbox p-absolute opacity-0"
+                              id="filter-{{ filter.label }}-{{ forloop.index }}"
+                              {% if value.active %}
+                                checked
+                              {% endif %}
+                              {% if value.count == 0 and value.active == false %}
+                                disabled
+                              {% endif %}
+                            >
+                            {{ icon_check }}
+                            <span class="flex-1">{{ value.label | escape }} ({{ value.count }})</span>
+                          </label>
+                        </li>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </ul>
+                </div>
+              </details>
+            {% when 'price_range' %}
+              {% liquid
+                assign currencies_using_comma_decimals = 'ANG,ARS,BRL,BYN,BYR,CLF,CLP,COP,CRC,CZK,DKK,EUR,HRK,HUF,IDR,ISK,MZN,NOK,PLN,RON,RUB,SEK,TRY,UYU,VES,VND' | split: ','
+                assign uses_comma_decimals = false
+                if currencies_using_comma_decimals contains cart.currency.iso_code
+                  assign uses_comma_decimals = true
+                endif
+              %}
+              <details class="filter-form__details js-details-filter mb-24" data-index="{{ forloop.index }}" {{ open }}>
+                <summary class="filter-form__summary h6 d-flex middle-xs between-xs p-relative ls-none m-zero c-pointer">
+                  {{ filter.label | escape }}
+                  {{ accordion_icon }}
+                </summary>
+                <div class="filter-form__display wb-break-word">
+                  <div class="filter-form__header">
+                    {%- assign max_price_amount = filter.range_max | money | strip_html | escape -%}
+                    <span class="d-none">{{ "sections.main_collection_product.filter_form.max_price" | t: price: max_price_amount }}</span>
+                    <sht-srch-fltr-frm-rst aria-hidden="true" class="d-none">
+                      <a href="{{ filter.url_to_remove }}" class="js-reset-form-btn">
+                        {{ 'sections.main_collection_product.filter_form.reset' | t }}
+                      </a>
+                    </sht-srch-fltr-frm-rst>
+                  </div>
+                  <sht-srch-fltr-frm-rgn class="d-grid gap-16" style="--gtc-equal:2">
+                    <sht-adv-fltr-price-rgn-slider data-slider-color="{{ section.settings.color_scheme.settings.primary_button_background }}" data-slider-color-shadow="{{ section.settings.color_scheme.settings.primary_button_background | color_modify: 'alpha', 0.24 }}" style="--gc-xs: 1/ span 2">
+                      <div class="range-slider p-relative">
+                        <div class="range-slider-bar js-range-slider-bar w-100 p-absolute m-auto bottom-0 right-0 left-0 zi-1"></div>
+                        <input class="js-price-range-slider-input js-slider-gte w-100 p-absolute top-0 bottom-0 right-0 left-0 pe-none m-zero zi-2" aria-label="{{ 'sections.main_collection_product.filter_form.from' | t }}" type="range" min="0"
+                          {%- if uses_comma_decimals -%}
+                            max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
+                          {%- else -%}
+                            max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+                          {% endif %}
+                          {%- if filter.min_value.value -%}
+                            {%- if uses_comma_decimals -%}
+                              value="{{ filter.min_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
+                            {%- else -%}
+                              value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"
+                            {% endif %}
+                          {%- else -%}
+                            value="0"
+                          {%- endif -%}
+                          class="slider" id="Filter-{{ filter.label | escape }}-Slider-GTE">
+                        <label class="visually-hidden" for="Filter-{{ filter.label | escape }}-Slider-GTE">{{ 'sections.main_collection_product.filter_form.from' | t }}</label>
+                        <input class="js-price-range-slider-input js-slider-lte w-100 p-absolute top-0 bottom-0 right-0 left-0 pe-none m-zero zi-2" aria-label="{{ 'sections.main_collection_product.filter_form.to' | t }}" type="range" min="0"
+                            {%- if uses_comma_decimals -%}
+                              max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
+                            {%- else -%}
+                              max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+                            {% endif %}
+                            {%- if filter.max_value.value -%}
+                              {%- if uses_comma_decimals -%}
+                                value="{{ filter.max_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
+                              {%- else -%}
+                                value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"
+                              {% endif %}
+                            {%- else -%}
+                              {%- if uses_comma_decimals -%}
+                                value="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
+                              {%- else -%}
+                                value="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+                              {% endif %}
+                            {%- endif -%}
+                          class="slider" id="Filter-{{ filter.label | escape }}-Slider-LTE">
+                        <label class="visually-hidden" for="Filter-{{ filter.label | escape }}-Slider-LTE">{{ 'sections.main_collection_product.filter_form.to' | t }}</label>
+                      </div>
+                    </sht-adv-fltr-price-rgn-slider>
+                    <div class="filter-form__field">
+                      <label class="field__label" for="Filter-{{ filter.label | escape }}-GTE">{{ 'sections.main_collection_product.filter_form.from' | t }}</label>
+                      <div class="field p-relative mt-4">
+                        <span class="field-currency p-absolute middle-y ml-20 zi-1">{{ cart.currency.symbol }}</span>
+                        <input class="field__text field--focus field--hover js-filter-price js-price-gte w-100 ta-right pl-20 input-number"
+                          name="{{ filter.min_value.param_name }}"
+                          id="Filter-{{ filter.label | escape }}-GTE"
+                          {%- if filter.min_value.value -%}
+                            {%- if uses_comma_decimals -%}value="{{ filter.min_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"{%- else -%}value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"{% endif %}
+                          {%- endif -%}
+                          type="number"
+                          placeholder="0"
+                          min="0"
+                          {%- if uses_comma_decimals -%}max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"{%- else -%}max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"{% endif %}
+                        >
+                        </input>
+                      </div>
+                    </div>
+                    <div class="filter-form__field">
+                      <label class="field__label" for="Filter-{{ filter.label | escape }}-LTE">{{ 'sections.main_collection_product.filter_form.to' | t }}</label>
+                      <div class="field p-relative mt-4">
+                        <span class="field-currency p-absolute middle-y ml-20 zi-1">{{ cart.currency.symbol }}</span>
+                        <input class="field__text field--focus field--hover w-100 ta-right pl-20 input-number js-filter-price js-price-lte"
+                          name="{{ filter.max_value.param_name }}"
+                          id="Filter-{{ filter.label | escape }}-LTE"
+                          {%- if filter.max_value.value -%}{%- if uses_comma_decimals -%}value="{{ filter.max_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"{%- else -%}value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"{% endif %}
+                          {%- endif -%}
+                          type="number"
+                          min="0"
+                          {%- if uses_comma_decimals -%}
+                            placeholder="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
+                            max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
+                          {%- else -%}
+                            placeholder="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+                            max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+                          {% endif %}
+                        >
+                        </input>
+                      </div>
+                    </div>
+
+                  </sht-srch-fltr-frm-rgn>
+                </div>
+              </details>
+          {% endcase %}
+        {%- endfor -%}
+        <noscript>
+          <button type="submit" class="c-pointer">{{ 'sections.main_search.filter_form.filter_button' | t }}</button>
+        </noscript>
+      </div>
+    {% if results.current_vendor or results.current_type %}
+      <input type="hidden" name="q" value="{{ results.current_vendor }}{{ results.current_type }}">
+    {% endif %}
+    <input type="hidden" name="" class="js-main-search-sort-by-field-hidden"value="{{ sort_by }}">
+    <script>
+      SHTHelper.qs('.js-main-search-sort-by-field-hidden').name="sort_by";
+      document.addEventListener("shopify:section:load", function (event) {
+        SHTHelper.qs('.js-main-search-sort-by-field-hidden').name = 'sort_by';
+      });
+    </script>
+  </form>
+</sht-srch-fltr-frm>

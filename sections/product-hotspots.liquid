@@ -1,0 +1,280 @@
+{%- liquid
+  assign loading = "lazy"
+  assign decoding ="async"
+  assign fetchpriority = "auto"
+
+  if section.index == 1
+    assign loading = "eager"
+    assign fetchpriority = "high"
+  endif
+  assign placeholder = 'collection-1' | placeholder_svg_tag: 'placeholder js-image-lazy media of-cover'
+  assign hotspot_image = placeholder
+  assign hotspot_image_alt = section.settings.image_hotspot.alt | default: section.settings.image_hotspot.image | split: '/' | last
+  assign hotspot_image = section.settings.image_hotspot | image_url: width: section.settings.image_hotspot.width | image_tag: widths: '320, 450, 550, 750, 950, 1024, 1200, 1400, 1600, 1800, 2000', sizes: '(min-width: 769px) calc(100vw / 12 * 8), 100vw', alt: hotspot_image_alt, class: 'js-image-lazy js-grid-image media of-cover w-100', loading: loading, fetchpriority: fetchpriority, decoding: decoding
+  assign s_content_class = ''
+  if section.settings.show_navigation == false or section.blocks.size == 1
+    assign s_content_class = 'gap-unequal'
+  endif
+-%}
+
+<div class="section color-{{- section.settings.color_scheme }} {{ section.settings.remove_padding_top | replace: 'true', 'section-top-zero' | replace: section.settings.remove_padding_top, '' }} {{ section.settings.remove_padding_bottom | replace: 'true', 'section-bottom-zero' | replace: section.settings.remove_padding_bottom, '' }} {% render 'animation-loader', section: section %}" data-ui-component="Product Hotspots Section" role="region" aria-labelledby="sectionHeading-{{ section.id | md5 | truncate: 12, "" }}">
+  <div class="ctnr">
+    {% render 'section-header', content_align: 'ta-left', subheading: section.settings.subheading, heading: section.settings.heading, description: section.settings.description, badge_text: section.settings.badge_text, badge_position: section.settings.badge_position, badge_shape: section.settings.badge_shape, badge_color: section.settings.badge_color, section: section %}
+    <div class="s-content rw middle-xs {{ s_content_class }}">
+      <div class="clm" style="--w-xs:12;--w-sm:12;--w-md:8;">
+        <div class="p-relative" id="hotspotContainer-{{ section.id }}">
+          <sht-grid class="p-relative h-100 w-100 d-block">
+            <div class="p-relative js-grid o-hidden">
+              {% render 'image', image_item: hotspot_image, ratio: section.settings.image_hotspot.aspect_ratio, image_classes: 'js-animate anm anm-zoomOut', media_wrap_style: '--delay: .0s;' %}
+            </div>
+            <sht-hotspot data-container-id="hotspotContainer-{{ section.id }}" class="p-absolute h-100 w-100 left-0 top-0">
+              <sht-carousel-trig id="carouselTrigger-{{ section.id }}" data-carousel-target="carousel-{{ section.id }}" class="p-relative h-100 w-100 d-block">
+                {% for block in section.blocks limit: section.blocks.size %}
+                  {%- liquid
+                    assign active_class = ''
+                    assign aria_current = ''
+                    if forloop.first
+                      assign active_class = ' hotspot-item--active'
+                      assign aria_current = ' aria-current="true"'
+                    endif
+                   -%}
+                  <button style="--axis-x: {{ block.settings.left_offset }}%; --axis-y: {{ block.settings.top_offset }}%" class="js-carousel-trigger js-tooltip-placeholder p-absolute hotspot-item br-50p d-flex middle-xs center-xs c-pointer {{ active_class }} b-zero" {{ aria_current }} aria-describedby="carouselItem-{{ forloop.index }}-{{ section.id }}" aria-label="{{ 'products.product.media.load_product_hotspot' | t: product_name: block.settings.product.title }}" aria-controls="carousel-{{ section.id }}" type="button">
+                    <span class="hotspot-content opacity-0 hidden-xs js-tooltip-content p-absolute zi-1 ta-left fs-body">
+                      <span class="h6 mb-8 d-block">
+                        {{ block.settings.product.title }}
+                      </span>
+                      {% render 'product-price', product: block.settings.product, target: block.settings.product %}
+                    </span>
+                  </button>
+                  {% capture carousel_item %}
+                    {{ carousel_item }}
+                    <sht-carousel-itm id="carouselItem-{{ forloop.index }}-{{ section.id }}" role="group" aria-roledescription="Slide" aria-label="{{ 'accessibility.slide' | t }} {{ forloop.index }} {{ 'accessibility.of' | t }} {{ forloop.length }}" class="js-carousel-item w-100 p-relative scrollable-aln-start d-flex aln-itm-ctr fg-1 fs-0" {{ block.shopify_attributes }}>
+                      {% render 'card-product', product: block.settings.product, show_vendor: settings.show_product_vendor, show_color_swatch: settings.show_color_swatches, show_sale_badge: settings.show_sale_badge, enable_quick_buy: settings.enable_quick_buy, item_per_row: 1, ratio: settings.product_card_image_ratio, show_second_image: settings.show_second_image, card_content_inner: false, section: section, is_first: false %}
+                    </sht-carousel-itm>
+                  {% endcapture %}
+                {% endfor %}
+              </sht-carousel-trig>
+            </sht-hotspot>
+          </sht-grid>
+        </div>
+      </div>
+      <div class="clm m-auto" style="--w-xs:12;--w-sm:6;--w-md:4;">
+        <sht-carousel class="p-relative d-block hotspot-carousel" tabindex="0" id="carousel-{{ section.id }}" data-section-id="{{ section.id }}" data-carousel-trigger="carouselTrigger-{{ section.id }}">
+          <div class="between-xs middle-xs no-js-hidden js-carousel-pagination mt-16 mb-16 mb-md-24 mt-md-0 {{ section.settings.show_navigation | default: 'd-none d-flex-sm' | replace: 'true', 'd-flex' }}">
+            <button type="button" data-step="1" class="js-carousel-prev-btn btn btn-icon btn-plain btn-large" aria-label="{{ 'accessibility.previous_slide' | t }}" name="previous" disabled="disabled">
+              {%- render 'icon-chevron-left' -%}
+            </button>
+            <div class="carousel__counter">
+              <span class="js-carousel-counter-current">1</span>
+              <span aria-hidden="true"> / </span>
+              <span class="visually-hidden">{{ 'accessibility.of' | t }}</span>
+              <span class="js-carousel-counter-total">{{ section.blocks.size }}</span>
+            </div>
+            <button type="button" data-step="1" class="js-carousel-next-btn btn btn-icon btn-plain btn-large" aria-label="{{ 'accessibility.next_slide' | t }}" name="next">
+              {%- render 'icon-chevron-right' -%}
+            </button>
+          </div>
+          <div aria-atomic="true" class="js-carousel-items ls-none d-flex p-zero m-zero ox-auto p-relative disable-scrollbars fw-nowrap scrollable scrollable-x">
+            {{ carousel_item }}
+          </div>
+        </sht-carousel>
+      </div>
+    </div>
+  </div>
+</div>
+{% schema %}
+{
+  "name": "t:sections.product_hotspots.name",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_general.content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:general.settings.color_scheme.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "t:general.settings.section_subheading.label"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:general.settings.section_heading.label",
+      "default": "Product hotspots"
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "label": "t:general.settings.section_description.label"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_layout.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_navigation",
+      "label": "t:general.settings.show_navigation_on_mobile.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_top",
+      "label": "t:general.settings.remove_padding_top.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_bottom",
+      "label": "t:general.settings.remove_padding_bottom.label",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_image.content"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_hotspot",
+      "label": "t:general.settings.image.label",
+      "info": "t:sections.product_hotspots.settings.select_image.info"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_prominent_badge.content"
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "t:general.settings.text.label",
+      "info": "t:general.settings.prominent_badge.text.info"
+    },
+    {
+      "type": "select",
+      "id": "badge_color",
+      "label": "t:general.settings.accent_scheme.label",
+      "default": "color-accent-1",
+      "options": [
+        {
+          "value": "color-accent-1",
+          "label": "t:general.settings.main.label"
+        },
+        {
+          "value": "color-accent-2",
+          "label": "t:general.settings.extra.label"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "badge_position",
+      "label": "t:general.settings.badge_position.label",
+      "default": "p-badge--top-left",
+      "options": [
+        {
+          "value": "p-badge--top-left",
+          "label": "t:general.settings.option_left.label"
+        },
+        {
+          "value": "p-badge--top-right",
+          "label": "t:general.settings.option_right.label"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "badge_shape",
+      "label": "t:general.settings.badge_shape.label",
+      "default": "badge--star",
+      "options": [
+        {
+          "value": "badge--star",
+          "label": "t:general.settings.badge_shape.options.option_star.label"
+        },
+        {
+          "value": "badge--diamond",
+          "label": "t:general.settings.badge_shape.options.option_diamond.label"
+        },
+        {
+          "value": "badge--asterisk",
+          "label": "t:general.settings.badge_shape.options.option_asterisk.label"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "hotspot",
+      "name": "t:sections.product_hotspots.blocks.hotspot_item.name",
+      "limit": 3,
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "t:general.settings.product.label"
+        },
+        {
+          "type": "range",
+          "id": "top_offset",
+          "label": "t:sections.product_hotspots.blocks.hotspot_item.settings.top_offset.label",
+          "min": 0,
+          "max": 100,
+          "default": 30,
+          "unit": "%"
+        },
+        {
+          "type": "range",
+          "id": "left_offset",
+          "label": "t:sections.product_hotspots.blocks.hotspot_item.settings.left_offset.label",
+          "min": 0,
+          "max": 100,
+          "default": 25,
+          "unit": "%"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.product_hotspots.name",
+      "blocks": [
+        {
+          "type": "hotspot",
+          "settings": {
+            "product": "",
+            "top_offset": 30,
+            "left_offset": 25
+          }
+        },
+        {
+          "type": "hotspot",
+          "settings": {
+            "product": "",
+            "top_offset": 45,
+            "left_offset": 40
+          }
+        },
+        {
+          "type": "hotspot",
+          "settings": {
+            "product": "",
+            "top_offset": 60,
+            "left_offset": 75
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

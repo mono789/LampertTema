@@ -1,0 +1,14 @@
+{%- for value in option.values -%}
+<div class="product-swatches__item js-variant-option-value product-option__value {% if product.selected_or_first_available_variant.available == false and option.selected_value == value %}product-option--sold-out{% endif %}" data-value="{{ value | escape }}-{{ index }}">
+      <input type="radio" class="input--variant form__control js-variant-item {{ input_class | default: 'js-variant-radio-item' }} visually-hidden" id="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
+        name="{{ option.name }}"
+        value="{{ value | escape }}"
+        data-variant-value="{{ value | escape }}-{{ index }}"
+        form="{{ product_form_id }}"
+        {% if option.selected_value == value %}checked{% endif %}>
+      <label class="form__label" for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" tabindex="-1">
+        <span class="product-swatches js-variant-swatch-item d-block br-50p subtext" aria-hidden="true" data-option-value="{{ value | downcase | escape | remove: " " }}"></span>
+        <span class="visually-hidden js-variant-option-label">{{ value }}</span>
+      </label>
+</div>
+{%- endfor -%}

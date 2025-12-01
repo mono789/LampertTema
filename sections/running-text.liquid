@@ -1,0 +1,207 @@
+{%- liquid
+  assign rand =  section.id | md5 | truncate: 12, ""
+-%}
+<div class="section color-{{ section.settings.color_scheme }} s-text-pb {{ section.settings.remove_padding_top | replace: 'true', 'section-top-zero' | replace: section.settings.remove_padding_top, '' }} {{ section.settings.remove_padding_bottom | replace: 'true', 'section-bottom-zero' | replace: section.settings.remove_padding_bottom, '' }} {% render 'animation-loader', section: section %}" data-ui-component="Running Text Section" role="region" aria-label="{{- section.settings.text -}}">
+  <div id="marquee-{{ rand }}" class="d-flex middle-xs running-text" data-tilt="{{- section.settings.slope_style -}}">
+    <sht-marquee class="ws-nowrap o-hidden w-100 p-relative d-flex middle-xs zi-1 {{ section.settings.accent_scheme }} marquee--{{- section.settings.slope_style -}}" style="--marquee-duration: {{- section.settings.speed -}}s;">
+      <a href="{{ section.settings.link | default: "#" }}" target="_blank" class="animation-pause around-xs marquee__items--animate js-marquee-items d-flex miw fs-0 pt-12 pb-16" style="--miw:100%">
+        {% for i in (1..5) %}
+          <span class="js-marquee-item marquee-item m-zero p-zero p-relative {{ section.settings.font_style }} {{ section.settings.text_size }}">{{ section.settings.text }}</span>
+        {% endfor %}
+      </a>
+      <a href="{{ section.settings.link | default: "#" }}" target="_blank" class="animation-pause around-xs marquee__items--animate js-marquee-items d-flex miw fs-0 pt-12 pb-16" style="--miw:100%">
+        {% for i in (1..5) %}
+          <span class="js-marquee-item marquee-item m-zero p-zero p-relative {{ section.settings.font_style }} {{ section.settings.text_size }}">{{ section.settings.text }}</span>
+        {% endfor %}
+      </a>
+      <div class="p-absolute d-flex middle-xs right-0 top-0 h-100 pr-12 pl-12 pr-md-20 pl-md-20 zi-2 {{ section.settings.enable_play | default: 'd-none-important' | replace: 'true', '' }}">
+        <button class="js-marquee-pause-n-play-btn rng-tt-btn btn btn-small btn-icon btn-secondary marquee-item" aria-label="{{ 'accessibility.pause_play_button' | t }}" aria-pressed="false">
+          {% liquid
+              render 'icon-pause', class: 'js-marqueen-pause-btn'
+              render 'icon-play', class: 'js-marqueen-play-btn d-none'
+          %}
+        </button>
+      </div>
+    </sht-marquee>
+  </div>
+</div>
+  <script data-asset="sht-script">
+    function calSideOppositeAngle{{- rand -}}() {
+      let elm = SHTHelper.qs("#marquee-{{- rand -}}");
+      let degree = (4 * Math.PI) / 180;
+      let height = elm.querySelector('sht-marquee').offsetHeight ;
+      let cHeight = window.innerWidth * Math.tan(degree) + height;
+      elm.dataset.tilt == 'none' ? elm.style.height = null : elm.style.height = `${cHeight}px`;
+    };
+    window.requestAnimationFrame(() => calSideOppositeAngle{{- rand -}}());
+    window.addEventListener('resize', function(event) {
+      window.requestAnimationFrame(()=> calSideOppositeAngle{{- rand -}}());
+    });
+  </script>
+{% schema %}
+{
+  "name": "t:sections.running_text.name",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_general.content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:general.settings.color_scheme.label",
+      "default": "accent-1"
+    },
+    {
+      "type": "select",
+      "id": "accent_scheme",
+      "label": "t:general.settings.accent_scheme.label",
+      "default": "color-accent-1",
+      "options": [
+        {
+          "value": "color-accent-1",
+          "label": "t:general.settings.main.label"
+        },
+        {
+          "value": "color-accent-2",
+          "label": "t:general.settings.extra.label"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "speed",
+      "label": "Speed",
+      "default": "20",
+      "options": [
+        {
+          "value": "50",
+          "label": "Very slow"
+        },
+        {
+          "value": "30",
+          "label": "Slow"
+        },
+        {
+          "value": "20",
+          "label": "Normal"
+        },
+        {
+          "value": "10",
+          "label": "Fast"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_play",
+      "label": "t:sections.running_text.settings.show_play_button.label",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_content.content"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "t:general.settings.text.label",
+      "info": "t:general.settings.text.info",
+      "default": "Highlight content"
+    },
+    {
+      "type": "select",
+      "label": "t:settings_schema.typography.settings.font.label",
+      "id": "font_style",
+      "options": [
+        {
+          "value": "marquee-font--body",
+          "label": "t:general.settings.option_body.label"
+        },
+        {
+          "value": "marquee-font--heading",
+          "label": "t:general.settings.option_heading.label"
+        }
+      ],
+      "default": "marquee-font--heading"
+    },
+    {
+      "type": "select",
+      "label": "t:settings_schema.typography.settings.text_size.label",
+      "id": "text_size",
+      "options": [
+        {
+          "value": "h3",
+          "label": "t:general.settings.option_small.label"
+        },
+        {
+          "value": "h2",
+          "label": "t:general.settings.option_medium.label"
+        },
+        {
+          "value": "h1",
+          "label": "t:general.settings.option_large.label"
+        },
+        {
+          "value": "headline-3x",
+          "label": "t:general.settings.option_xlarge.label"
+        }
+      ],
+      "default": "h3"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "t:general.settings.link.label"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_layout.content"
+    },
+    {
+      "type": "select",
+      "id": "slope_style",
+      "label": "t:sections.running_text.settings.slope_style.label",
+      "default": "up",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:general.settings.option_none.label"
+        },
+        {
+          "value": "up",
+          "label": "t:sections.running_text.settings.slope_style.options.option_up.label"
+        },
+        {
+          "value": "down",
+          "label": "t:sections.running_text.settings.slope_style.options.option_down.label"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_top",
+      "label": "t:general.settings.remove_padding_top.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_bottom",
+      "label": "t:general.settings.remove_padding_bottom.label",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.running_text.name"
+    }
+  ]
+}
+{% endschema %}
+

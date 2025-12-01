@@ -1,0 +1,10 @@
+{%- render 'icon-cart' -%}
+<span class="visually-hidden">{{ 'sections.header.cart_label' | t }}</span>
+<span class="header__cart-count d-block p-absolute subtext ta-center color-accent-1 ws-nowrap header-cart-count-{{- cart.item_count }} {% if cart.item_count == 0 %}opacity-0 hidden-xs {% endif %}">
+  <span class="cart-count-number d-block p-relative">
+    {{- cart.item_count -}}
+  </span>
+</span>
+<span class="visually-hidden">
+  {{- 'sections.header.cart_count.other' | t: count: cart.item_count -}}
+</span>

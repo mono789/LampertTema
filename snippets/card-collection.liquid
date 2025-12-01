@@ -1,0 +1,28 @@
+{%- comment -%}
+{% render 'card-collection',
+  collection: collection,
+  media_ratio: '1/1'
+  show_product_count: settings.show_product_count
+%}
+{%- endcomment -%}
+{%- liquid
+  assign loading = "lazy"
+  assign decoding ="async"
+  assign fetchpriority = "auto"
+
+  if section.index == 1 and is_first
+    assign loading = "eager"
+    assign fetchpriority = "high"
+  endif
+  assign collection_image = 'collection-1' | placeholder_svg_tag: 'placeholder media of-cover js-image-lazy w-100'
+  assign collection_image = collection.products.first.featured_image | image_url: width: section.settings.hero_image.width | image_tag: widths: '320, 450, 550', sizes: '(min-width: 459px) calc(100vw/2), (min-width: 769px) calc(100vw/4), 100vw', alt: collection.title, class: 'media of-cover js-image-lazy w-100', loading: loading, fetchpriority: fetchpriority, decoding: decoding
+  assign collection_image = collection.image | image_url: width: section.settings.hero_image.width | image_tag: widths: '320, 450, 550', sizes: '(min-width: 459px) calc(100vw/2), (min-width: 769px) calc(100vw/4), 100vw', alt: collection.title, class: 'media of-cover js-image-lazy w-100', loading: loading, fetchpriority: fetchpriority, decoding: decoding
+-%}
+<div class="card card__media w-100 p-relative mah-100 sht-mask h-100 o-hidden color-{{- settings.collection_card_color_scheme -}}" style="--overlay: {{ overlay_opacity }}">
+  <a aria-label="{{ collection.title }}" href="{{ collection.url }}" class="d-block h-100 w-100 p-absolute zi-2"></a>
+  {% render 'image', image_item: collection_image, src: collection_image.src, ratio: media_ratio, image_wrap_classes: 'h-100', image_classes: 'h-100 w-100' %}
+  <div class="card__content card__content--inner p-absolute bottom-0 w-100 zi-1 pe-none wb-break-word">
+    <h3 class="h6 m-zero card__heading">{{ collection.title }}</h3>
+    <div class="subtext mt-6 {{ show_product_count | default: ' d-none-important' | replace: 'true', '' }}">{{ 'general.collection.view_collection' | t: count: collection.products.size }}</div>
+  </div>
+</div>

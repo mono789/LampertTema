@@ -1,0 +1,308 @@
+{%- liquid
+  assign loading = "lazy"
+  assign decoding ="async"
+  assign fetchpriority = "auto"
+
+  if section.index == 1
+    assign loading = "eager"
+    assign fetchpriority = "high"
+  endif
+  assign section_id = section.id | md5 | truncate: 12, ""
+  assign formID = section_id | prepend: 'cf-'
+  assign form_image_alt  = section.settings.contact_image.alt | default: section.settings.contact_image.image | split: '/' | last
+  assign form_image = section.settings.contact_image | image_url: width: section.settings.contact_image.width | image_tag: widths: '550, 750, 950, 1024, 1200', sizes: '(min-width: 361px) calc(100vw/2), calc(100vw/3)', alt: form_image_alt, class: 'js-image-lazy media w-100 of-cover', loading: loading, fetchpriority: fetchpriority, decoding: decoding
+-%}
+{% if form_image %}
+  {% assign error_class= " start-lg " %}
+  {% capture form_image_html %}
+    <div class="clm o-hidden" style="--w-xs:12;--w-sm:12;--w-md:4;">
+      {% render 'image', image_item: form_image, image_classes: 'js-animate anm anm-zoomOut', media_wrap_style: '--delay: 0s;', ratio: section.settings.image_ratio %}
+    </div>
+  {% endcapture %}
+{%  else %}
+  {% assign submit_button_class= " center-md " %}
+{% endif %}
+
+<div class="section color-{{ section.settings.color_scheme }} {{ section.settings.remove_padding_top | replace: 'true', 'section-top-zero' | replace: section.settings.remove_padding_top, '' }} {{ section.settings.remove_padding_bottom | replace: 'true', 'section-bottom-zero' | replace: section.settings.remove_padding_bottom, '' }} {% render 'animation-loader', section: section %}" data-ui-component="Contact Form Section" role="region" aria-labelledby="sectionHeading-{{ section_id }}">
+  <div class="ctnr">
+    {% render 'section-header', heading: section.settings.heading, content_align: 'ta-center' %}
+    <div class="s-content rw center-xs r-gap-48 r-gap-sm-36 {% if section.settings.content_ordering == 'fd-row-reverse' %}{{ section.settings.content_ordering }}{% endif %}">
+      <div class="clm m-zero-md js-animate anm" style="--w-xs:12;--w-sm:12;--w-md:8; --duration: .6s; --delay: .3s;">
+        {%- form 'contact', id: formID, class: 'form-contact' -%}
+          {%- if form.posted_successfully? -%}
+            <div class="d-flex middle-xs mb-32 center-xs {{ error_class }}">
+              <div class="icon icon--small icon--success fs-0">
+                {% render 'icon-check-mark', size: 16 %}
+              </div>
+              <span class="ml-8 subtext">
+                {{ 'templates.contact.form.post_success' | t }}
+              </span>
+            </div>
+          {%- elsif form.errors -%}
+            <div class="d-flex middle-xs mb-32 center-xs {{ error_class }}">
+              <div class="icon icon--small icon--error fs-0">
+                {% render 'icon-error', size: 16 %}
+              </div>
+              <span class="ml-8 subtext">
+                {{ 'templates.contact.form.error_heading' | t }}
+              </span>
+            </div>
+          {%- endif -%}
+          <div class="rw gap-equal">
+            <div class="clm field" style="--w-xs:12;--w-md:6">
+              <label class="d-block field__label mb-12" for="{{ formID }}-name">{{ 'templates.contact.form.name' | t }}</label>
+              <input class="field__text field--focus field--hover w-100" autocomplete="name" type="text" id="{{ formID }}-name" name="contact[Name]" value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}" placeholder="{{ 'templates.contact.form.name_placeholder' | t }}">
+            </div>
+            <div class="clm field" style="--w-xs:12;--w-md:6">
+              <label class="field__label mb-12 d-block p-relative" for="{{ formID }}-email">{{ 'templates.contact.form.email' | t }}<sup class="p-absolute ml-4 color-danger">*</sup></label>
+              <input
+              autocomplete="email"
+              type="email"
+              id="{{ formID }}-email"
+              class="field__text field--focus field--hover w-100"
+              name="contact[email]"
+              spellcheck="false"
+              autocapitalize="off"
+              value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+              aria-required="true"
+              placeholder="{{ 'templates.contact.form.email_placeholder' | t }}"
+              required
+              >
+            </div>
+            {%- for block in section.blocks -%}
+              {%- case block.type -%}
+                {%- when 'text_field' -%}
+                  <div class="clm field" style="--w-xs:12;--w-md:12" {{ block.shopify_attributes }}>
+                    <label class="d-block field__label mb-12 p-relative" for="{{ formID }}-{{ forloop.index }}-custom">
+                      {{ block.settings.label }}
+                      <sup class="p-absolute ml-4 color-danger {{ block.settings.required | default: 'd-none' | replace: 'true', 'p-absolute ml-4 color-danger' }}">*</sup>
+                    </label>
+                    {%- if block.settings.textarea -%}
+                      <textarea
+                        rows="5"
+                        id="{{ formID }}-{{ forloop.index }}-custom"
+                        class="textarea field__text field--focus field--hover w-100"
+                        name="contact[{{ block.settings.label }}]"
+                        placeholder="{{ block.settings.placeholder }}"
+                        {{ block.settings.required | default: '' | replace: 'true', 'required' }}
+                        >
+                        {{- form.body -}}
+                      </textarea>
+                    {%- else -%}
+                      <input
+                      class="field__text field--focus field--hover w-100"
+                      type="text"
+                      id="{{ formID }}-{{ forloop.index }}-custom"
+                      name="contact[{{ block.settings.label }}]"
+                      placeholder="{{ block.settings.placeholder }}"
+                      {{ block.settings.required | default: '' | replace: 'true', 'required' }}
+                      >
+                    {%- endif -%}
+                  </div>
+                {%- when 'dropdown' -%}
+                  <div class="clm field" style="--w-xs:12;--w-md:12" {{ block.shopify_attributes }}>
+                    <label class="d-block field__label mb-12 p-relative" for="{{ formID }}-{{ forloop.index }}-dropdown">
+                      {{ block.settings.label }}
+                    </label>
+                    {% assign options = block.settings.add_value | split: ',' %}
+                    <div class="field__select p-relative">
+                      <select class="field__text field--focus field--hover w-100 color-text-regular" name="contact[{{ block.settings.label }}]" id="{{ formID }}-{{ forloop.index }}-dropdown">
+                        {% for value in options %}
+                          <option value="{{value}}">{{ value }}</option>
+                        {% endfor %}
+                      </select>
+                      <span class="btn btn-large btn-icon p-absolute right-0 pe-none">
+                        {% render 'icon-chevron-down' %}
+                      </span>
+                    </div>
+                  </div>
+              {%- endcase -%}
+            {%- endfor -%}
+            <div class="clm field" style="--w-xs:12;">
+              <label class="field__label mb-12 p-relative d-block" for="{{ formID }}-message">{{ 'templates.contact.form.message' | t }}<sup class="p-absolute ml-4 color-danger">*</sup></label>
+              <textarea
+                rows="5"
+                id="{{ formID }}-message"
+                required
+                class="textarea field__text field--focus field--hover w-100"
+                name="contact[{{ 'templates.contact.form.message_title' | t }}]"
+                placeholder="{{ 'templates.contact.form.message_placeholder' | t }}"
+              >
+                {{- form.body -}}
+              </textarea>
+            </div>
+            <div class="clm field d-flex fd-column fd-row-sm center-xs start-md mt-32 mt-sm-12 mt-md-0 {{ submit_button_class }}" style="--w-xs:12;">
+              <button type="submit" class="btn btn-primary btn-large c-pointer">
+                {{- section.settings.button_label | default: 'Send message' -}}
+              </button>
+            </div>
+          </div>
+        {%- endform -%}
+      </div>
+      {{ form_image_html }}
+    </div>
+  </div>
+</div>
+{% schema %}
+{
+  "name": "t:sections.contact_form.name",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_general.content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:general.settings.color_scheme.label",
+      "default": "accent-1"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:general.settings.section_heading.label",
+      "default": "Contact form"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_layout.content"
+    },
+    {
+      "type": "select",
+      "id": "content_ordering",
+      "label": "t:general.settings.content_ordering_on_desktop.label",
+      "default": "text_first",
+      "options": [
+        {
+          "value": "text_first",
+          "label": "t:general.settings.content_ordering.options.option_text_first.label"
+        },
+        {
+          "value": "fd-row-reverse",
+          "label": "t:general.settings.content_ordering.options.option_image_first.label"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_top",
+      "label": "t:general.settings.remove_padding_top.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_bottom",
+      "label": "t:general.settings.remove_padding_bottom.label",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_image.content"
+    },
+    {
+      "type": "image_picker",
+      "id": "contact_image",
+      "label": "t:general.settings.image.label",
+      "info": "t:general.settings.desktop_background_image.info"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "t:general.settings.image_ratio.label",
+      "default": "auto",
+      "options": [
+        {
+          "value": "1/1",
+          "label": "t:general.settings.image_ratio.options.option_square.label"
+        },
+        {
+          "value": "2/3",
+          "label": "t:general.settings.image_ratio.options.option_portrait_1.label"
+        },
+        {
+          "value": "3/2",
+          "label": "t:general.settings.image_ratio.options.option_landscape_1.label"
+        },
+        {
+          "value": "auto",
+          "label": "t:general.settings.image_ratio.options.option_adapt.label"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_button.content"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "t:general.settings.label.label",
+      "default": "Send message"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "text_field",
+      "name": "t:sections.contact_form.blocks.custom_text_field.name",
+      "limit": 3,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "t:general.settings.label.label",
+          "default": "Custom text field label"
+        },
+        {
+          "type": "text",
+          "id": "placeholder",
+          "label": "t:sections.contact_form.general.blocks.settings.placeholder.label",
+          "default": "Placeholder"
+        },
+        {
+          "type": "checkbox",
+          "id": "required",
+          "label": "t:sections.contact_form.general.blocks.settings.field_is_required.label",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "textarea",
+          "label": "t:sections.contact_form.blocks.custom_text_field.settings.use_textarea.label",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "dropdown",
+      "name": "t:sections.contact_form.blocks.custom_dropdown.name",
+      "limit": 3,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "t:general.settings.label.label",
+          "default": "Custom dropdown label"
+        },
+        {
+          "type": "text",
+          "id": "add_value",
+          "label": "t:sections.contact_form.blocks.custom_dropdown.settings.value.label",
+          "default": "value1, value2, value3",
+          "info": "t:sections.contact_form.blocks.custom_dropdown.settings.value.info"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.contact_form.name"
+    }
+  ]
+}
+{% endschema %}

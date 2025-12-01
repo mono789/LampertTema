@@ -1,0 +1,200 @@
+{% schema %}
+{
+  "name": "Galería Lampert",
+  "settings": [
+    {
+      "type": "range",
+      "id": "autoplay_interval",
+      "label": "Intervalo de reproducción automática (ms)",
+      "min": 1000,
+      "max": 9000,
+      "step": 1000,
+      "default": 5000
+    },
+    {
+      "type": "range",
+      "id": "section_width",
+      "label": "Ancho de la sección (%)",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "default": 100
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image_slide",
+      "name": "Slide de Imagen",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image_desktop",
+          "label": "Imagen de escritorio"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_mobile",
+          "label": "Imagen móvil"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Enlace del slide"
+        }
+      ]
+    },
+    {
+      "type": "video_slide",
+      "name": "Slide de Video",
+      "settings": [
+        {
+          "type": "video",
+          "id": "video_file",
+          "label": "Archivo de video alojado en Shopify"
+        },
+        {
+          "type": "video",
+          "id": "video_mobile_file",
+          "label": "Archivo de video móvil alojado en Shopify"
+        },
+        {
+          "type": "video_url",
+          "id": "video_url",
+          "label": "URL del video externo (YouTube o Vimeo)",
+          "accept": ["youtube", "vimeo"]
+        },
+        {
+          "type": "video_url",
+          "id": "video_url_mobile",
+          "label": "URL del video externo móvil (YouTube o Vimeo)",
+          "accept": ["youtube", "vimeo"]
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Galería de Imágenes y Video",
+      "category": "Galería"
+    }
+  ]
+}
+{% endschema %}
+
+<style>
+  #gallery {
+    max-width: {{ section.settings.section_width }}%;
+    height: auto;
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
+  }
+  .gallery-container {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+  }
+  .gallery-item {
+    min-width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+  }
+  .gallery-item video, .gallery-item iframe {
+    width: 100%;
+    object-fit: cover;
+  }
+  .gallery-navigation {
+    display: flex;
+    justify-content: space-between;
+    width: calc(100% - 40px);
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .nav-button {
+    background-color: rgba(0, 0, 0, 0.3);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  .nav-button span {
+    font-size: 30px;
+  }
+  .nav-button:hover {
+    background-color: #000;
+  }
+
+  .mobile{
+    display: none;
+  }
+  
+  @media (max-width: 620px) {
+    .gallery-item .desktop {
+      display: none;
+    }
+    .gallery-item .mobile {
+      display: block;
+    }
+  }
+</style>
+
+<section id="gallery">
+  <div class="gallery-container">
+    {% for block in section.blocks %}
+      {% if block.type == 'image_slide' %}
+        <figure class="gallery-item">
+          <a href="{{ block.settings.link }}">
+            <img class="desktop" src="{{ block.settings.image_desktop | img_url: 'master' }}" alt="Slide Desktop">
+            <img class="mobile" src="{{ block.settings.image_mobile | img_url: 'master' }}" alt="Slide Mobile">
+          </a>
+        </figure>
+      {% elsif block.type == 'video_slide' %}
+        <figure class="gallery-item">
+          <div class="desktop">
+            {% if block.settings.video_file != blank %}
+              {{ block.settings.video_file | video_tag: autoplay: true, muted: true, loop: true, controls: false }}
+            {% elsif block.settings.video_url != blank %}
+              {% if block.settings.video_url contains "youtube" %}
+                <iframe src="{{ block.settings.video_url | replace: 'watch?v=', 'embed/' }}?autoplay=1&mute=1&loop=1&playlist={{ block.settings.video_url | split: 'v=' | last }}" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+              {% elsif block.settings.video_url contains "vimeo" %}
+                <iframe src="{{ block.settings.video_url | replace: 'vimeo.com/', 'player.vimeo.com/video/' }}?autoplay=1&loop=1&muted=1&background=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+              {% endif %}
+            {% endif %}
+          </div>
+          <div class="mobile">
+            {% if block.settings.video_mobile_file != blank %}
+              {{ block.settings.video_mobile_file | video_tag: autoplay: true, muted: true, loop: true, controls: false }}
+            {% elsif block.settings.video_url_mobile != blank %}
+              {% if block.settings.video_url_mobile contains "youtube" %}
+                <iframe src="{{ block.settings.video_url_mobile | replace: 'watch?v=', 'embed/' }}?autoplay=1&mute=1&loop=1&playlist={{ block.settings.video_url_mobile | split: 'v=' | last }}" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+              {% elsif block.settings.video_url_mobile contains "vimeo" %}
+                <iframe src="{{ block.settings.video_url_mobile | replace: 'vimeo.com/', 'player.vimeo.com/video/' }}?autoplay=1&loop=1&muted=1&background=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+              {% endif %}
+            {% endif %}
+          </div>
+        </figure>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <nav class="gallery-navigation">
+    <button class="nav-button prev-button"><span>&lt;</span></button>
+    <button class="nav-button next-button"><span>&gt;</span></button>
+  </nav>
+</section>
+
+<script>
+  let currentIndex = 0;
+  const autoplayInterval = {{ section.settings.autoplay_interval }};
+  const slides = document.querySelectorAll('.gallery-item');
+
+  function navigate(direction) {
+    currentIndex = (currentIndex + direction + slides.length) % slides.length;
+    document.querySelector('.gallery-container').style.transform = `translateX(-${currentIndex * 100}%)`;
+  }
+
+  document.querySelector('.prev-button').addEventListener('click', () => navigate(-1));
+  document.querySelector('.next-button').addEventListener('click', () => navigate(1));
+
+  setInterval(() => navigate(1), autoplayInterval);
+</script>

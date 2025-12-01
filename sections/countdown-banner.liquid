@@ -1,0 +1,522 @@
+{%- liquid
+
+  assign loading = "lazy"
+  assign decoding ="async"
+  assign fetchpriority = "auto"
+
+  if section.index == 1
+    assign loading = "eager"
+    assign fetchpriority = "high"
+  endif
+
+  assign desktop_background_image = 'lifestyle-1' | placeholder_svg_tag: 'js-image-lazy placeholder d-none d-block-sm w-100 h-100 of-cover'
+  assign mobile_background_image = 'lifestyle-1' | placeholder_svg_tag: 'js-image-lazy-mobile placeholder d-none-sm d-block w-100 h-100 of-cover'
+
+  assign desktop_background_image_alt  = section.settings.desktop_background_image.alt | default: section.settings.desktop_background_image.image | split: '/' | last
+  assign desktop_background_image = section.settings.desktop_background_image | image_url: width: section.settings.desktop_background_image.width | image_tag: widths: '320, 450, 550, 750, 950, 1024, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000', sizes: "100vw", alt: desktop_background_image_alt, class: 'js-image-lazy d-none d-block-sm w-100 h-100 of-cover', loading: loading, fetchpriority: fetchpriority, decoding: decoding
+
+  assign mobile_background_image_alt  = section.settings.mobile_background_image.alt | default: section.settings.mobile_background_image.image | split: '/' | last
+  assign mobile_background_image = section.settings.mobile_background_image | image_url: width: section.settings.mobile_background_image.width | image_tag: widths: '320, 450, 550, 750, 950, 1024, 1200', sizes: "100vw", alt: mobile_background_image_alt, class: 'js-image-lazy-mobile d-none-sm d-block w-100 h-100 of-cover', loading: loading, fetchpriority: fetchpriority, decoding: decoding
+
+  if section.settings.mobile_background_image == blank
+    assign desktop_background_image = desktop_background_image | replace: 'd-none d-block-sm', ''
+  endif
+
+  assign min_height_mobile = section.settings.height_mobile
+  assign min_height_desktop = section.settings.height_desktop
+  if min_height_desktop == "adapt_img"
+    if section.settings.desktop_background_image == blank
+      assign min_height_desktop = "400px"
+    else
+      assign min_height_desktop = 1 | divided_by: section.settings.desktop_background_image.aspect_ratio | times: 100 | append: 'vw'
+    endif
+  endif
+
+  if min_height_mobile == "adapt_img"
+    if section.settings.mobile_background_image != blank
+      assign min_height_mobile = 1 | divided_by: section.settings.mobile_background_image.aspect_ratio | times: 100 | append: 'vw'
+    else
+      assign min_height_mobile = 1 | divided_by: section.settings.desktop_background_image.aspect_ratio | times: 100 | append: 'vw'
+    endif
+  endif
+
+  unless section.settings.section_mask_overlay_color.alpha == 0.0 or section.settings.section_mask_overlay_color == blank
+    assign overlay_color =  '--color-page-bg-rgb:' | append: section.settings.section_mask_overlay_color.red | append: ',' | append: section.settings.section_mask_overlay_color.green | append: ',' | append: section.settings.section_mask_overlay_color.blue
+  endunless
+  unless section.settings.section_content_overlay_color.alpha == 0.0 or section.settings.section_content_overlay_color == blank
+    assign content_color =  'color:' | append: section.settings.section_content_overlay_color
+  endunless
+  unless section.blocks[0].settings.color_end_text.alpha == 0.0 or section.blocks[0].settings.color_end_text == blank
+    assign message_color = '--color-countdown-message:' | append: section.blocks[0].settings.color_end_text
+  endunless
+  assign fullwidth_banner_class = 'ctnr-banner'
+  assign padding_banner_class = ''
+  if section.settings.enable_fullwidth_banner == true
+    assign fullwidth_banner_class = 'w-100'
+  endif
+  if section.settings.enable_fullwidth_banner == false
+    assign padding_banner_class = 'banner-wrapper'
+  endif
+-%}
+{% capture countdown %}
+  {% if section.blocks[0].settings.enable_countdown_timer == true %}
+    {%- liquid
+      assign is_expried = false
+      assign hide_countdown_cls = ''
+      assign hide_countdown_message_cls = 'd-none'
+      assign today = "now" | date: "%Y-%m-%d"
+      assign end_time = section.blocks[0].settings.end_time | default: '23:59' | append: ':00'
+      assign end_date = section.blocks[0].settings.end_date | default: today
+
+      assign timezone_offset = "now" | date: "%z"
+      assign expired_at = end_date | append: ' ' | append: end_time | append: ' ' | append: timezone_offset
+
+      assign expired_at_timestamp = expired_at | date: '%s'
+      assign now_timestamp = 'now' | date: '%s'
+
+      assign diff_seconds = expired_at_timestamp | minus: now_timestamp
+
+      assign days = diff_seconds | divided_by: 3600 | divided_by: 24 | round
+      assign hours = diff_seconds | modulo: 86400 | divided_by: 3600 | round
+      assign minutes = diff_seconds | modulo: 3600 | divided_by: 60 | round
+      assign seconds = diff_seconds | modulo: 60 | round
+
+      assign days_string = '00'
+      assign hours_string = '00'
+      assign minutes_string = '00'
+      assign seconds_string = '00'
+
+      if diff_seconds > 0 and days < 9 and days >= 0
+        assign days_string = days | prepend: '0'
+      elsif diff_seconds > 0 and days > 9
+        assign days_string = days
+      endif
+
+      if diff_seconds > 0 and hours < 9 and hours >= 0
+        assign hours_string = hours | prepend: '0'
+      elsif diff_seconds > 0 and hours > 9
+        assign hours_string = hours
+      endif
+
+      if diff_seconds > 0 and minutes < 9 and minutes >= 0
+        assign minutes_string = minutes | prepend: '0'
+      elsif diff_seconds > 0 and minutes > 9
+        assign minutes_string = minutes
+      endif
+
+      if diff_seconds > 0 and seconds < 9 and seconds >= 0
+        assign seconds_string = seconds | prepend: '0'
+      elsif diff_seconds > 0 and seconds > 9
+        assign seconds_string = seconds
+      endif
+
+      if diff_seconds <= 0
+        assign is_expried = true
+        if section.blocks[0].settings.hide_on_end
+          assign hide_countdown_cls = "d-none-important"
+        endif
+        if section.blocks[0].settings.end_text != blank
+          assign hide_countdown_message_cls = ''
+        endif
+      endif
+    -%}
+  <sht-countdown class="d-block" data-is-expired="{{ is_expried }}" data-hide-on-end="{{ section.blocks[0].settings.hide_on_end }}" data-time-zone-name="{{ "now" | date: "%Z" }}" data-time-zone-offset="{{ timezone_offset }}" data-end-time="{{ end_time }}" data-end-date="{{ end_date }}">
+    <time class="countdown_counter js-counter d-inline-flex gap-24 fw-wrap {{ hide_countdown_cls }} {%- if section.blocks[0].settings.content_position contains 'ta-center' -%} center-xs {%- endif -%}">
+      <span class="d-flex fd-column middle-xs gap-8">
+        <span class="h3 m-zero js-counter-days">{{ days_string }}</span>
+        <span>{{ 'sections.countdown_banner.days' | t }}</span>
+      </span>
+      <span class="d-flex fd-column middle-xs gap-8">
+        <span class="h3 m-zero js-counter-hours">{{ hours_string }}</span>
+        <span>{{ 'sections.countdown_banner.hours' | t }}</span>
+      </span>
+      <span class="d-flex fd-column middle-xs gap-8">
+        <span class="h3 m-zero js-counter-minutes">{{ minutes_string }}</span>
+        <span>{{ 'sections.countdown_banner.minutes' | t }}</span>
+      </span>
+      <span class="d-flex fd-column middle-xs gap-8">
+        <span class="h3 m-zero js-counter-seconds">{{ seconds_string }}</span>
+        <span>{{ 'sections.countdown_banner.seconds' | t }}</span>
+      </span>
+    </time>
+    <div class="countdown_message text-block {{ hide_countdown_message_cls }} js-counter-message" style="{{ message_color }}">{{- section.blocks[0].settings.end_text -}}</div>
+  </sht-countdown>
+  {% endif %}
+{% endcapture %}
+
+<div class="p-relative color-{{- section.settings.color_scheme }} {% render 'animation-loader', section: section %} h-100 content--special section {{ section.settings.remove_padding_top | replace: 'true', 'section-top-zero' | replace: section.settings.remove_padding_top, '' }} {{ section.settings.remove_padding_bottom | replace: 'true', 'section-bottom-zero' | replace: section.settings.remove_padding_bottom, '' }}" data-ui-component="Countdown Banner Section" role="region" aria-labelledby="sectionHeading-{{ section.id | md5 | truncate: 12, "" }}">
+  <div class="p-relative {{ fullwidth_banner_class }} {{ padding_banner_class }}">
+    {%- if section.settings.image_banner_link != blank %}
+      {% unless section.blocks[0].settings.primary_button_label != blank and section.blocks[0].settings.primary_button_link != blank %}
+        <a href="{{- section.settings.image_banner_link -}}" class="p-absolute top-0 right-0 bottom-0 left-0 zi-2" target="_blank" aria-label="{{- section.blocks[0].settings.heading |  escape -}}"></a>
+      {% endunless %}
+    {%- endif -%}
+    <div class="p-absolute h-100 w-100 left-0 top-0 {{ padding_banner_class }}">
+      <div class="sht-mask p-relative w-100 h-100 o-hidden" style="--overlay: {{ section.settings.section_overlay_opacity }}; {{ overlay_color }}">
+        <div class="d-block w-100 h-100 js-animate anm anm-zoomOut media-wrapper">
+          {%- liquid
+            echo desktop_background_image
+            if section.settings.mobile_background_image
+              echo mobile_background_image
+            endif
+          -%}
+        </div>
+      </div>
+    </div>
+    <div class="ctnr zi-1 w-100 h-100 mah-100 p-relative d-flex fd-column banner-padding {{ section.blocks[0].settings.content_position }}" {{ section.blocks[0].shopify_attributes }} style="--mh-xs: {{- min_height_mobile -}};--mh-sm: {{- min_height_desktop -}}; {{content_color}}">
+      {%- assign heading_style = section.settings.enable_large_heading | default: '' | replace: 'true', 'headline' -%}
+      {%- render 'section-header'
+        classes: 's-header mah-100 pb-0 w-100',
+        header_content_class: 'mah-100 o-hidden',
+        content_align: section.blocks[0].settings.content_position,
+        subheading: section.blocks[0].settings.subheading,
+        heading: section.blocks[0].settings.heading,
+        heading_classes: heading_style,
+        description: section.blocks[0].settings.description,
+        button_main_text: section.blocks[0].settings.primary_button_label,
+        button_main_link: section.blocks[0].settings.primary_button_link,
+        badge_text: section.settings.badge_text,
+        badge_position: section.settings.badge_position,
+        badge_shape: section.settings.badge_shape,
+        badge_color: section.settings.badge_color,
+        advance_content: countdown,
+        section: section
+      -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.countdown_banner.name",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_general.content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:general.settings.color_scheme.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_large_heading",
+      "label": "t:general.settings.enable_large_heading.label",
+      "info": "t:general.settings.enable_large_heading.info",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_fullwidth_banner",
+      "label": "t:general.settings.enable_fullwidth_banner.label",
+      "default": true
+    },
+    {
+      "type": "range",
+      "unit": "%",
+      "max": 90,
+      "min": 0,
+      "step": 1,
+      "default": 30,
+      "id": "section_overlay_opacity",
+      "label": "t:general.settings.overlay_opacity.label"
+    },
+    {
+      "type": "color",
+      "id": "section_mask_overlay_color",
+      "label": "t:general.settings.mask_overlay.label",
+      "info": "t:general.settings.banner_mask_overlay.info",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "section_content_overlay_color",
+      "label": "t:general.settings.content_overlay.label",
+      "info": "t:general.settings.banner_content_overlay.info",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_layout.content"
+    },
+    {
+      "type": "select",
+      "label": "t:general.settings.section_height_on_large_screen.label",
+      "id": "height_desktop",
+      "info": "t:general.settings.section_height.info",
+      "options": [
+        {
+          "value": "50vh",
+          "label": "t:general.settings.height.options.option_50.label"
+        },
+        {
+          "value": "70vh",
+          "label": "t:general.settings.height.options.option_70.label"
+        },
+        {
+          "value": "100vh",
+          "label": "t:general.settings.height.options.fill_screen_height.label"
+        },
+        {
+          "value": "adapt_img",
+          "label": "t:general.settings.image_ratio.options.option_adapt.label"
+        }
+      ],
+      "default": "70vh"
+    },
+    {
+      "type": "select",
+      "label": "t:general.settings.section_height_on_phone.label",
+      "id": "height_mobile",
+      "info": "t:general.settings.section_height.info",
+      "options": [
+        {
+          "value": "50vh",
+          "label": "t:general.settings.height.options.option_50.label"
+        },
+        {
+          "value": "70vh",
+          "label": "t:general.settings.height.options.option_70.label"
+        },
+        {
+          "value": "100vh",
+          "label": "t:general.settings.height.options.fill_screen_height.label"
+        },
+        {
+          "value": "adapt_img",
+          "label": "t:general.settings.image_ratio.options.option_adapt.label"
+        }
+      ],
+      "default": "70vh"
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_top",
+      "label": "t:general.settings.remove_padding_top.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_bottom",
+      "label": "t:general.settings.remove_padding_bottom.label",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_image.content"
+    },
+    {
+      "type": "image_picker",
+      "label": "t:general.settings.desktop_background_image.label",
+      "id": "desktop_background_image",
+      "info": "t:general.settings.image_recommend.info"
+    },
+    {
+      "type": "image_picker",
+      "label": "t:general.settings.mobile_background_image.label",
+      "id": "mobile_background_image",
+      "info": "t:general.settings.image_recommend_mobile.info"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_prominent_badge.content"
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "t:general.settings.text.label",
+      "info": "t:general.settings.prominent_badge.text.info",
+      "default": "Get ready"
+    },
+    {
+      "type": "select",
+      "id": "badge_color",
+      "label": "t:general.settings.accent_scheme.label",
+      "default": "color-accent-1",
+      "options": [
+        {
+          "value": "color-accent-1",
+          "label": "t:general.settings.main.label"
+        },
+        {
+          "value": "color-accent-2",
+          "label": "t:general.settings.extra.label"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "badge_position",
+      "label": "t:general.settings.badge_position.label",
+      "default": "p-badge--top-right",
+      "options": [
+        {
+          "value": "p-badge--top-left",
+          "label": "t:general.settings.option_left.label"
+        },
+        {
+          "value": "p-badge--top-right",
+          "label": "t:general.settings.option_right.label"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "badge_shape",
+      "label": "t:general.settings.badge_shape.label",
+      "default": "badge--star",
+      "options": [
+        {
+          "value": "badge--diamond",
+          "label": "t:general.settings.badge_shape.options.option_diamond.label"
+        },
+        {
+          "value": "badge--star",
+          "label": "t:general.settings.badge_shape.options.option_star.label"
+        },
+        {
+          "value": "badge--asterisk",
+          "label": "t:general.settings.badge_shape.options.option_asterisk.label"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.link.label"
+    },
+    {
+      "type": "url",
+      "id": "image_banner_link",
+      "label": "t:general.settings.link.label",
+      "info": "t:sections.image_banner.settings.banner_link.info"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "content",
+      "name": "t:general.settings.headers.header_content.content",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "label": "t:general.settings.content_position.label",
+          "id": "content_position",
+          "options": [
+            {
+              "value": "center-xs middle-xs ta-center",
+              "label": "t:general.settings.option_center.label"
+            },
+            {
+              "value": "center-xs top-xs ta-left",
+              "label": "t:general.settings.content_position.options.option_left_center.label"
+            },
+            {
+              "value": "end-xs top-xs ta-left",
+              "label": "t:general.settings.content_position.options.option_bottom_left.label"
+            }
+          ],
+          "default": "center-xs middle-xs ta-center"
+        },
+        {
+          "type": "header",
+          "content": "t:general.settings.headers.header_text.content"
+        },
+        {
+          "type": "text",
+          "label": "t:general.settings.subheading.label",
+          "id": "subheading",
+          "default": "Subheading"
+        },
+        {
+          "type": "text",
+          "label": "t:general.settings.heading.label",
+          "id": "heading",
+          "default": "Countdown banner"
+        },
+        {
+          "type": "richtext",
+          "label": "t:general.settings.description.label",
+          "id": "description",
+          "default": "<p>Share information about your promotion.</p>"
+        },
+        {
+          "type": "header",
+          "content": "t:settings.countdown_banner.blocks.content.settings.header.countdown.content",
+          "info": "t:settings.countdown_banner.blocks.content.settings.countdown.info"
+        },
+        {
+          "type": "checkbox",
+          "id": "enable_countdown_timer",
+          "label": "t:settings.countdown_banner.blocks.content.settings.enable_countdown_timer.label",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "hide_on_end",
+          "label": "t:settings.countdown_banner.blocks.content.settings.hide_on_end.label",
+          "info": "t:settings.countdown_banner.blocks.content.settings.hide_on_end.info",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "end_date",
+          "label": "t:settings.countdown_banner.blocks.content.settings.end_date.label",
+          "info": "t:settings.countdown_banner.blocks.content.settings.end_date.info"
+        },
+        {
+          "type": "text",
+          "id": "end_time",
+          "label": "t:settings.countdown_banner.blocks.content.settings.end_time.label",
+          "info": "t:settings.countdown_banner.blocks.content.settings.end_time.info"
+        },
+        {
+          "type": "richtext",
+          "id": "end_text",
+          "label": "t:settings.countdown_banner.blocks.content.settings.end_text.label",
+          "info": "t:settings.countdown_banner.blocks.content.settings.end_text.info",
+          "default": "<p>This event is finished.</p>"
+        },
+        {
+          "type": "color",
+          "id": "color_end_text",
+          "label": "t:settings.countdown_banner.blocks.content.settings.end_text.label",
+          "default": "#FF0000"
+        },
+        {
+          "type": "header",
+          "content": "t:general.settings.headers.header_button.content"
+        },
+        {
+          "type": "text",
+          "id": "primary_button_label",
+          "label": "t:general.settings.label.label",
+          "info": "t:general.settings.hide_if_empty.info"
+        },
+        {
+          "type": "url",
+          "id": "primary_button_link",
+          "label": "t:general.settings.link.label"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.countdown_banner.name",
+      "blocks": [
+        {
+          "type": "content"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

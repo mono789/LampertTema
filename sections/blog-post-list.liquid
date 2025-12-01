@@ -1,0 +1,217 @@
+{%- liquid
+  assign placeholder = 'image' | placeholder_svg_tag: 'js-image-lazy placeholder media'
+  assign show_image = settings.article_card_show_featured_image
+  assign image_ratio = settings.article_card_featured_image_ratio
+
+  assign show_excerpt = settings.article_card_show_excerpt
+  assign show_published_date = settings.article_card_show_published_date
+  assign show_author = settings.article_card_show_author
+  assign show_read_more = settings.article_card_show_read_more
+  assign items_to_show = section.settings.items_to_show
+
+  assign md = 12.0 | divided_by : section.settings.items_per_row_on_desktop
+-%}
+<div class="section color-{{ section.settings.color_scheme }} {{ section.settings.remove_padding_top | replace: 'true', 'section-top-zero' | replace: section.settings.remove_padding_top, '' }} {{ section.settings.remove_padding_bottom | replace: 'true', 'section-bottom-zero' | replace: section.settings.remove_padding_bottom, '' }} {% render 'animation-loader', section: section %}" data-ui-component="Blog Post List Section" role="region" aria-labelledby="sectionHeading-{{ section.id | md5 | truncate: 12, "" }}">
+  <div class="ctnr">
+    {% render 'section-header', content_align: section.settings.content_alignment, subheading: section.settings.subheading, heading: section.settings.heading, description: section.settings.description, section: section %}
+    <div class="s-content">
+      <sht-carousel-wrapper data-on-mobile-only="{{ section.settings.enable_carousel }}" data-css-class-on-container="carousel m-zero ox-auto p-relative fw-nowrap scrollable scrollable-x disable-scrollbars" data-css-class-on-item="carousel__item p-zero p-relative scrollable-aln-start d-flex fg-1 fs-0">
+        <sht-carousel class="p-relative d-block">
+          <div class="rw gap-unequal js-carousel-items js-animate" aria-atomic="true">
+            {% for article in blogs[section.settings.blog].articles limit: items_to_show %}
+              <sht-carousel-itm class="clm js-carousel-item anm anm-fadeInUp" style="--w-xs:12;--w-sm:6;--w-md:{{- md -}}; --delay: {{ forloop.index | times: 0.05 -}}s; --duration: .6s" aria-label="{{ 'accessibility.slide' | t }} {{ forloop.index }} {{ 'accessibility.of' | t }} {{ forloop.length }}" role="group" aria-roledescription="Slide">
+                {% render 'card-article', article: article, blog: section.settings.blog, show_image: show_image, image_ratio: image_ratio, show_blog_tag: false, show_excerpt: show_excerpt, show_published_date: show_published_date, show_author: show_author, show_read_more: show_read_more, section: section, is_first: forloop.first, force_eager: false %}
+              </sht-carousel-itm>
+            {% else %}
+              {% for i in (1..items_to_show) %}
+                <sht-carousel-itm class="clm js-carousel-item anm anm-fadeInUp" style="--w-xs:12;--w-sm:6;--w-md:{{- md -}}; --delay: {{ forloop.index | times: 0.05 -}}s; --duration: .6s" role="group">
+                  <div class="card w-100">
+                    <a href="#" class="pe-no-link d-none {{ show_image | replace: true, 'd-block' }}">
+                      {% render 'image', image_item: placeholder, ratio: image_ratio %}
+                    </a>
+                    <div class="card__content card__content--outer wb-break-word">
+                      <a href="#" class="pe-no-link td-none mb-16 tag d-none-important" >{{ 'sections.featured_blog.article.lorem_tag' | t }}</a>
+                      <h3 class="mb-12 h5">
+                        <a href="#" class="pe-no-link td-none d-inline-block link--hover">{{ 'sections.featured_blog.article.title' | t }}</a>
+                      </h3>
+                      <div class="hide-empty mb-8 subtext color-light">
+                        <span class="d-none {{ show_author | replace: true, 'd-inline-block' }}">{{ 'sections.featured_blog.article.lorem_author' | t }}</span>
+                        {% if show_author and show_published_date %}
+                          {{ 'sections.featured_blog.article.in_date' | t }}
+                        {% endif %}
+                        <span class="d-none {{ show_published_date | replace: true, 'd-inline-block' }}">
+                          {{ 'sections.featured_blog.article.lorem_date' | t }}
+                        </span>
+                      </div>
+                      <p class="card__excerpt mb-8 o-hidden {{ show_excerpt | default: 'd-none-important' | replace: 'true', '' }}">
+                        {{ 'sections.featured_blog.article.excerpt' | t | strip_html | truncatewords: 30 }}
+                      </p>
+                      <a class="btn btn-small btn-link {{ show_read_more | default: 'd-none-important' | replace: 'true', '' }}" href="{{ article.url | default: '#' }}">
+                        {{ 'blogs.article.read_more' | t }}
+                      </a>
+                    </div>
+                  </div>
+                </sht-carousel-itm>
+              {% endfor %}
+            {% endfor %}
+          </div>
+          <div class="carousel-pagination middle-y w-100 p-absolute d-none-md no-js-hidden zi-1 {% if section.settings.show_navigation == false or section.settings.enable_carousel == false %} d-none-important {% endif %}">
+            <button type="button" data-step="1" class="js-carousel-prev-btn btn btn-primary btn-icon btn-small p-absolute middle-y left-0 " aria-label="{{ 'accessibility.previous_slide' | t }}" name="previous" disabled>{% render 'icon-chevron-left' %}</button>
+            <button type="button" data-step="1" class="js-carousel-next-btn btn btn-primary btn-icon btn-small p-absolute middle-y right-0" aria-label="{{ 'accessibility.next_slide' | t }}" name="next" disabled>{% render 'icon-chevron-right' %}</button>
+          </div>
+        </sht-carousel>
+      </sht-carousel-wrapper>
+    </div>
+    {% if items_to_show < section.settings.blog.articles_count %}
+      {%- liquid
+        assign default_text_btn = "general.search.view_all" | t
+      -%}
+      <div class="s-footer {{ section.settings.content_alignment }} {{ section.settings.show_view_all_button | default: 'd-none' | replace: 'true', '' }}">
+        <a href="{{ section.settings.blog.url | default: "#" }}" class="btn btn-primary btn-large">
+          {{- section.settings.btn_text | default: default_text_btn -}}
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% schema %}
+{
+  "name": "t:sections.blog_post_list.name",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_general.content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:general.settings.color_scheme.label",
+      "default": "accent-1"
+    },
+    {
+      "type": "text",
+      "label": "t:general.settings.section_subheading.label",
+      "id": "subheading"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:general.settings.section_heading.label",
+      "default": "Blog posts list"
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "label": "t:general.settings.section_description.label"
+    },
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "t:sections.blog_post_list.settings.blog.label"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_layout.content"
+    },
+    {
+      "type": "select",
+      "id": "items_per_row_on_desktop",
+      "label": "t:general.settings.items_per_row_on_desktop.label",
+      "default": "4",
+      "options": [
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        },
+        {
+          "value": "5",
+          "label": "5"
+        },
+        {
+          "value": "6",
+          "label": "6"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "t:general.settings.content_alignment.label",
+      "default": "ta-left",
+      "options": [
+        {
+          "value": "ta-left",
+          "label": "t:general.settings.option_left.label"
+        },
+        {
+          "value": "ta-center",
+          "label": "t:general.settings.option_center.label"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "items_to_show",
+      "label": "t:general.settings.items_to_show.label",
+      "min": 2,
+      "max": 12,
+      "step": 2,
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_carousel",
+      "label": "t:general.settings.enable_carousel_on_mobile.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_navigation",
+      "label": "t:general.settings.show_navigation_on_mobile.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_top",
+      "label": "t:general.settings.remove_padding_top.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_bottom",
+      "label": "t:general.settings.remove_padding_bottom.label",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_button.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all_button",
+      "label": "t:sections.blog_post_list.settings.show_view_all.label"
+    },
+    {
+      "type": "text",
+      "id": "btn_text",
+      "label": "t:general.settings.view_all_button_label.label",
+      "default": "View all"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.blog_post_list.name"
+    }
+  ]
+}
+{% endschema %}

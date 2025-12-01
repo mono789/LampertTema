@@ -1,0 +1,62 @@
+<sht-dialog class="sht-dialog no-focus-visible p-fixed left-0 top-0 h-100 w-100 o-auto zi-9" id="dialogProductGallery{{ rand }}" data-close-modal-on-overlay="false" hidden tabindex="-1">
+  <div class="product__media__dialog dialog dialog--full-width" role="dialog" aria-labelledby="dialogTitle{{ rand }}" aria-modal="true">
+    <div class="dialog__content d-flex fd-column h-100">
+      <div class="dialog__header dialog--no-title d-flex between-xs p-sticky top-0">
+        <h3 class="h5 d-none m-zero" aria-hidden="true" id="dialogTitle{{ rand }}">{{ product.title | escape }}</h3>
+        <button type="button" aria-label="{{- "accessibility.close_modal" | t -}}" class="js-dialog-close-btn btn btn-large btn-secondary btn-icon">
+          {%- render 'icon-close' -%}
+        </button>
+      </div>
+      <div class="dialog__body js-dialog-body">
+        <template id="productGallery-{{ section.id }}">
+          <sht-gallery class="d-flex fd-column h-100" data-gallery-dialog-id="dialogProductGallery{{ rand }}">
+            <sht-gallery-slides class="dialog-gallery-slides d-block w-100 h-100" id="zoomContainer-{{ section.id }}" data-total-slides="{{ product.media.size }}">
+              {%- liquid
+                for media in product.media
+                  render 'product-slideshow-image-gallery', xr_button: true, section: section, media: media, product: product, place_holder: place_holder, product_media_index: product_media_index, is_first_item: forloop.first, rand: rand, index: forloop.index
+                endfor
+              -%}
+              <div class="slide__pagination js-slide-pagination p-absolute d-flex w-100 between-xs middle-xs bottom-0 d-none-md no-js-hidden">
+                <button type="button" data-step="1" class="js-slide-prev-btn center-xs middle-xs btn btn-large btn-secondary btn-icon p-zero" aria-label="{{ 'accessibility.previous_slide' | t }}" name="previous" disabled>
+                  {% render 'icon-chevron-left' %}
+                </button>
+                <div class="slide__counter btn-secondary btn-plain">
+                  <span class="js-slide-current">1</span>
+                  <span aria-hidden="true"> / </span>
+                  <span class="visually-hidden">{{ 'accessibility.of' | t }}</span>
+                  <span class="js-slide-total">{{ product.media.size }}</span>
+                </div>
+                <button type="button" data-step="1" class="js-slide-next-btn center-xs middle-xs btn btn-large btn-secondary btn-icon p-zero" aria-label="{{ 'accessibility.next_slide' | t }}" name="next">
+                  {% render 'icon-chevron-right' %}
+                </button>
+              </div>
+            </sht-gallery-slides>
+
+            <sht-gallery-thumbnails class="flex-1 product-gallery-thumbnails d-flex-md d-none middle-xs center-xs p-relative">
+              <sht-horiz-carousel class="horizontal-carousel-wrapper" data-section-id="{{ section.id }}">
+                <div class="js-carousel-items horizontal-carousel d-flex fd-row p-zero ox-auto p-relative disable-scrollbars fw-nowrap scrollable scrollable-x scrl-bhvr-auto m-auto" role="list" aria-label="{{ 'accessibility.slider' | t }}">
+                  {%- liquid
+                    for media in product.media
+                      render 'product-slideshow-thumb-gallery', section: section, media: media, product: product, place_holder: place_holder, is_first_media: forloop.first, rand: rand, thumb_index: forloop.index, ratio: ratio, object_fit: object_fit, media_background: media_background
+                    endfor
+                  -%}
+                </div>
+                <div class="carousel-pagination p-absolute-md d-flex center-xs no-js-hidden ">
+                  <button type="button" data-step="1" class="carousel__btn p-absolute-md btn-prev js-carousel-prev-btn btn btn-secondary btn-large btn-icon" {% if product.media.size <= 1 %} disabled="disabled" {% endif %} aria-label="{{ 'accessibility.previous_slide' | t }}" name="previous">
+                    {% render 'icon-chevron-left' %}
+                  </button>
+                  <button type="button" data-step="1" class="carousel__btn p-absolute-md btn-next js-carousel-next-btn btn btn-secondary btn-large btn-icon" {% if product.media.size <= 1 %} disabled="disabled" {% endif %} aria-label="{{ 'accessibility.next_slide' | t }}" name="next">
+                    {% render 'icon-chevron-right' %}
+                  </button>
+                </div>
+              </sht-horiz-carousel>
+            </sht-gallery-thumbnails>
+          </sht-gallery>
+        </template>
+      </div>
+      <div class="dialog__footer d-none">
+        <button type="button" aria-label="{{- "accessibility.close_modal" | t -}}" class="js-dialog-close-btn js-dialog-close-btn--last d-none">{{- 'accessibility.close_modal' | t -}}</button>
+      </div>
+    </div>
+  </div>
+</sht-dialog>

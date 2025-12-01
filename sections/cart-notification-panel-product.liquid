@@ -1,0 +1,62 @@
+{%- if cart != empty -%}
+  {% if settings.cart_show_free_shipping_notification and settings.cart_minimum_order_price_for_free_shipping != blank %}
+    <div class="free-shipping-notification">
+      {% render 'free-shipping-amount', cart: cart, section: section %}
+    </div>
+  {% endif %}
+  {%- for item in cart.items -%}
+    <div class="cart-item js-cart-notification-panel-product-{{ item.id }}">
+      {%- liquid
+          assign image_height = 250 | divided_by: item.image.aspect_ratio
+          assign product_image = 'product-1' | placeholder_svg_tag: 'placeholder media of-cover w-100'
+          assign product_image = item.image.src | image_url: width: 250, height: image_height | image_tag: alt: item.product.title, class: 'cart-notification-product__image of-contain corner-radius-sm'
+        -%}
+      {{ product_image }}
+      <div class="cart-notification-product__info d-grid gap-12 w-100">
+        <div>
+          <p class="subtext color-light mb-4 hide-empty">{{- item.vendor -}}</p>
+          <p class="h6 m-zero">
+            {{ item.product.title | escape }}
+          </p>
+        </div>
+        <p class="m-zero ta-right">
+          <span class="cart-notification-product__price d-block"><b class="d-block">{{ item.original_price | money }}</b></span>
+        </p>
+
+        <div class="m-zero subtext color-light wb-break-word d-grid gap-4">
+          {%- unless item.product.has_only_default_variant -%}
+            <div class="product-option">
+              <span>
+              {%- liquid
+                assign options_names = ''
+                for option in item.options_with_values
+                  assign options_names = options_names | append: ', ' | append: option.value
+                endfor
+                echo  options_names | replace_first: ', ', ''
+              -%}
+              </span>
+            </div>
+          {%- endunless -%}
+          <span class="color-light">x {{ item.quantity }}</span>
+          {%- for property in item.properties -%}
+            {%- assign property_first_char = property.first | slice: 0 -%}
+            {% if property.last != blank and property_first_char != '_' %}
+            <div>
+              <p>{{ property.first }}:
+                {% if property.last contains '/uploads/' %}
+                <a href="{{ property.last }}" class="link" target="_blank">
+                  {{ property.last | split: "/" | last }}
+                </a>
+                {% else %}
+                  {{ property.last }}
+                {% endif %}
+              </p>
+            </div>
+            {% endif %}
+          {%- endfor -%}
+        </div>
+      </div>
+    </div>
+  {%- endfor -%}
+  <span class="js-cart-notification-panel-item-count">{{ cart.item_count }}</span>
+{%- endif -%}

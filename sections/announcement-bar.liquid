@@ -1,0 +1,137 @@
+{%- liquid
+  assign btn_class = 'btn btn-plain btn-small btn-icon no-js-hidden d-none-' | append: section.blocks.size
+  assign open_external_link = section.settings.open_external_link
+  -%}
+{%- if section.blocks.size > 0 -%}
+  <div class="anmb p-relative zi-3 js-anmb-section color-{{ section.settings.color_scheme }}" data-ui-component="Announcement Bar Section">
+    <div class="ctnr pt-12 pb-12">
+      <sht-ann-bar role="region" aria-label="{{ 'accessibility.announcement' | t }}" aria-roledescription="Carousel" class="d-flex middle-xs o-hidden" data-props='{"autoPlay":{{ section.settings.enable_autoplay }},"duration":{{ section.settings.duration | times: 1000 }}}'>
+        <button aria-label="{{ 'accessibility.previous_slide' | t }}" name="previous" class="js-anmb-control-prev {{ btn_class | replace: 'd-none-1', 'd-none-important' }}" type="button" style="--form-field-sm:24px;">
+          {%- render 'icon-chevron-left' -%}
+        </button>
+        <div aria-live="polite" aria-atomic="true" class="js-anmb-items ox-auto disable-scrollbars d-flex middle-xs scrollable-stop-always scrollable-x w-100 ml-4 mr-4 p-relative">
+          {%- for block in section.blocks -%}
+            {% liquid
+              assign is_open_first = block.settings.message_link | slice: 0
+              assign target_blank_first = ''
+              if is_open_first != '/' and open_external_link
+                assign target_blank_first = 'target = "_blank"'
+              endif
+            %}
+            <div {{ block.shopify_attributes }} role="group" aria-roledescription="Slide" aria-label="{{ 'accessibility.slide' | t }} {{ forloop.index }}  {{ 'accessibility.of' | t }} {{ forloop.length }}" aria-hidden="true" class="js-anmb-item fs-0 scrollable-aln-start w-100 ta-center" data-item-index="{{ forloop.index }}">
+              <a href="{{ block.settings.message_link | default: "#" }}" class="td-underline js-anmb-link-items hide-no-link" {{ target_blank_first }} tabindex="-1">
+                {{- block.settings.message_text -}}
+              </a>
+              <span>{{- block.settings.message_text -}}</span>
+            </div>
+          {%- endfor -%}
+          {%- if section.blocks.size == 2 -%}
+            {% liquid
+              assign is_open_second = section.blocks[0].settings.message_link | slice: 0
+              assign is_open_third = section.blocks[1].settings.message_link | slice: 0
+              assign target_blank_second = ''
+              assign target_blank_third = ''
+              if is_open_second != '/' and open_external_link
+                assign target_blank_second = 'target = "_blank"'
+              endif
+              if is_open_third != '/' and open_external_link
+                assign target_blank_third = 'target = "_blank"'
+              endif
+            %}
+            <div role="group" aria-roledescription="Slide" aria-label="{{ 'accessibility.slide' | t }} 1 {{ 'accessibility.of' | t }} 2" aria-hidden="true" class="js-anmb-item fs-0 scrollable-aln-start w-100 ta-center" data-item-index="3">
+              <a href="{{ section.blocks[0].settings.message_link | default: "#" }}" class="td-underline js-anmb-link-items hide-no-link" tabindex="-1" {{ target_blank_second }}>
+                {{- section.blocks[0].settings.message_text -}}
+              </a>
+              <span>{{- section.blocks[0].settings.message_text -}}</span>
+            </div>
+            <div role="group" aria-roledescription="Slide" aria-label="{{ 'accessibility.slide' | t }} 2 {{ 'accessibility.of' | t }} 2" aria-hidden="true" class="js-anmb-item fs-0 scrollable-aln-start w-100 ta-center" data-item-index="4">
+              <a href="{{ section.blocks[1].settings.message_link | default: "#" }}" class="td-underline js-anmb-link-items hide-no-link" tabindex="-1" {{ target_blank_third }}>
+                {{- section.blocks[1].settings.message_text -}}
+              </a>
+              <span>{{- section.blocks[1].settings.message_text -}}</span>
+            </div>
+          {%- endif -%}
+        </div>
+        <button aria-label="{{ 'accessibility.next_slide' | t }}" name="next" class="js-anmb-control-next {{ btn_class | replace: 'd-none-1', 'd-none-important' }}" type="button" style="--form-field-sm:24px">
+          {%- render 'icon-chevron-right' -%}
+        </button>
+      </sht-ann-bar>
+    </div>
+  </div>
+
+{%- endif -%}
+{% schema %}
+{
+  "name": "t:sections.announcement_bar.name",
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_general.content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:general.settings.color_scheme.label"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_messages.content"
+    },
+    {
+      "type": "checkbox",
+      "label": "t:sections.announcement_bar.settings.enable_message_autoplay.label",
+      "id": "enable_autoplay",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "duration",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "label": "t:sections.announcement_bar.settings.change_message_every.label",
+      "default": 5,
+      "unit": "s"
+    },
+    {
+      "type": "checkbox",
+      "id": "open_external_link",
+      "label": "t:general.settings.open_external_link.label",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "name": "t:sections.announcement_bar.blocks.message.name",
+      "type": "message",
+      "limit": 6,
+      "settings": [
+        {
+          "type": "text",
+          "label": "t:general.settings.text.label",
+          "id": "message_text",
+          "default": "Use this for a short annoucement"
+        },
+        {
+          "type": "url",
+          "label": "t:general.settings.link.label",
+          "id": "message_link"
+        }
+      ]
+    }
+  ],
+  "default": {
+    "blocks": [
+      {
+        "type": "message"
+      },
+      {
+        "type": "message"
+      },
+      {
+        "type": "message"
+      }
+    ]
+  }
+}
+{% endschema %}

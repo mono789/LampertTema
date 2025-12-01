@@ -1,0 +1,180 @@
+{% liquid
+  assign show_image = settings.article_card_show_featured_image
+  assign image_ratio = settings.article_card_featured_image_ratio
+  assign show_blog_tag = settings.article_card_show_blog_tag
+  assign show_excerpt = settings.article_card_show_excerpt
+  assign show_published_date = settings.article_card_show_published_date
+  assign show_author = settings.article_card_show_author
+  assign show_read_more = settings.article_card_show_read_more
+  assign md = 12.0 | divided_by : section.settings.items_per_row_on_desktop
+%}
+
+{%- paginate blog.articles by section.settings.items_per_page -%}
+  <div class="section color-{{ section.settings.color_scheme }} {{ section.settings.remove_padding_top | replace: 'true', 'section-top-zero' | replace: section.settings.remove_padding_top, '' }} {{ section.settings.remove_padding_bottom | replace: 'true', 'section-bottom-zero' | replace: section.settings.remove_padding_bottom, '' }}" data-ui-component="Section Main Blog">
+    <div class="ctnr">
+      <div class="s-header {{ section.settings.content_alignment }}">
+        <h1 class="h2 d-inline-flex middle-xs">
+          {{ blog.title | escape }}
+          <a class="btn btn-icon btn-small ml-8 {{ section.settings.show_rss | default: 'd-none-important' | replace: 'true', '' }}" href="{{ shop.url }}{{ blog.url }}.atom" title="RSS">
+            {% render 'icon-rss' %}
+          </a>
+        </h1>
+      </div>
+
+      <div class="s-content">
+        <ul class="tab__header p-relative ox-auto disable-scrollbars ls-none ws-nowrap {{ section.settings.show_tags_filter | default: 'd-none' | replace: 'true', 'd-flex' }}">
+          <li class="tab__item">
+            <a href="{{ blog.url }}" class="tab__link {% if current_tags.first == blank %}tab__link--active{% endif %} fw-700 d-block p-relative h6 m-zero">
+              {{ 'blogs.all' | t }}
+            </a>
+          </li>
+          {%- for tag in blog.all_tags -%}
+            <li class="tab__item">
+              {%- liquid
+                assign class = '<a class="tab__link fw-700 d-block p-relative h6 m-zero"'
+                if current_tags.first contains tag.title
+                  assign class = '<a class="tab__link fw-700 d-block p-relative tab__link--active h6 m-zero"'
+                endif
+                echo tag | link_to_tag: tag | replace: '<a', class
+              -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+        <div class="rw gap-unequal">
+          {%- for article in blog.articles -%}
+            <div class="clm js-seq-animate anm anm-fadeInUp" style="--w-xs: 12; --w-sm: 6; --w-md: {{- md -}}; --duration: .6s;">
+              {% render 'card-article',
+                article: article,
+                blog: blog,
+                show_image: show_image,
+                image_ratio: image_ratio,
+                show_blog_tag: show_blog_tag,
+                show_excerpt: show_excerpt,
+                show_published_date: show_published_date,
+                show_author: show_author,
+                show_read_more: show_read_more,
+                section: section,
+                is_first: forloop.first,
+                force_eager: false %}
+            </div>
+          {%- endfor -%}
+        </div>
+      </div>
+      {%- if paginate.pages > 1 -%}
+        <div class="s-footer">
+          {%- render 'pagination', paginate: paginate -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endpaginate -%}
+
+{% schema %}
+{
+  "name": "t:sections.main_blog.name",
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_general.content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:general.settings.color_scheme.label",
+      "default": "accent-1"
+    },
+    {
+      "type": "select",
+      "id": "items_per_page",
+      "default": "12",
+      "label": "t:general.settings.items_per_page.label",
+      "options": [
+        {
+          "value": "12",
+          "label": "12"
+        },
+        {
+          "value": "24",
+          "label": "24"
+        },
+        {
+          "value": "36",
+          "label": "36"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_layout.content"
+    },
+    {
+      "type": "select",
+      "id": "items_per_row_on_desktop",
+      "label": "t:general.settings.items_per_row_on_desktop.label",
+      "default": "3",
+      "options": [
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        },
+        {
+          "value": "5",
+          "label": "5"
+        },
+        {
+          "value": "6",
+          "label": "6"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "t:general.settings.content_alignment.label",
+      "default": "ta-left",
+      "options": [
+        {
+          "value": "ta-left",
+          "label": "t:general.settings.option_left.label"
+        },
+        {
+          "value": "ta-center",
+          "label": "t:general.settings.option_center.label"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_top",
+      "label": "t:general.settings.remove_padding_top.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_bottom",
+      "label": "t:general.settings.remove_padding_bottom.label",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:sections.main_blog.settings.headers.header_blog_post.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rss",
+      "label": "t:sections.main_blog.settings.show_rss.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tags_filter",
+      "label": "t:sections.main_blog.settings.show_tags_filter.label",
+      "default": true
+    }
+  ]
+}
+{% endschema %}

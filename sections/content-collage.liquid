@@ -1,0 +1,530 @@
+{%- liquid
+  unless section.settings.items_ordering == 'equal'
+    if section.blocks.size == 2
+      assign stacked_class = ' unstacked-2'
+    endif
+
+    if section.blocks.size == 3
+      if section.settings.enable_stacked_layout
+        assign stacked_class = ' stacked'
+      else
+        assign stacked_class = ' unstacked'
+      endif
+    endif
+  else
+    assign size_style = section.blocks.size | prepend: '--size:' | prepend: 'style="' | append: '"'
+  endunless
+
+  assign media_height = ''
+  if section.blocks.size < 3
+    assign media_height = 'mah-100v'
+  endif
+-%}
+<div class="section color-{{- section.settings.color_scheme }} {{ section.settings.remove_padding_top | replace: 'true', 'section-top-zero' | replace: section.settings.remove_padding_top, '' }} {{ section.settings.remove_padding_bottom | replace: 'true', 'section-bottom-zero' | replace: section.settings.remove_padding_bottom, '' }} {% render 'animation-loader', section: section %}" data-ui-component="Content Collage Section" role="region" aria-labelledby="sectionHeading-{{ section.id | md5 | truncate: 12, "" }}">
+  <div class="ctnr">
+    {% render 'section-header',
+      content_align: section.settings.content_alignment,
+      subheading: section.settings.subheading,
+      heading: section.settings.heading,
+      description: section.settings.description,
+      badge_text: section.settings.badge_text,
+      badge_position: section.settings.badge_position,
+      badge_shape: section.settings.badge_shape,
+      badge_color: section.settings.badge_color,
+      section: section
+    %}
+  {% if section.settings.collage_width_on_desktop == 'wide' %}</div>{% endif %}
+  <div class="s-content d-grid gap-1 ctclg--{{ section.settings.items_ordering }}{{ stacked_class }} {% if section.settings.collage_width_on_desktop == 'wide' %} h-sm-100v {% endif %}" {{ size_style }}>
+      {%- for block in section.blocks -%}
+        {%-  liquid
+          assign loading = "lazy"
+          assign decoding ="async"
+          assign fetchpriority = "auto"
+
+          if section.index == 1 and forloop.first
+            assign loading = "eager"
+            assign fetchpriority = "high"
+          endif
+        -%}
+        {% case block.type %}
+          {% when 'collection' %}
+            {% liquid
+              assign collection_title = 'sections.content_collage.collection.collection_title' | t
+              assign collection = collections[block.settings.collection]
+              assign collection_image = 'collection-1' | placeholder_svg_tag: 'js-image-lazy placeholder media w-100 h-100'
+              assign collection_image = collection.featured_image | image_url: width: collection.featured_image.width | image_tag: widths: '320, 450, 550, 750, 950, 1024', sizes: "(min-width: 769px) calc(100vw/2), 100vw", alt: collection.featured_image.alt, class: 'js-image-lazy media of-cover w-100 h-100', loading: loading, fetchpriority: fetchpriority, decoding: decoding
+              assign view_details_btn = 'sections.content_collage.collection.view_product' | t
+              if block.settings.show_number_of_products
+                assign view_details_btn = 'sections.content_collage.collection.view_count_product' | t: count: collection.products.size
+              endif
+              unless block.settings.collection_mask_overlay_color.alpha == 0.0 or block.settings.collection_mask_overlay_color == blank
+                assign collection_overlay_color =  '--color-page-bg-rgb:' | append: block.settings.collection_mask_overlay_color.red | append: ',' | append: block.settings.collection_mask_overlay_color.green | append: ',' | append: block.settings.collection_mask_overlay_color.blue
+              endunless
+              unless block.settings.collection_content_overlay_color.alpha == 0.0 or block.settings.collection_content_overlay_color == blank
+                assign collection_content_color =  'color:' | append: block.settings.collection_content_overlay_color
+              endunless
+            %}
+            <div class="p-relative o-hidden sht-mask index-{{ forloop.index }} {{ media_height }}" {{ block.shopify_attributes }} style="--overlay: {{ block.settings.collection_overlay_opacity }}; {{ collection_overlay_color }}">
+              <a aria-label="{{ collection.title | escape }}" href="{{ collection.url | default: '#' }}" class="content-collage__link p-absolute zi-1 pe-no-link d-block w-100 h-100"></a>
+                {% render 'image', image_item: collection_image, ratio: section.settings.image_ratio, image_wrap_classes: 'h-100 ', image_classes: 'h-100 w-100 js-animate anm anm-zoomOut' %}
+              <div class="card__content card__content--inner wb-break-word zi-1 bottom-0 p-absolute w-100 {{ section.settings.content_alignment }} js-animate anm anm-fadeInUp" style="--duration: .6s; --delay: .3s; {{ collection_content_color }}">
+                <h3 class="h6 mb-8">{{ collection.title | default: collection_title }}</h3>
+                <a href="{{ collection.url }}" class="{{ section.settings.show_items_button | default: 'd-none' | replace: 'true', 'td-underline btn btn-link btn-small' }}">{{ view_details_btn }}</a>
+              </div>
+            </div>
+          {% when 'product' %}
+            {% liquid
+              assign product_title = "sections.content_collage.collection.view_product" | t
+              assign product = all_products[block.settings.product]
+              assign product_featured_image = 'product-1' | placeholder_svg_tag: 'js-image-lazy placeholder w-100 h-100 media'
+              assign product_featured_image = product.featured_image | image_url: width: product.featured_image.image.width | image_tag: widths: '320, 450, 550, 750, 950, 1024', sizes: "(min-width: 769px) calc(100vw/2), 100vw", alt: product.title, class: 'js-image-lazy media of-cover w-100 h-100', loading: loading, fetchpriority: fetchpriority, decoding: decoding
+              assign product_title = product.title | default: product_title
+
+              assign money_price = 5000 | money
+              assign money_price_sale = 10000 | money
+              if settings.currency_code_enabled
+                assign money_price = 5000 | money_with_currency
+                assign money_price_sale = 10000 | money_with_currency
+              endif
+              assign align_price = section.settings.content_alignment | replace: 'ta-center', 'center-xs' | replace: 'ta-left', ''
+              unless block.settings.product_mask_overlay_color.alpha == 0.0 or block.settings.product_mask_overlay_color == blank
+                assign product_overlay_color =  '--color-page-bg-rgb:' | append: block.settings.product_mask_overlay_color.red | append: ',' | append: block.settings.product_mask_overlay_color.green | append: ',' | append: block.settings.product_mask_overlay_color.blue
+              endunless
+              unless block.settings.product_content_overlay_color.alpha == 0.0 or block.settings.product_content_overlay_color == blank
+                assign product_content_color =  'color:' | append: block.settings.product_content_overlay_color
+              endunless
+            %}
+            <div class="p-relative o-hidden sht-mask color-inverse index-{{ forloop.index }} {{ media_height }}" {{ block.shopify_attributes }} style="--overlay: {{ block.settings.product_overlay_opacity }}; {{ product_overlay_color }}">
+              <a aria-label="{{ product.title | escape }}" href="{{ product.url | default: '#' }}" class="content-collage__link p-absolute zi-1 pe-no-link d-block w-100 h-100"></a>
+                {% render 'image', image_item: product_featured_image, ratio: section.settings.image_ratio, image_wrap_classes: 'h-100', image_classes: 'h-100 w-100 js-animate anm anm-zoomOut' %}
+              <div class="card__content card__content--inner wb-break-word zi-1 bottom-0 p-absolute w-100 {{ section.settings.content_alignment }} js-animate anm anm-fadeInUp" style="--duration: .6s; --delay: .3s; {{ product_content_color }}">
+                <h3 class="h6 mb-8">{{ product_title }}</h3>
+                {% if block.settings.show_rating %}
+                  {% liquid
+                    unless block.settings.star_rating_color.alpha == 0.0 or block.settings.star_rating_color == blank
+                      assign content_collage_star_rating_color = '--color-rating-star: rgba(' | append: block.settings.star_rating_color.red | append: ',' | append: block.settings.star_rating_color.green | append: ',' | append: block.settings.star_rating_color.blue | append: ', 1)'
+                    endunless
+                  %}
+                  {% render 'product-rating', product: product, star_rating_color: false, quick_buy_star_rating_color: false, content_collage_star_rating_color: content_collage_star_rating_color %}
+                {% endif %}
+                {% if product != blank %}
+                  {% render 'product-price' product: product, target: product, content_align: align_price %}
+                {% else %}
+                  <div class="price d-flex middle-xs {{ align_price }}">
+                    <span class="visually-hidden">{{ 'products.product.price.sale_price' | t }}</span>
+                    <span class="d-inline-block mr-8">{{ money_price }}</span>
+                    <span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>
+                    <span class="d-inline-block"><s class="color-light">{{ money_price_sale }}</s></span>
+                  </div>
+                {% endif %}
+                <a href="{{ product.url }}" class="{{ section.settings.show_items_button | default: 'd-none' | replace: 'true', 'td-underline btn btn-link btn-small' }}">
+                  {{ "sections.content_collage.collection.view_product" | t }}
+                </a>
+              </div>
+            </div>
+          {% when 'image' %}
+            {% liquid
+                assign collage_image = 'image' | placeholder_svg_tag: 'js-image-lazy placeholder w-100 h-100 media'
+                assign collage_image_alt  = block.settings.heading | default: block.settings.image.image | split: '/' | last
+                assign collage_image = block.settings.image | image_url: width: block.settings.image.width | image_tag: widths: '320, 450, 550, 750, 950, 1024', sizes: "(min-width: 769px) calc(100vw/2), 100vw", alt: collage_image_alt , class: 'js-image-lazy media of-cover w-100 h-100', loading: loading, fetchpriority: fetchpriority, decoding: decoding
+                unless block.settings.image_mask_overlay_color.alpha == 0.0 or block.settings.image_mask_overlay_color == blank
+                  assign image_overlay_color =  '--color-page-bg-rgb:' | append: block.settings.image_mask_overlay_color.red | append: ',' | append: block.settings.image_mask_overlay_color.green | append: ',' | append: block.settings.image_mask_overlay_color.blue
+                endunless
+                unless block.settings.image_content_overlay_color.alpha == 0.0 or block.settings.image_content_overlay_color == blank
+                  assign image_content_color =  'color:' | append: block.settings.image_content_overlay_color
+                endunless
+              %}
+            <div class="p-relative o-hidden sht-mask index-{{ forloop.index }} {{ media_height }}" {{ block.shopify_attributes }} style="--overlay: {{ block.settings.image_overlay_opacity }}; {{ image_overlay_color }}">
+              <a aria-label="{{ collage_image_alt }}" href="{{ block.settings.button_link | default: '#' }}" class="content-collage__link p-absolute zi-1 pe-no-link d-block w-100 h-100"></a>
+                {% render 'image', image_item: collage_image, ratio: section.settings.image_ratio, image_wrap_classes: 'h-100', image_classes: 'h-100 w-100 js-animate anm anm-zoomOut' %}
+              <div class="card__content card__content--inner wb-break-word zi-1 bottom-0 p-absolute w-100 {{ section.settings.content_alignment }} js-animate anm anm-fadeInUp" style="--duration: .6s; --delay: .3s; {{ image_content_color }}">
+                <h3 class="h6 mb-8">{{ block.settings.heading }}</h3>
+                {% if block.settings.button_text != blank %}
+                  <a href="{{ block.settings.button_link }}" class="{{ section.settings.show_items_button | default: 'd-none' | replace: 'true', 'td-underline btn btn-link btn-small' }}">
+                    {{ block.settings.button_text }}
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+        {% endcase %}
+      {%- endfor -%}
+    </div>
+  {% unless section.settings.collage_width_on_desktop == 'wide' %}</div>{% endunless %}
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.content_collage.name",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer"
+    ]
+  },
+  "max_blocks": 3,
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_general.content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:general.settings.color_scheme.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "t:general.settings.section_subheading.label"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:general.settings.section_heading.label",
+      "default": "Content collage"
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "label": "t:general.settings.section_description.label"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_layout.content"
+    },
+    {
+      "type": "select",
+      "id": "collage_width_on_desktop",
+      "label": "t:sections.content_collage.settings.collage_width_on_desktop.label",
+      "options": [
+        {
+          "value": "wide",
+          "label": "t:sections.main_product.settings.wide.label"
+        },
+        {
+          "value": "compacted",
+          "label": "t:sections.content_collage.settings.collage_width_on_desktop.options.option_compacted.label"
+        }
+      ],
+      "default": "compacted"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "t:general.settings.content_alignment.label",
+      "default": "ta-left",
+      "options": [
+        {
+          "value": "ta-left",
+          "label": "t:general.settings.option_left.label"
+        },
+        {
+          "value": "ta-center",
+          "label": "t:general.settings.option_center.label"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "items_ordering",
+      "label": "t:sections.content_collage.settings.items_ordering.label",
+      "default": "equal",
+      "options": [
+        {
+          "value": "equal",
+          "label": "t:sections.content_collage.settings.items_ordering.options.option_equal.label"
+        },
+        {
+          "value": "big-first",
+          "label": "t:sections.content_collage.settings.items_ordering.options.option_main_item_first.label"
+        },
+        {
+          "value": "big-last",
+          "label": "t:sections.content_collage.settings.items_ordering.options.option_main_item_last.label"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_stacked_layout",
+      "label": "t:sections.content_collage.settings.enable_stacked_layout.label",
+      "info": "t:sections.content_collage.settings.enable_stacked_layout.info",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_top",
+      "label": "t:general.settings.remove_padding_top.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_bottom",
+      "label": "t:general.settings.remove_padding_bottom.label",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:sections.content_collage.settings.headers.header_items.content"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "t:general.settings.image_ratio.label",
+      "info": "t:general.settings.image_ratio.info",
+      "default": "1/1",
+      "options": [
+        {
+          "value": "1/1",
+          "label": "t:general.settings.image_ratio.options.option_square.label"
+        },
+        {
+          "value": "4/5",
+          "label": "t:general.settings.image_ratio.options.option_portrait_1.label"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_items_button",
+      "label": "t:sections.content_collage.settings.show_items_button.label",
+      "info": "t:sections.content_collage.settings.show_items_button.info",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_prominent_badge.content"
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "t:general.settings.text.label",
+      "info": "t:general.settings.prominent_badge.text.info"
+    },
+    {
+      "type": "select",
+      "id": "badge_color",
+      "label": "t:general.settings.accent_scheme.label",
+      "default": "color-accent-1",
+      "options": [
+        {
+          "value": "color-accent-1",
+          "label": "t:general.settings.main.label"
+        },
+        {
+          "value": "color-accent-2",
+          "label": "t:general.settings.extra.label"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "badge_position",
+      "label": "t:general.settings.badge_position.label",
+      "default": "p-badge--bottom-right",
+      "options": [
+        {
+          "value": "p-badge--bottom-left",
+          "label": "t:general.settings.option_left.label"
+        },
+        {
+          "value": "p-badge--bottom-right",
+          "label": "t:general.settings.option_right.label"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "badge_shape",
+      "label": "t:general.settings.badge_shape.label",
+      "default": "badge--star",
+      "options": [
+        {
+          "value": "badge--star",
+          "label": "t:general.settings.badge_shape.options.option_star.label"
+        },
+        {
+          "value": "badge--diamond",
+          "label": "t:general.settings.badge_shape.options.option_diamond.label"
+        },
+        {
+          "value": "badge--asterisk",
+          "label": "t:general.settings.badge_shape.options.option_asterisk.label"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "t:sections.content_collage.blocks.collection.name",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "t:general.settings.collection.label"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_number_of_products",
+          "label": "t:sections.content_collage.blocks.collection.settings.show_number_of_products.label",
+          "default": true
+        },
+        {
+          "type": "range",
+          "unit": "%",
+          "max": 90,
+          "min": 0,
+          "step": 1,
+          "default": 30,
+          "id": "collection_overlay_opacity",
+          "label": "t:general.settings.overlay_opacity.label"
+        },
+        {
+          "type": "color",
+          "id": "collection_mask_overlay_color",
+          "label": "t:general.settings.mask_overlay.label",
+          "info": "t:sections.content_collage.mask_overlay.info",
+          "default": "#000000"
+        },
+        {
+          "type": "color",
+          "id": "collection_content_overlay_color",
+          "label": "t:general.settings.text_overlay.label",
+          "info": "t:sections.content_collage.text_overlay.info",
+          "default": "#FFFFFF"
+        }
+      ]
+    },
+    {
+      "type": "product",
+      "name": "t:sections.content_collage.blocks.product.name",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "t:general.settings.product.label"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_rating",
+          "label": "t:general.settings.show_rating.label",
+          "info": "t:general.settings.show_rating.info",
+          "default": false
+        },
+        {
+          "type": "range",
+          "unit": "%",
+          "max": 90,
+          "min": 0,
+          "step": 1,
+          "default": 30,
+          "id": "product_overlay_opacity",
+          "label": "t:general.settings.overlay_opacity.label"
+        },
+        {
+          "type": "color",
+          "id": "product_mask_overlay_color",
+          "label": "t:general.settings.mask_overlay.label",
+          "info": "t:sections.content_collage.mask_overlay.info",
+          "default": "#000000"
+        },
+        {
+          "type": "color",
+          "id": "product_content_overlay_color",
+          "label": "t:general.settings.text_overlay.label",
+          "info": "t:sections.content_collage.text_overlay.info",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "color",
+          "id": "star_rating_color",
+          "label": "t:general.settings.star_rating_overlay.label",
+          "default": "#FFB82D"
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "name": "t:sections.content_collage.blocks.image.name",
+      "settings": [
+        {
+          "type": "header",
+          "content": "t:general.settings.headers.header_general.content"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:general.settings.image.label"
+        },
+        {
+          "type": "range",
+          "unit": "%",
+          "max": 90,
+          "min": 0,
+          "step": 1,
+          "default": 30,
+          "id": "image_overlay_opacity",
+          "label": "t:general.settings.overlay_opacity.label"
+        },
+        {
+          "type": "color",
+          "id": "image_mask_overlay_color",
+          "label": "t:general.settings.mask_overlay.label",
+          "info": "t:sections.content_collage.mask_overlay.info",
+          "default": "#000000"
+        },
+        {
+          "type": "color",
+          "id": "image_content_overlay_color",
+          "label": "t:general.settings.text_overlay.label",
+          "info": "t:sections.content_collage.text_overlay.info",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "header",
+          "content": "t:general.settings.headers.header_content.content"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:general.settings.heading.label",
+          "default": "Heading"
+        },
+        {
+          "type": "header",
+          "content": "t:general.settings.headers.header_button.content"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "t:general.settings.label.label",
+          "default": "Check now"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "t:general.settings.link.label"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.content_collage.name",
+      "blocks": [
+        {
+          "type": "collection"
+        },
+        {
+          "type": "product"
+        },
+        {
+          "type": "image"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

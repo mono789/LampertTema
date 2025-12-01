@@ -1,0 +1,21 @@
+
+{%- if request.page_type == 'index' and section.settings.enable_transparent and section.settings.logo_transparent != blank -%}
+{%- assign image_size_2x = section.settings.logo_width | times: 2 | at_most: 5760 -%}
+{%- assign header_transparent_logo_css = ' header-logo--transparent' -%}
+  {%- capture logo_transparent -%}
+    <img srcset="{{ section.settings.logo_transparent | image_url: width: section.settings.logo_width }}, {{ section.settings.logo_transparent | image_url: width: image_size_2x }} 2x" src="{{ section.settings.logo | image_url: width: 400 }}"  class="header__logo-img logo logo--transparent" width="{{ section.settings.logo_transparent.width }}" height="{{ section.settings.logo_transparent.height }}" alt="{{ section.settings.logo_transparent.alt | default: shop.name | escape }}" loading="eager" fetchpriority="high" decoding="async">
+  {%- endcapture -%}
+{%- endif -%}
+<div class="header-logo {{ header_transparent_logo_css }}" style="{{ styles }}">
+  {%- if request.page_type == 'index' -%}
+    <h1 class="header__heading m-zero wb-break-word visually-hidden">{{ section.settings.logo.alt | default: shop.name | escape }}</h1>
+  {%- endif -%}
+    <a href="{{ routes.root_url }}" aria-label="{{ section.settings.logo.alt | default: shop.name | escape }}" class="header__logo-link m-zero js-header-logo-link d-block h4 p-relative wb-break-word">
+      {%- if section.settings.logo != blank -%}
+          <img srcset="{{ section.settings.logo | image_url: width: section.settings.logo_width }}, {{ section.settings.logo | image_url: width: image_size_2x }} 2x" src="{{ section.settings.logo | image_url: width: 400 }}" class="header__logo-img logo__main-logo logo" width="{{ section.settings.logo.width }}" height="{{ section.settings.logo.height }}" alt="{{ section.settings.logo.alt | default: shop.name | escape }}" loading="eager" fetchpriority="high" decoding="async">
+         {{ logo_transparent }}
+      {%- else -%}
+        <span class="header__heading m-zero wb-break-word">{{ shop.name }}</span>
+      {%- endif -%}
+    </a>
+</div>

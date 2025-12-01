@@ -1,0 +1,14 @@
+<sht-dialog-quickshop class="sht-dialog dialog__quickshop no-focus-visible middle-md bottom-xs center-xs p-fixed left-0 top-0 h-100 w-100 o-auto zi-9" id="dialogQuickShop" hidden tabindex="-1">
+  <div class="dialog color-{{- settings.quick_buy_color_scheme }}" role="dialog" aria-labelledby="dialogQuickShopTitle" aria-modal="true">
+    <div class="dialog__content d-flex fd-column h-100">
+      <div class="dialog__header d-flex between-xs middle-xs p-sticky top-0">
+        <h3 class="h5 m-zero" id="dialogQuickShopTitle">{{ 'products.product.card.quick_shop' | t }}</h3>
+        <button type="button" aria-label="{{- "accessibility.close_modal" | t -}}" class="js-dialog-close-btn btn btn-icon btn-large btn-plain">
+          {%- render 'icon-close' -%}
+        </button>
+      </div>
+      <div class="dialog__body js-dialog-body">
+      </div>
+    </div>
+  </div>
+</sht-dialog-quickshop>

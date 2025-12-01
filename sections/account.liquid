@@ -1,0 +1,87 @@
+{{ 'account.css' | asset_url | stylesheet_tag: preload: true }}
+<div class="section section-alone color-{{- section.settings.color_scheme }}">
+	<div class="ctnr">
+		<div class="s-content">
+			<div class="rw middle-md account__header">
+				<div class="clm" style="--w-xs:12;--w-md:6">
+					<h2	tabindex="-1" class="m-zero">{{ 'customer.account.title' | t }}</h2>
+				</div>
+				<div class="clm d-flex end-md middle-md top-xs fd-column fd-row-md mt-16 mb-48 m-zero-md" style="--w-xs:12;--w-md:6">
+					<span class="mr-16">{{ 'customer.account.welcome_message' | t }} {{ customer.name | append: '!' }}</span>
+					<a class="btn btn-link btn-large mt-8 m-zero-md" href="{{ routes.account_logout_url }}">{{ 'customer.log_out' | t }}</a>
+				</div>
+			</div>
+			<div class="rw">
+				<div class="clm" style="--w-xs:12;">
+					<ul class="tab__header p-relative ox-auto disable-scrollbars ls-none ws-nowrap d-flex">
+						<li class="tab__item d-inline-block">
+							<a class="tab__link h6 mb-0 p-relative d-block tab__link--active" href="{{ routes.account_url }}"">
+								{{ "customer.orders.title_1" | t }}
+							</a>
+						</li>
+						<li class="tab__item d-inline-block">
+							<a class="tab__link h6 mb-0 p-relative d-block" href="{{ routes.account_addresses_url }}">
+								{{ "customer.addresses.title" | t }}
+							</a>
+						</li>
+					</ul>
+					<div class="">
+						<div class="d-block">
+							<h3 class="h5 mb-48">{{ 'customer.orders.title' | t: order_count: customer.orders_count }}</h3>
+							{% paginate customer.orders by 5 %}
+								{% if customer.orders.size > 0 %}
+									<table class="w-100 ta-left">
+										<thead class="t-thead" role="rowgroup">
+											<tr role="row">
+												<th id="columnOrder" scope="col" role="columnheader">{{ 'customer.orders.order_number' | t }}</th>
+												<th id="columnDate" scope="col" role="columnheader">{{ 'customer.orders.date' | t }}</th>
+												<th id="columnPayment" scope="col" role="columnheader">{{ 'customer.orders.payment_status' | t }}</th>
+												<th id="columnFulfillment" scope="col" role="columnheader">{{ 'customer.orders.fulfillment_status' | t }}</th>
+												<th id="columnTotal" class="ta-right" scope="col" role="columnheader">{{ 'customer.orders.total' | t }}</th>
+											</tr>
+										</thead>
+										<tbody role="rowgroup">
+											{% for order in customer.orders %}
+												<tr class="t-tr pt-24 pb-24 p-zero-md" role="row">
+													<td id="rowOrder"  headers="ColumnOrder" class="t-td" data-name="{{ 'customer.orders.order_number' | t }}" role="cell"><a href="{{ order.customer_url }}" class="tag" aria-label="{{ 'customer.orders.order_number_link' | t: number: order.name }}">{{ order.name }}</a></td>
+													<td headers="rowOrder columnDate" class="t-td" data-name="{{ 'customer.orders.date' | t }}" role="cell">{{ order.created_at | time_tag: format: 'date' }}</td>
+													<td headers="rowOrder columnPayment" class="t-td" data-name="{{ 'customer.orders.payment_status' | t }}" role="cell">{{ order.financial_status_label }}</td>
+													<td headers="rowOrder columnFulfillment" class="t-td" data-name="{{ 'customer.orders.fulfillment_status' | t }}" role="cell">{{ order.fulfillment_status_label }}</td>
+													<td headers="rowOrder columnTotal" class="t-td ta-right" data-name="{{ 'customer.orders.total' | t }}" role="cell">{{ order.total_price | money }}</td>
+												</tr>
+											{% endfor %}
+										</tbody>
+									</table>
+								{% else %}
+									<p>{{ 'customer.orders.none' | t }}</p>
+								{% endif %}
+								{%- if paginate.pages > 1 -%}
+									<div class="s-footer">
+										{%- render 'pagination', paginate: paginate -%}
+									</div>
+								{%- endif -%}
+							{% endpaginate %}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% schema %}
+{
+  "name": "t:sections.account.name",
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_general.content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:general.settings.color_scheme.label",
+      "default": "scheme-1"
+    }
+  ]
+}
+{% endschema %}

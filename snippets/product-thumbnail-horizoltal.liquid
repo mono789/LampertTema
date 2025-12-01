@@ -1,0 +1,23 @@
+<div class="thumbnail__horizoltal ta-center d-none-md no-js-hidden maw-100 o-scroll disable-scrollbars {{ enable_thumbnail_mobile | default: 'd-none' | replace: 'true', 'd-block' }} {{ product.media.size |  replace: 1, 'd-none-important'  }}">
+  <sht-horizoltal-carousel class="sht-horizoltal product-thumbs p-relative" data-section="{{ section.id }}">
+    <div class="thumbnail__horizoltal-carousel h-100 top-xs js-carousel-items d-flex middle-xs p-relative disable-scrollbars fw-nowrap scrollable scrl-bhvr-auto" role="list" aria-label="{{ 'accessibility.slider' | t }}">
+      {%- liquid
+        if product.selected_or_first_available_variant.featured_media != null
+          assign thumb_index = thumb_index | plus: 1
+          assign featured_media = product.selected_or_first_available_variant.featured_media
+          render 'product-slideshow-thumb', section: section, media: featured_media, product: product, thumb_index: thumb_index, ratio: ratio_thubnails, object_fit: object_fit, media_background: media_background
+        endif
+        for media in product.media
+          assign thumb_index = thumb_index | plus: 1
+          unless media.id == product.selected_or_first_available_variant.featured_media.id
+            render 'product-slideshow-thumb', section: section, media: media, product: product, thumb_index: thumb_index, ratio: ratio_thubnails, object_fit: object_fit, media_background: media_background
+          endunless
+        endfor
+      -%}
+    </div>
+    <div class="pagination-thumbnail__horizoltal carousel-controls--outside carousel-pagination center-xs no-js-hidden js-carousel-pagination">
+      <button type="button" data-step="1" class="btn btn-primary btn-small btn-icon btn-prev p-absolute js-carousel-prev-btn" aria-label="{{ 'accessibility.previous_slide' | t }}" name="previous">{% render 'icon-chevron-left' %}</button>
+      <button type="button" data-step="1" class="btn btn-primary btn-small btn-icon btn-next p-absolute js-carousel-next-btn" aria-label="{{ 'accessibility.next_slide' | t }}" name="next">{% render 'icon-chevron-right' %}</button>
+    </div>
+  </sht-horizoltal-carousel>
+</div>

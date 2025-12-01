@@ -1,0 +1,336 @@
+{%- liquid
+  assign loading = "lazy"
+  assign decoding ="async"
+  assign fetchpriority = "auto"
+  assign image_classes = 'w-100 h-100 js-animate anm anm-zoomOut'
+  if section.index == 1
+    assign loading = "eager"
+    assign fetchpriority = "high"
+    assign image_classes = 'w-100 h-100'
+  endif
+  assign primary_image = section.settings.primary_image
+  assign secondary_image = section.settings.secondary_image
+  assign primary_image_ratio = section.settings.primary_image_ratio
+  assign secondary_image_ratio = section.settings.secondary_image_ratio
+  assign heading_style = section.settings.enable_large_heading | default: 'ts-default' | replace: 'true', 'headline ts-default'
+
+
+  assign placeholder = 'image' | placeholder_svg_tag: 'h-100 w-100 placeholder media of-cover js-image-lazy'
+  assign primary_image_alt = primary_image.alt | default: primary_image.image | split: '/' | last
+  assign primary_media = primary_image | image_url: width: primary_image.width | image_tag: widths: '320, 450, 550, 750, 950, 1024, 1200, 1400, 1600, 1800, 2000', sizes: '(min-width: 459px) calc(100vw/2), 100vw', alt: primary_image_alt, class: 'js-image-lazy media of-cover w-100 h-100', loading: loading, fetchpriority: fetchpriority, decoding: decoding
+
+  assign secondary_media_alt = secondary_image.alt | default: secondary_image.image | split: '/' | last
+  assign secondary_media = secondary_image | image_url: width: secondary_image.width | image_tag: widths: '320, 450, 550, 750, 950, 1024, 1200, 1400, 1600, 1800, 2000', sizes: '(min-width: 459px) calc(100vw/2), 100vw', alt: secondary_media_alt, class: 'js-image-lazy media of-cover w-100 h-100', loading: 'lazy', fetchpriority: 'auto', decoding: decoding
+  assign classes = 's-header s-header--special pt-zero-mb zi-1'
+  assign class_swap = 'd-rtl'
+
+
+  assign primary_img_style = primary_image_ratio | replace: 'landscape', '--gc-xs: 1/6; --gr-xs: 1/5;' | replace: 'square', '--gc-xs: 1/6; --gr-xs: 1/6;' | replace: 'portrait', '--gc-xs: 2/6; --gr-xs: 1/6;'
+  assign secondary_img_style = secondary_image_ratio | replace: 'landscape', '--gc-xs: 1/6; --gr-xs: 1/5;' | replace: 'square', '--gc-xs: 1/6; --gr-xs: 1/6;' | replace: 'portrait', '--gc-xs: 2/6; --gr-xs: 1/6;'
+
+  if primary_image != blank and secondary_image != blank
+    assign primary_img_style = '--gc-xs: 2/6; --gr-xs: 1/4;'
+    assign secondary_img_style = secondary_image_ratio | replace: 'portrait', '--gc-xs: 1/3; --gr-xs: 3/6;' | replace: 'square', '--gc-xs: 1/3; --gr-xs: 3/5;' | replace: 'landscape', '--gc-xs: 1/4; --gr-xs: 3/5;'
+
+    if primary_image_ratio == 'portrait'
+      assign primary_img_style = '--gc-xs: 3/6; --gr-xs: 1/5;'
+      assign secondary_img_style = secondary_image_ratio | replace: 'portrait', '--gc-xs: 2/4; --gr-xs: 3/6;' | replace: 'square', '--gc-xs: 2/4; --gr-xs: 4/6;' | replace: 'landscape', '--gc-xs: 1/4; --gr-xs: 4/6;'
+    elsif primary_image_ratio == 'square'
+      assign primary_img_style = '--gc-xs: 2/6; --gr-xs: 1/5;'
+      assign secondary_img_style = secondary_image_ratio | replace: 'portrait', '--gc-xs: 1/3; --gr-xs: 3/6;' | replace: 'square', '--gc-xs: 1/3; --gr-xs: 4/6;' | replace: 'landscape', '--gc-xs: 1/4; --gr-xs: 4/6;'
+    endif
+  endif
+
+  assign header_style = section.settings.content_alignment | replace: 'ta-left', '--gc-xs: 1/13; --gc-md: 1/8; --gr-xs: 1;' | replace: 'ta-center', '--gc-md: 3/11; --gc-xs: 1/13; --gr-xs: 1' | replace: 'ta-right', '--gc-xs: 1/13; --gc-md: 7/13; --gr-xs: 1;'
+  assign media_style = section.settings.content_alignment | replace: 'ta-left', '--gc-xs: 1/13; --gc-md: 7/13; --gr-xs: 2; --gr-md: 1;' | replace: 'ta-center', '--gc-xs: 1/13; --gc-md: 3/11;' | replace: 'ta-right', '--gc-xs: 1/13; --gc-md: 1/7; --gr-xs: 2; --gr-md: 1;'
+  assign class_swap = ''
+  if section.settings.content_alignment == 'ta-center'
+    assign description_extra_class = ' m-sides'
+    assign btn_position = 'center-xs'
+    assign classes = classes | replace: 's-header--special', ''
+  elsif section.settings.content_alignment == 'ta-right'
+    assign class_swap = 'd-rtl'
+  endif
+-%}
+<div class="section color-{{- section.settings.color_scheme }} {{ section.settings.remove_padding_top | replace: 'true', 'section-top-zero' | replace: section.settings.remove_padding_top, '' }} {{ section.settings.remove_padding_bottom | replace: 'true', 'section-bottom-zero' | replace: section.settings.remove_padding_bottom, '' }} {% render 'animation-loader', section: section %}" data-ui-component="Image With Text Section" role="region" aria-labelledby="sectionHeading-{{ section.id | md5 | truncate: 12, "" }}">
+  <div class="ctnr d-grid c-gap {{ section.settings.content_alignment | replace: 'ta-right', 'iwt-content--right' }}" style="--gtc-equal:12">
+    {% render 'section-header',
+      btn_position: btn_position,
+      classes: classes,
+      content_align: section.settings.content_alignment,
+      header_style: header_style,
+      subheading: section.settings.subheading,
+      heading: section.settings.heading,
+      description: section.settings.description,
+      description_extra_class: description_extra_class,
+      heading_classes: heading_style,
+      button_main_text: section.settings.button_main_text,
+      button_main_link: section.settings.button_main_link,
+      button_sub_text: section.settings.button_sub_text,
+      button_sub_link: section.settings.button_sub_link,
+      badge_text: section.settings.badge_text,
+      badge_position: section.settings.badge_position,
+      badge_shape: section.settings.badge_shape,
+      badge_color: section.settings.badge_color,
+      section: section %}
+    <div style="{{ media_style }}">
+      <div class="section-content__media p-relative">
+        <div class="p-absolute left-0 top-0 d-grid h-100 w-100 {{ class_swap }}" style="--gtc-equal: 5; --gtr-equal: 5">
+          {% if primary_image %}
+            <div class="o-hidden" style="{{ primary_img_style }}">
+              {% render 'image', image_item: primary_media, image_wrap_classes: 'h-100', image_classes: image_classes, media_wrap_style: '--delay: .6s', order: section.index %}
+            </div>
+          {% endif %}
+          {% if secondary_image %}
+            <div class="f-default o-hidden" style="{{ secondary_img_style }}">
+              {% render 'image', image_item: secondary_media, image_wrap_classes: 'h-100', image_classes: image_classes, media_wrap_style: '--delay: .6s', order: section.index %}
+            </div>
+          {% endif %}
+          {% if primary_image == blank and secondary_image == blank %}
+            <div style="{{ primary_img_style }}">
+              {% render 'image', image_item: placeholder, image_wrap_classes: 'h-100', image_classes: 'd-block h-100 js-animate anm anm-zoomOut', order: section.index %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.image_with_text.name",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_general.content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:general.settings.color_scheme.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_large_heading",
+      "label": "t:general.settings.enable_large_heading.label",
+      "info": "t:general.settings.enable_large_heading.info"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_layout.content"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "t:general.settings.content_alignment.label",
+      "default": "ta-left",
+      "options": [
+        {
+          "value": "ta-left",
+          "label": "t:sections.image_with_text.settings.option_text_left_image_right.label"
+        },
+        {
+          "value": "ta-right",
+          "label": "t:sections.image_with_text.settings.option_text_right_image_left.label"
+        },
+        {
+          "value": "ta-center",
+          "label": "t:sections.image_with_text.settings.option_text_center_image_below.label"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_top",
+      "label": "t:general.settings.remove_padding_top.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_bottom",
+      "label": "t:general.settings.remove_padding_bottom.label",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_image.content"
+    },
+    {
+      "type": "image_picker",
+      "id": "primary_image",
+      "label": "t:sections.image_with_text.settings.primary_image.label"
+    },
+    {
+      "type": "select",
+      "id": "primary_image_ratio",
+      "label": "t:sections.image_with_text.settings.primary_image_ratio.label",
+      "default": "square",
+      "options": [
+        {
+          "value": "square",
+          "label": "t:general.settings.image_ratio.options.option_square.label"
+        },
+        {
+          "value": "portrait",
+          "label": "t:general.settings.image_ratio.options.option_portrait_1.label"
+        },
+        {
+          "value": "landscape",
+          "label": "t:general.settings.image_ratio.options.option_landscape_1.label"
+        }
+      ]
+    },
+    {
+      "type": "image_picker",
+      "id": "secondary_image",
+      "label": "t:sections.image_with_text.settings.secondary_image.label"
+    },
+    {
+      "type": "select",
+      "id": "secondary_image_ratio",
+      "label": "t:sections.image_with_text.settings.secondary_image_ratio.label",
+      "default": "portrait",
+      "options": [
+        {
+          "value": "square",
+          "label": "t:general.settings.image_ratio.options.option_square.label"
+        },
+        {
+          "value": "portrait",
+          "label": "t:general.settings.image_ratio.options.option_portrait_1.label"
+        },
+        {
+          "value": "landscape",
+          "label": "t:general.settings.image_ratio.options.option_landscape_1.label"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_text.content"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "t:general.settings.subheading.label",
+      "default": "Subheading"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:general.settings.heading.label",
+      "default": "Image with text"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "t:general.settings.description.label",
+      "default": "<p>Use this text to share brand information with your customers. Introduce a new product, share an announcement or welcome customers.</p>"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_buttons.content"
+    },
+    {
+      "type": "text",
+      "id": "button_main_text",
+      "label": "t:general.settings.primary_button_label.label",
+      "info": "t:general.settings.hide_if_empty.info",
+      "default": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "button_main_link",
+      "label": "t:general.settings.primary_button_link.label"
+    },
+    {
+      "type": "text",
+      "id": "button_sub_text",
+      "label": "t:general.settings.secondary_button_label.label",
+      "info": "t:general.settings.hide_if_empty.info",
+      "default": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "button_sub_link",
+      "label": "t:general.settings.secondary_button_link.label"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_prominent_badge.content"
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "t:general.settings.text.label",
+      "info": "t:general.settings.prominent_badge.text.info",
+      "default": "Get ready"
+    },
+    {
+      "type": "select",
+      "id": "badge_color",
+      "label": "t:general.settings.accent_scheme.label",
+      "default": "color-accent-1",
+      "options": [
+        {
+          "value": "color-accent-1",
+          "label": "t:general.settings.main.label"
+        },
+        {
+          "value": "color-accent-2",
+          "label": "t:general.settings.extra.label"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "badge_position",
+      "label": "t:general.settings.badge_position.label",
+      "default": "p-badge--bottom-right",
+      "options": [
+        {
+          "value": "p-badge--bottom-left",
+          "label": "t:general.settings.option_left.label"
+        },
+        {
+          "value": "p-badge--bottom-right",
+          "label": "t:general.settings.option_right.label"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "badge_shape",
+      "label": "t:general.settings.badge_shape.label",
+      "default": "badge--star",
+      "options": [
+        {
+          "value": "badge--star",
+          "label": "t:general.settings.badge_shape.options.option_star.label"
+        },
+        {
+          "value": "badge--diamond",
+          "label": "t:general.settings.badge_shape.options.option_diamond.label"
+        },
+        {
+          "value": "badge--asterisk",
+          "label": "t:general.settings.badge_shape.options.option_asterisk.label"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.image_with_text.name"
+    }
+  ]
+}
+{% endschema %}

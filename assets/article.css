@@ -1,0 +1,16 @@
+.article__wrapper {
+  gap: calc(var(--spacing) * 2);
+}
+.article__pagination {
+  margin-top: calc(var(--spacing) * 2);
+}
+.article-index-1 .article__header {
+  margin-top: calc(var(--spacing) * 4);
+}
+.article__content {
+  font-size: var(--font-blog-post-size);
+  line-height: 1.65;
+}
+.article__comment + .article__comment {
+  margin-top: 24px;
+}

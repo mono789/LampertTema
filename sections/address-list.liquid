@@ -1,0 +1,406 @@
+{%- liquid
+  assign hide_element_on_compact_information_css = ''
+  assign hide_element_on_no_compact_information_css = 'd-none'
+  assign button_on_compact_information_css = 'btn-link'
+
+  assign section_id = section.id | md5 | truncate: 12, ""
+  assign md = 12.0 | divided_by : section.settings.items_per_row_on_desktop
+  assign icon = ''
+  if section.settings.content_align == 'diagonal d-grid-md'
+    assign md = 6
+    assign s_button = section.settings.button_main_text
+  endif
+
+  if section.settings.show_address_description
+    assign hide_element_on_compact_information_css = 'd-none'
+    assign hide_element_on_no_compact_information_css = ''
+    assign button_on_compact_information_css = 'btn-primary w-100'
+  endif
+-%}
+{% capture icon %}
+  {%- render 'icon-arrow-right', class: 'ml-8' -%}
+{% endcapture %}
+<div class="section color-{{- section.settings.color_scheme }} {{ section.settings.remove_padding_top | replace: 'true', 'section-top-zero' | replace: section.settings.remove_padding_top, '' }} {{ section.settings.remove_padding_bottom | replace: 'true', 'section-bottom-zero' | replace: section.settings.remove_padding_bottom, '' }} {% render 'animation-loader', section: section %}" data-ui-component="Address List Section" role="region" aria-labelledby="sectionHeading-{{ section_id }}">
+  <div class="ctnr {{ section.settings.content_align }}">
+    {%- render 'section-header', content_align: section.settings.content_align, subheading: section.settings.subheading, heading: section.settings.heading, description: section.settings.description, badge_text: section.settings.badge_text, badge_position: section.settings.badge_position, badge_shape: section.settings.badge_shape, badge_color: section.settings.badge_color, button_main_text: s_button, button_main_link: section.settings.button_main_link, section: section -%}
+    <div class="s-content">
+      <sht-carousel-wrapper data-on-mobile-only="{{ section.settings.enable_carousel }}" data-css-class-on-container="carousel d-flex p-zero m-zero ox-auto p-relative disable-scrollbars fw-nowrap scrollable scrollable-x" data-css-class-on-item="carousel__item p-relative scrollable-aln-start d-flex middle-xs fg-1 fs-0">
+        <sht-carousel class="p-relative d-block">
+          <div class="rw gap-unequal js-carousel-items js-animate" role="list" xaria-label="{{ 'accessibility.slider' | t }}">
+            {% for block in section.blocks %}
+              <sht-carousel-itm role="listitem" tabindex="-1" class="clm js-carousel-item anm anm-fadeInUp" style="--w-xs:12;--w-sm: 6;--w-md: {{- md -}}; --delay: {{ forloop.index | times: 0.05 -}}s; --duration: .6s">
+                {% liquid
+                  assign loading = "lazy"
+                  assign decoding ="async"
+                  assign fetchpriority = "auto"
+
+                  if section.index == 1 and forloop.first
+                    assign loading = "eager"
+                    assign fetchpriority = "high"
+                  endif
+                    assign media = 'image' | placeholder_svg_tag: 'placeholder media js-image-lazy'
+                  assign media_alt = block.settings.image.alt | default: block.settings.image.image | split: '/' | last
+                  assign media = block.settings.image | image_url: width: block.settings.image.width | image_tag: widths: '350, 450, 750', sizes: '(min-width: 459px) calc(100vw / 2), (min-width: 769px) calc(100vw / 4), 100vw', alt: media_alt, class: 'js-image-lazy media of-cover w-100', loading: loading, fetchpriority: fetchpriority, decoding: decoding
+                %}
+                <sht-drwr-trg class="card" data-drawer-id="drawer{{ section_id }}">
+                  <div class="js-drawer-trigger-media card__media">
+                    {% render 'image', image_item: media, ratio: section.settings.image_ratio %}
+                  </div>
+                  <div class="card__content card__address card__content--outer wb-break-word ta-left">
+                    <h3 class="js-drawer-trigger-heading hide-empty h5 mb-12">{{- block.settings.heading | escape -}}</h3>
+                    <div class="js-drawer-trigger-content mb-12">
+                      <p>{{ block.settings.address }}</p>
+                    </div>
+                    <div class="js-drawer-trigger-content hide-empty text-block {{ hide_element_on_compact_information_css }}">{{- block.settings.text -}}</div>
+                    <div class="js-drawer-trigger-footer hide-empty mb-12 {{ hide_element_on_compact_information_css }}">
+                      {%- if block.settings.address_link != blank -%}
+                        <a href="{{- block.settings.address_link | default: '' -}}" class="{{ button_on_compact_information_css }} btn btn-large js-drawer-trigger-footer-btn hide-empty" target="_blank">
+                          {{- block.settings.button_text -}}
+                          {{- section.settings.show_address_description | default: '' | replace: 'true', icon -}}
+                        </a>
+                      {%- endif -%}
+                    </div>
+                    <div class="adrs-lt__cta {{ hide_element_on_no_compact_information_css }}">
+                      <button type="button" aria-haspopup="true" class="js-drawer-trigger b-zero btn btn-link btn-large">
+                        {{ 'sections.address_list.button.view_details' | t }}
+                      </button>
+                    </div>
+                  </div>
+                </sht-drwr-trg>
+              </sht-carousel-itm>
+            {% endfor %}
+          </div>
+          <div class="carousel-pagination middle-y w-100 p-absolute d-none-md no-js-hidden zi-1 {% if section.settings.show_navigation == false or section.settings.enable_carousel == false %} d-none-important {% endif %}">
+            <button type="button" data-step="1" class="js-carousel-prev-btn btn btn-primary btn-icon btn-small p-absolute middle-y zi-1 left-0" aria-label="{{ 'accessibility.previous_slide' | t }}" name="previous" disabled>{% render 'icon-chevron-left' %}</button>
+            <button type="button" data-step="1" class="js-carousel-next-btn btn btn-primary btn-icon btn-small p-absolute middle-y zi-1 right-0" aria-label="{{ 'accessibility.next_slide' | t }}" name="next" disabled>{% render 'icon-chevron-right' %}</button>
+          </div>
+        </sht-carousel>
+      </sht-carousel-wrapper>
+
+      <div class="s-footer {{ section.settings.content_align | replace: 'diagonal d-grid-md', "d-none" | replace: section.settings.content_align, '' }} {{ section.settings.button_main_text | default: 'd-none' | replace: section.settings.button_main_text, '' }}">
+        <a class="btn btn-primary btn-large hide-empty" href="{{- section.settings.button_main_link | default: '#' -}}">
+          {{- section.settings.button_main_text -}}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% if section.settings.show_address_description %}
+  <sht-drwr class="drawer no-focus-visible color-{{- section.settings.color_scheme }}" id="drawer{{ section_id }}" aria-hidden="true" hidden tabindex="-1">
+    <div class="drawer__overlay js-drawer-overlay"></div>
+    <div class="drawer__wrapper js-drawer-wrapper p-relative" role="dialog" aria-modal="true" aria-label="{{ 'sections.address_list.title' | t }}">
+      <div class="drawer__header d-flex between-xs middle-xs">
+        <h2 class="drawer__heading js-drawer-heading h5 mb-0 m-zero"></h2>
+        <button class="js-drawer-btn-close btn btn-icon btn-large btn-plain" type="button" aria-label="{{ 'accessibility.close' | t }}">{%- render 'icon-close', class: 'd-block' -%}</button>
+      </div>
+      <div class="drawer__body oy-scroll flex-1">
+        <div class="p-relative js-drawer-media mb-20"></div>
+        <div class="js-drawer-content text-block"></div>
+      </div>
+      <div class="drawer__footer js-drawer-footer w-100 p-absolute bottom-0 hide-empty p-sticky"></div>
+    </div>
+  </sht-drwr>
+{% endif %}
+{% schema %}
+{
+  "name": "t:sections.address_list.name",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_general.content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:general.settings.color_scheme.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "t:general.settings.section_subheading.label"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:general.settings.section_heading.label",
+      "default": "Address list"
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "label": "t:general.settings.section_description.label"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_layout.content"
+    },
+    {
+      "type": "select",
+      "id": "items_per_row_on_desktop",
+      "label": "t:general.settings.items_per_row_on_desktop.label",
+      "info": "t:general.settings.items_per_row.not_applicable_for_diagonal.info",
+      "default": "4",
+      "options": [
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        },
+        {
+          "value": "5",
+          "label": "5"
+        },
+        {
+          "value": "6",
+          "label": "6"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "content_align",
+      "label": "t:general.settings.content_alignment.label",
+      "default": "ta-left",
+      "options": [
+        {
+          "value": "ta-left",
+          "label": "t:general.settings.option_left.label"
+        },
+        {
+          "value": "ta-center",
+          "label": "t:general.settings.option_center.label"
+        },
+        {
+          "value": "diagonal d-grid-md",
+          "label": "t:general.settings.content_alignment.options.option_diagonal.label"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_carousel",
+      "label": "t:general.settings.enable_carousel_on_mobile.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_navigation",
+      "label": "t:general.settings.show_navigation_on_mobile.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_top",
+      "label": "t:general.settings.remove_padding_top.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_bottom",
+      "label": "t:general.settings.remove_padding_bottom.label",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:sections.address_list.settings.headers.header_address_items.content"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "t:general.settings.image_ratio.label",
+      "default": "auto",
+      "options": [
+        {
+          "value": "1/1",
+          "label": "t:general.settings.image_ratio.options.option_square.label"
+        },
+        {
+          "value": "2/3",
+          "label": "t:general.settings.image_ratio.options.option_portrait_1.label"
+        },
+        {
+          "value": "3/2",
+          "label": "t:general.settings.image_ratio.options.option_landscape_1.label"
+        },
+        {
+          "value": "auto",
+          "label": "t:general.settings.image_ratio.options.option_adapt.label"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_address_description",
+      "label": "t:sections.address_list.settings.show_address_description.label",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_button.content"
+    },
+    {
+      "type": "text",
+      "id": "button_main_text",
+      "label": "t:general.settings.label.label",
+      "info": "t:general.settings.hide_if_empty.info"
+    },
+    {
+      "type": "url",
+      "id": "button_main_link",
+      "label": "t:general.settings.link.label"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_prominent_badge.content"
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "t:general.settings.text.label",
+      "info": "t:general.settings.prominent_badge.text.info"
+    },
+    {
+      "type": "select",
+      "id": "badge_color",
+      "label": "t:general.settings.accent_scheme.label",
+      "default": "color-accent-1",
+      "options": [
+        {
+          "value": "color-accent-1",
+          "label": "t:general.settings.main.label"
+        },
+        {
+          "value": "color-accent-2",
+          "label": "t:general.settings.extra.label"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "badge_position",
+      "label": "t:general.settings.badge_position.label",
+      "default": "p-badge--top-right",
+      "options": [
+        {
+          "value": "p-badge--top-left",
+          "label": "t:general.settings.option_left.label"
+        },
+        {
+          "value": "p-badge--top-right",
+          "label": "t:general.settings.option_right.label"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "badge_shape",
+      "label": "t:general.settings.badge_shape.label",
+      "default": "badge--star",
+      "options": [
+        {
+          "value": "badge--star",
+          "label": "t:general.settings.badge_shape.options.option_star.label"
+        },
+        {
+          "value": "badge--diamond",
+          "label": "t:general.settings.badge_shape.options.option_diamond.label"
+        },
+        {
+          "value": "badge--asterisk",
+          "label": "t:general.settings.badge_shape.options.option_asterisk.label"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "address_item",
+      "name": "t:sections.address_list.blocks.address_item.name",
+      "limit": 6,
+      "settings": [
+        {
+          "type": "header",
+          "content": "t:general.settings.headers.header_image.content"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:general.settings.image.label",
+          "info": "t:sections.address_list.blocks.address_item.settings.image.info"
+        },
+        {
+          "type": "header",
+          "content": "t:general.settings.headers.header_text.content"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:general.settings.heading.label",
+          "default": "Store name"
+        },
+        {
+          "type": "text",
+          "id": "address",
+          "label": "t:sections.address_list.blocks.address_item.settings.address.label",
+          "default": "Street, City, Country, State"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "t:general.settings.description.label",
+          "default": "<p>Talk about your shop.</p>"
+        },
+        {
+          "type": "header",
+          "content": "t:general.settings.headers.header_button.content"
+        },
+        {
+          "type": "paragraph",
+          "content": "t:sections.address_list.blocks.address_item.settings.header_direction_button.content"
+        },
+        {
+          "type": "text",
+          "id": "address_link",
+          "label": "t:sections.address_list.blocks.address_item.settings.google_maps_link.label",
+          "default": "https://goo.gl/maps/thGUGLRtaPqkWbBH6"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "t:general.settings.label.label",
+          "default": "Get direction"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.address_list.name",
+      "blocks": [
+        {
+          "type": "address_item"
+        },
+        {
+          "type": "address_item"
+        },
+        {
+          "type": "address_item"
+        },
+        {
+          "type": "address_item"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

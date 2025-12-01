@@ -1,0 +1,176 @@
+
+{%- if section.settings.show_popup -%}
+  {%- unless section.settings.show_only_on_index and template != 'index' -%}
+    {%- unless section.settings.show_only_for_visitors and customer -%}
+      {%- liquid
+        assign media_alt = section.settings.image.alt | default: section.settings.image.image | split: '/' | last
+        assign media_image = section.settings.image | image_url: width: section.settings.image.width | image_tag: widths: '320, 450, 550', sizes: '(min-width: 769px) calc(100vw/2), 100vw', class: 'w-100 h-100 of-cover js-image-lazy media' , alt: media_alt
+      -%}
+      {% assign section_id = section.id | md5 | truncate: 12, "" %}
+      {% assign frm_id = section_id | prepend: 'newsletterPopupForm-' %}
+      <sht-popup class="popup zi-6 hidden-xs opacity-0 p-fixed no-js-hidden d-none no-focus-visible color-{{ section.settings.color_scheme }}" data-props='{"triggerOn":"{{ section.settings.trigger }}"}' tabindex="-1" data-ui-component="Popup Section">
+        {% if section.settings.image %}
+          <div class="p-relative">
+            {% render 'image', image_item: media_image, ratio: '16/9' %}
+          </div>
+        {% endif %}
+        <button class="btn btn-small btn-icon btn-secondary p-absolute js-popup-close-btn zi-1" type="button" data-dismiss="modal" aria-label="{{ 'accessibility.close_popup' | t }}">
+          {%- render 'icon-close' -%}
+        </button>
+        <div class="pr-20 pl-20 pt-20 pb-20">
+          {% render 'section-header'
+            classes: 's-header pb-0'
+            subheading: section.settings.subheading,
+            heading: section.settings.heading,
+            description: section.settings.text,
+            description_extra_class: 'popup__description',
+            heading_classes: 'h5 mt-8',
+            section: section
+          %}
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+              {%- when 'button' -%}
+                  <a target="_blank" href="{{ block.settings.button_link | default: '#' }}" class="btn btn-primary btn-large w-100 mt-16 hide-no-link hide-empty" {{ block.shopify_attributes }}>{{- block.settings.button_title | escape -}}</a>
+              {%- when 'newsletter' -%}
+                <div class="mt-16" {{ block.shopify_attributes }}>
+                  {%- render 'newsletter-form', form_name: 'contactPopup', form_id: frm_id, classes: 'fd-column-sm' -%}
+                </div>
+            {%- endcase -%}
+          {%- endfor -%}
+        </div>
+      </sht-popup>
+    {%- endunless -%}
+  {%- endunless -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.popup.name",
+  "max_blocks": 1,
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_general.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_popup",
+      "label": "t:sections.popup.settings.enable_popup.label",
+      "info": "t:sections.popup.settings.enable_popup.info",
+      "default": false
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:general.settings.color_scheme.label",
+      "default": "scheme-2"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_image.content"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:general.settings.image.label",
+      "info": "t:sections.popup.settings.popup_image_recoments.info"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_text.content"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "t:general.settings.subheading.label"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:general.settings.heading.label",
+      "default": "Subscribe"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "t:general.settings.description.label",
+      "default": "<p>Promotions, new products and sales. Directly to your inbox.</p>"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.popup.settings.headers.header_trigger.content"
+    },
+    {
+      "type": "select",
+      "id": "trigger",
+      "label": "t:sections.popup.settings.when_to_show.label",
+      "options": [
+        {
+          "value": "reaching-to-footer",
+          "label": "t:sections.popup.settings.when_to_show.options.option_reaching_the_footer.label"
+        },
+        {
+          "value": "after-closing-cart-notification",
+          "label": "t:sections.popup.settings.when_to_show.options.option_after_add_to_cart.label"
+        }
+      ],
+      "default": "reaching-to-footer",
+      "info": "t:sections.popup.settings.when_to_show.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_only_on_index",
+      "label": "t:sections.popup.settings.show_only_on_home_page.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_only_for_visitors",
+      "label": "t:sections.popup.settings.show_only_for_non_login_visitors.label",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "button",
+      "name": "t:sections.popup.blocks.button.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "button_title",
+          "label": "t:general.settings.button_text.label",
+          "info": "t:general.settings.hide_if_empty.info"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "t:general.settings.button_link.label"
+        }
+      ]
+    },
+    {
+      "type": "newsletter",
+      "name": "t:sections.popup.blocks.newsletter.name",
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "t:sections.popup.blocks.newsletter.settings.paragraph_one.content"
+        },
+        {
+          "type": "paragraph",
+          "content": "t:sections.popup.blocks.newsletter.settings.paragraph_two.content"
+        }
+      ],
+      "limit": 1
+    }
+  ],
+  "default": {
+    "blocks": [
+      {
+        "type": "newsletter"
+      }
+    ]
+  }
+}
+{% endschema %}

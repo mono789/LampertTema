@@ -1,0 +1,61 @@
+<div class="ctnr pt-48">
+  <div class="rw center-xs">
+    <div class="clm ta-center" style="--w-xs:12;--w-sm:8;--w-md:4;">
+      {% render 'header-logo' %}
+      <h1 class="h2 mb-32 mt-48 mb-sm-48 mt-sm-64 mb-md-80 mt-md-80 mb-xl-96 mt-xl-96">{{ 'gift_cards.issued.subtext' | t }}</h1>
+
+      <div class="p-relative mb-24">
+        <span class="p-absolute price icon--success fw-700 center-middle h4 pr-20 pl-20">{{ gift_card.initial_value | money }}</span>
+        {%- if gift_card.enabled == false or gift_card.expired -%}
+          <span>{{ 'gift_cards.issued.expired' | t }}</span>
+        {%- endif -%}
+        <img class="w-100" src="{{ 'gift-card/card.svg' | shopify_asset_url }}" alt="{{ shop.name | escape }}" height="134" width="202" loading="lazy">
+      </div>
+
+      <p class="mb-24">{{ 'gift_cards.issued.redeem' | t }}</p>
+
+      <input
+        type="text"
+        value="{{ gift_card.code | format_code }}"
+        aria-label="{{ 'gift_cards.issued.gift_card_code' | t }}"
+        readonly
+        class="gift-card__number ta-center pt-8 pb-8 pl-12 pr-12 mb-4 fw-700"
+      >
+
+      <div class="mb-24">
+        <button class="gift-card-copy btn btn-link btn-large">{{ 'gift_cards.issued.copy_code' | t }}</button>
+        <div class="d-flex middle-xs center-xs mb-24 gift-card__copy-success" role="status"></div>
+        <template>
+          <div class="icon icon--small icon--success fs-0">
+            {%- render 'icon-check-mark' , size: 16 -%}
+          </div>
+          <span class="ml-8 subtext">
+            {{ 'gift_cards.issued.copy_code_success' | t }}
+          </span>
+        </template>
+      </div>
+
+      {%- if gift_card.pass_url -%}
+        <a href="{{ gift_card.pass_url }}">
+          <img src="{{ 'gift-card/add-to-apple-wallet.svg' | shopify_asset_url }}" width="120" height="40" alt="{{ 'gift_cards.issued.add_to_apple_wallet' | t }}" loading="lazy">
+        </a>
+      {%- endif -%}
+
+      <div class="gift-card__qr-code p-relative d-flex center-xs mb-56 mt-24" data-identifier="{{ gift_card.qr_identifier }}"></div>
+
+      <div class="d-flex fd-column top-md middle-md">
+        <a href="{{ shop.url }}" class="btn btn-primary btn-large mb-16" target="_blank" rel="noopener" aria-describedby="a11y-new-window-message">
+          {{ 'gift_cards.issued.shop_link' | t }}
+        </a>
+        <button class="btn btn-link btn-large" onclick="window.print();">
+          {{ 'gift_cards.issued.print_gift_card' | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% schema %}
+{
+  "name": "t:sections.giftcard.name"
+}
+{% endschema %}

@@ -1,0 +1,94 @@
+{%- liquid
+  if star_rating_color == true
+    if settings.star_rating_color.alpha != 0.0 and settings.star_rating_color != blank
+      assign rating_star_color = '--color-rating-star: rgba(' | append: settings.star_rating_color.red | append: ',' | append: settings.star_rating_color.green | append: ',' | append: settings.star_rating_color.blue | append: ', 1)'
+    endif
+  endif
+  if quick_buy_star_rating_color == true
+    if settings.quick_buy_star_rating_color.alpha != 0.0 and settings.quick_buy_star_rating_color != blank
+      assign quick_buy_star_rating_color = '--color-rating-star: rgba(' | append: settings.quick_buy_star_rating_color.red | append: ',' | append: settings.quick_buy_star_rating_color.green | append: ',' | append: settings.quick_buy_star_rating_color.blue | append: ', 1)'
+    endif
+  endif
+-%}
+{%- if settings.product_rating_app != 'judge_me' -%}
+  {%- liquid
+    assign rating_max = 5
+    case settings.product_rating_app
+      when 'other_apps'
+        assign rating_value = product.metafields.reviews.rating.value.rating
+        assign rating_count = product.metafields.reviews.rating_count
+        assign rating_max = product.metafields.reviews.rating.value.scale_max
+      when 'air_reviews'
+        assign rating_value = product.metafields.air_reviews_product.review_avg
+        assign rating_count = product.metafields.air_reviews_product.review_count
+      when 'loox'
+        assign rating_value = product.metafields.loox.avg_rating | floor
+        assign rating_count = product.metafields.loox.num_reviews | plus: 0
+      when 'okendo'
+        assign rating_value = product.metafields.okendo.summaryData.reviewAverageValue
+        assign rating_count = product.metafields.okendo.summaryData.reviewCount
+    endcase
+  -%}
+  {%- if rating_value and rating_count > 0 -%}
+    {% liquid
+      assign decimal = rating_value | modulo: 1
+      assign rating_decimal = 0.5
+      if decimal > 0.7
+        assign rating_decimal = 1
+      elsif decimal < 0.3
+        assign rating_decimal = 0
+      endif
+    %}
+    <div class="rating-wrapper d-flex gap-4 fw-wrap middle-xs subtext">
+      <div class="rating" role="img" aria-label="product-rating">
+        <span aria-hidden="true" class="rating-star"
+          style="--rating: {{ rating_value | floor }};
+                --rating-max: {{ rating_max }};
+                --rating-decimal: {{ rating_decimal }};
+                {{ rating_star_color }};
+                {{ star_rating_overlay }};
+                {{ quick_buy_star_rating_color }};
+                {{ content_collage_star_rating_color }};
+                {{ main_product_star_rating_color }}"
+        ></span>
+      </div>
+      <p class="rating-count color-light mb-0">
+        <span>{{- rating_value }}</span>
+        <span>({{ 'products.product.review_html' | t: count: rating_count }})</span>
+      </p>
+      <p class="rating-text d-none">
+        <span aria-hidden="true">{{- rating_value }} / {{ rating_max -}}</span>
+      </p>
+    </div>
+  {%- else -%}
+    {%- render 'product-no-review' -%}
+  {%- endif -%}
+{%- else -%}
+  {%- if product.metafields.judgeme.badge -%}
+    <sht-product-rating>
+      <div class="js-rating">
+        <div class="rating-wrapper d-flex gap-4 fw-wrap middle-xs subtext">
+          <div class="rating" role="img" aria-label="product-rating">
+            <span aria-hidden="true" class="rating-star js-rating-star"
+              style="--rating: ;
+                    --rating-max: 5;
+                    --rating-decimal: ;
+                    {{ rating_star_color }};
+                    {{ star_rating_overlay }};
+                    {{ quick_buy_star_rating_color }};
+                    {{ content_collage_star_rating_color }};
+                    {{ main_product_star_rating_color }}"
+            ></span>
+          </div>
+          <p class="rating-count color-light mb-0">
+            <span class="js-rating-value"></span>
+            <span class="js-rating-count"></span>
+          </p>
+        </div>
+        <div class="d-none" aria-hidden="true">{{ product.metafields.judgeme.badge }}</div>
+      </div>
+    </sht-product-rating>
+  {%- else -%}
+    {% render 'product-no-review' %}
+  {%- endif -%}
+{%- endif -%}

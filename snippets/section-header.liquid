@@ -1,0 +1,100 @@
+{% comment %}
+  Renders section header
+
+  Accepts:
+  - subheading: {String} Section subheading.
+  - heading: {String} Section heading.
+  - description: {String} Section description.
+  - content_align: {String} Header text alignment. Value is "ta-center" for center, left is empty.
+  - button_main_text: {String} Button primary text.
+  - button_main_link: {String} Button primary link.
+  - button_sub_text: {String} Button secondary text.
+  - button_sub_link: {String} Button secondary link.
+  - badge_text: {String} Prominent badge content. Leave if empty if want to hide it.
+  - badge_position: {String} Prominent badge position. Value are section setting values.
+  - badge_shape: {String} Prominent badge shape. Value are section setting values.
+  - badge_color: {String} Prominent badge color. Value are section setting values.
+
+  Example usage:
+  {% render 'section-header',
+    content_align: section.settings.content_alignment,
+    subheading: section.settings.subheading,
+    heading: section.settings.heading,
+    description: section.settings.description,
+    button_main_text: section.settings.button_main_text,
+    button_main_link: section.settings.button_main_link,
+    button_sub_text: section.settings.button_sub_text,
+    button_sub_link: section.settings.button_sub_link,
+    badge_text: section.settings.badge_text,
+    badge_position: section.settings.badge_position,
+    badge_shape: section.settings.badge_shape,
+    badge_color: section.settings.badge_color
+  %}
+{% endcomment %}
+{%- liquid
+  assign classes = classes | default: 's-header'
+  assign header_style = header_style
+  assign content_align = content_align
+  assign advance_content = advance_content | default: ''
+
+  if content_align contains 'ta-center'
+    assign content_align_class = ' clm ta-center m-auto p-zero'
+    assign description_class = ' m-sides'
+    assign header_content_style = '--w-md:8'
+    assign margin_auto = 'm-auto'
+  elsif content_align contains 'ta-left'
+    assign content_align_class = ' clm p-zero'
+    assign header_content_style = '--w-md:8'
+  else
+    assign description_class = ' '
+  endif
+
+  assign animation_one_cls = 'js-animate anm anm-fadeInUp'
+  assign animation_two_cls = 'js-animate anm'
+
+  if section.index == 1
+  assign animation_one_cls = ''
+  assign animation_two_cls = ''
+  endif
+
+-%}
+{%- unless subheading == blank and heading == blank and description == blank -%}
+  <div class="{{ classes }}" {% if content_align contains 'ta-' or header_style %}style="{{ header_style }}"{% endif %}>
+    {% if badge_text != blank and badge_position contains 'top' %}
+      <sht-shape-parallax class="d-block p-relative p-badge-wrap" data-enable-parallax-scrolling="{{ settings.enable_parallax_scrolling_prominent_badge }}" data-content-transform="rotate(-4deg) translate(-50%, -50%)">
+        <div class="js-shape-parallax-shape {{ badge_position }} p-absolute zi-2 o-hidden">
+          <div class="js-shape-parallax-rotation p-badge {{ badge_shape }} {{ badge_color }}">
+            <span class="js-shape-parallax-content p-badge__content h6 ta-center p-absolute center-middle">{{ badge_text }}</span>
+          </div>
+        </div>
+      </sht-shape-parallax>
+    {% endif %}
+    <div class="s-header__content {{ header_content_class }} {{ content_align_class }} wb-break-word" {% if content_align contains 'ta-' or header_content_style %}style="{{ header_content_style }}"{% endif %}>
+      <div class="s-header__sub hide-empty d-inline-block tt-up {{ settings.subheading_style }} {{ animation_one_cls }}" style="--duration: .6s;">{{- subheading | escape -}}</div>
+      <h2 id="sectionHeading-{{ section.id | md5 | truncate: 12, "" }}" class="s-header__title {{ margin_auto }} mb-0 wb-break-word hide-empty {{ heading_classes }} {{ animation_one_cls }}" style="--duration: .6s; --delay: .3s">{{- heading | escape -}}</h2>
+      <div class="s-header-content hide-empty {{ animation_two_cls }}" style="--duration: .6s; --delay: .6s">
+        {% if description -%}
+          <div class="s-header__desc text-block hide-empty {{ description_class }}{{ description_extra_class }}">{{- description -}}</div>
+        {%- endif %}
+        {{ advance_content }}
+        <div class="s-header__buttons d-inline-flex gap-12 gap-md-16 fw-wrap hide-empty {{ btn_position }} {% if content_align contains 'ta-center' %}center-xs{% endif %}">
+          {%- if button_main_text != blank -%}
+            <a class="btn btn-large btn-primary" href="{{- button_main_link | default: '#' -}}">{{- button_main_text -}}</a>
+          {%- endif -%}
+          {%- if button_sub_text != blank -%}
+            <a class="btn btn-large btn-secondary" href="{{- button_sub_link | default: '#' -}}">{{- button_sub_text -}}</a>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+    {% if badge_text != blank and badge_position contains 'bottom' %}
+      <sht-shape-parallax class="d-block p-relative p-badge-wrap" data-enable-parallax-scrolling="{{ settings.enable_parallax_scrolling_prominent_badge }}" data-content-transform="rotate(-4deg) translate(-50%, -50%)">
+        <div class="js-shape-parallax-shape {{ badge_position }} p-absolute zi-2 o-hidden">
+          <div class="js-shape-parallax-rotation p-badge {{ badge_shape }} {{ badge_color }}">
+            <span class="js-shape-parallax-content p-badge__content h6 ta-center p-absolute center-middle">{{ badge_text }}</span>
+          </div>
+        </div>
+      </sht-shape-parallax>
+    {% endif %}
+  </div>
+{%- endunless -%}

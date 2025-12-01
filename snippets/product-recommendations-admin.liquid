@@ -1,0 +1,253 @@
+{% comment %}
+  Snippet para administrar productos relacionados en la edición de productos
+  Incluir este snippet en la página de edición de productos de Shopify
+{% endcomment %}
+
+<div class="sliding-cart-recommendations-admin">
+  <div class="admin-section">
+    <h3>Configuración de Recomendaciones - Carrito Deslizante</h3>
+    
+    <!-- Productos Relacionados Generales -->
+    <div class="admin-field">
+      <label for="related_products">Productos Relacionados:</label>
+      <select id="related_products" name="metafields[sliding_cart.related_products]" multiple>
+        {% for product in collections.all.products %}
+          {% if product.id != current_product.id %}
+            <option value="{{ product.id }}" 
+                    {% if current_product.metafields.sliding_cart.related_products contains product.id %}selected{% endif %}>
+              {{ product.title }} ({{ product.vendor }})
+            </option>
+          {% endif %}
+        {% endfor %}
+      </select>
+      <p class="field-help">Selecciona hasta 10 productos que aparecerán como recomendaciones cuando este producto esté en el carrito.</p>
+    </div>
+
+    <!-- Excluir de Recomendaciones -->
+    <div class="admin-field">
+      <label>
+        <input type="checkbox" 
+               name="metafields[sliding_cart.exclude_from_recommendations]" 
+               value="true"
+               {% if current_product.metafields.sliding_cart.exclude_from_recommendations %}checked{% endif %}>
+        Excluir este producto de las recomendaciones
+      </label>
+      <p class="field-help">Marcar si no quieres que este producto aparezca en las recomendaciones de otros productos.</p>
+    </div>
+
+    <!-- Prioridad de Recomendación -->
+    <div class="admin-field">
+      <label for="recommendation_priority">Prioridad de Recomendación:</label>
+      <select id="recommendation_priority" name="metafields[sliding_cart.recommendation_priority]">
+        <option value="">Sin prioridad</option>
+        {% for i in (1..10) %}
+          <option value="{{ i }}" 
+                  {% if current_product.metafields.sliding_cart.recommendation_priority == i %}selected{% endif %}>
+            {{ i }} - {{ i | times: 10 }}% de prioridad
+          </option>
+        {% endfor %}
+      </select>
+      <p class="field-help">Los productos con mayor prioridad aparecerán primero en las recomendaciones.</p>
+    </div>
+
+    <!-- Mensaje Personalizado -->
+    <div class="admin-field">
+      <label for="recommendation_message">Mensaje de Recomendación:</label>
+      <input type="text" 
+             id="recommendation_message" 
+             name="metafields[sliding_cart.recommendation_message]"
+             value="{{ current_product.metafields.sliding_cart.recommendation_message }}"
+             maxlength="100"
+             placeholder="Ej: ¡Perfecto para complementar tu compra!">
+      <p class="field-help">Mensaje personalizado que aparece cuando se recomienda este producto (máximo 100 caracteres).</p>
+    </div>
+
+    <!-- Productos Relacionados por Variante -->
+    <div class="admin-field">
+      <h4>Recomendaciones por Variante</h4>
+      <div id="variant-recommendations">
+        {% for variant in current_product.variants %}
+          <div class="variant-recommendation" data-variant-id="{{ variant.id }}">
+            <h5>{{ variant.title | default: 'Variante sin título' }}</h5>
+            <select class="variant-related-products" 
+                    name="metafields[sliding_cart.related_products_by_variant][{{ variant.id }}]" 
+                    multiple>
+              {% for product in collections.all.products %}
+                {% if product.id != current_product.id %}
+                  <option value="{{ product.id }}">
+                    {{ product.title }} ({{ product.vendor }})
+                  </option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+        {% endfor %}
+      </div>
+      <p class="field-help">Configura recomendaciones específicas para cada variante del producto.</p>
+    </div>
+
+    <!-- Tags para Recomendaciones -->
+    <div class="admin-field">
+      <h4>Configuración por Tags</h4>
+      <p>También puedes usar tags para configurar recomendaciones automáticas:</p>
+      <ul class="tag-help">
+        <li><strong>recommend-with:</strong> Productos que se recomiendan junto con este</li>
+        <li><strong>recommend-after:</strong> Productos que se recomiendan después de comprar este</li>
+        <li><strong>recommend-priority:</strong> Prioridad de recomendación (1-10)</li>
+        <li><strong>no-recommend:</strong> Excluir de todas las recomendaciones</li>
+      </ul>
+      
+      <div class="tag-examples">
+        <h5>Ejemplos de Tags:</h5>
+        <ul>
+          <li><code>recommend-with:iphone-case,iphone-screen-protector</code></li>
+          <li><code>recommend-after:iphone-charger,wireless-charger</code></li>
+          <li><code>recommend-priority:8</code></li>
+          <li><code>no-recommend</code></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.sliding-cart-recommendations-admin {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.admin-section h3 {
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #007cba;
+}
+
+.admin-field {
+  margin-bottom: 20px;
+}
+
+.admin-field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.admin-field select,
+.admin-field input[type="text"] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.admin-field select[multiple] {
+  min-height: 120px;
+}
+
+.field-help {
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+.variant-recommendation {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 10px;
+}
+
+.variant-recommendation h5 {
+  margin: 0 0 10px 0;
+  color: #007cba;
+  font-size: 14px;
+}
+
+.tag-help {
+  background: #e7f3ff;
+  border-left: 4px solid #007cba;
+  padding: 15px;
+  margin: 15px 0;
+}
+
+.tag-help li {
+  margin-bottom: 5px;
+}
+
+.tag-examples {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 15px;
+  margin-top: 15px;
+}
+
+.tag-examples h5 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.tag-examples ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.tag-examples code {
+  background: #e9ecef;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 12px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Inicializar selects múltiples
+  const multiSelects = document.querySelectorAll('select[multiple]');
+  multiSelects.forEach(select => {
+    // Añadir funcionalidad de búsqueda
+    const searchBox = document.createElement('input');
+    searchBox.type = 'text';
+    searchBox.placeholder = 'Buscar productos...';
+    searchBox.className = 'product-search';
+    searchBox.style.cssText = 'width: 100%; padding: 5px; margin-bottom: 5px; border: 1px solid #ddd; border-radius: 3px;';
+    
+    select.parentNode.insertBefore(searchBox, select);
+    
+    searchBox.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      const options = select.querySelectorAll('option');
+      
+      options.forEach(option => {
+        const text = option.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+          option.style.display = '';
+        } else {
+          option.style.display = 'none';
+        }
+      });
+    });
+  });
+  
+  // Validar límite de productos seleccionados
+  const relatedProductsSelect = document.getElementById('related_products');
+  if (relatedProductsSelect) {
+    relatedProductsSelect.addEventListener('change', function() {
+      if (this.selectedOptions.length > 10) {
+        alert('Puedes seleccionar máximo 10 productos relacionados.');
+        // Deseleccionar la última opción seleccionada
+        this.selectedOptions[this.selectedOptions.length - 1].selected = false;
+      }
+    });
+  }
+});
+</script>

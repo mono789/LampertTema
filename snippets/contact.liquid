@@ -1,0 +1,23 @@
+{%- if settings.phone_number != blank or settings.email_address != blank -%}
+  <div class="contact__wrapper {{ classes }}">
+    <span class="d-block h6 m-zero {{ header_style }}">{{ 'general.contact.contact_us' | t }}</span>
+    <div class="contact__list d-inline-flex fd-column {{ contact_class }}">
+      {%- if settings.phone_number != blank -%}
+        <a href="tel:+{{- settings.phone_number -}}" class="contact__item d-flex middle-xs">
+          <span class="icon icon--small mr-8 fs-0 bs-none color-accent-2">
+            {%- render 'icon-phone', size: 16 -%}
+          </span>
+          +
+          {{- settings.phone_number -}}
+        </a>
+      {%- endif -%}
+
+      {%- if settings.email_address != blank -%}
+        <a href="mailto: {{- settings.email_address -}}" class="contact__item d-flex middle-xs">
+          <span class="icon icon--small mr-8 fs-0 bs-none color-accent-2">{%- render 'icon-mail', size: 16 -%}</span>
+          {{- settings.email_address -}}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}

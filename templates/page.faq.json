@@ -1,0 +1,218 @@
+{
+  "sections": {
+    "image-banner": {
+      "type": "image-banner",
+      "blocks": {
+        "item": {
+          "type": "content",
+          "settings": {
+            "content_position": "center-xs top-xs ta-left",
+            "subheading": "",
+            "heading": "Image banner",
+            "description": "<p>Use this text to share brand information with your customers. Introduce a new product, share an announcement or welcome customers.</p>",
+            "primary_button_label": "",
+            "primary_button_link": "",
+            "secondary_button_label": "",
+            "secondary_button_link": ""
+          }
+        }
+      },
+      "block_order": [
+        "item"
+      ],
+      "settings": {
+        "color_scheme": "",
+        "enable_large_heading": false,
+        "enable_fullwidth_banner": true,
+        "section_overlay_opacity": 30,
+        "section_mask_overlay_color": "#000000",
+        "section_content_overlay_color": "#FFFFFF",
+        "height_desktop": "70",
+        "height_mobile": "70",
+        "remove_padding_top": true,
+        "remove_padding_bottom": true,
+        "desktop_background_image": "",
+        "badge_text": "",
+        "badge_color": "color-accent-1",
+        "badge_position": "p-badge--top-right",
+        "badge_shape": "badge--star",
+        "image_banner_link": ""
+      }
+    },
+    "main": {
+      "type": "main-page",
+      "disabled": true,
+      "settings": {
+        "color_scheme": "",
+        "show_page_title": true,
+        "remove_padding_top": true,
+        "remove_padding_bottom": false
+      }
+    },
+    "collapsible-content-1": {
+      "type": "collapsible-content",
+      "blocks": {
+        "item-1": {
+          "type": "content",
+          "settings": {}
+        },
+        "item-2": {
+          "type": "content",
+          "settings": {}
+        },
+        "item-3": {
+          "type": "content",
+          "settings": {}
+        },
+        "item-4": {
+          "type": "content",
+          "settings": {}
+        },
+        "item-5": {
+          "type": "content",
+          "settings": {}
+        },
+        "item-6": {
+          "type": "content",
+          "settings": {}
+        },
+        "item-7": {
+          "type": "content",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "item-1",
+        "item-2",
+        "item-3",
+        "item-4",
+        "item-5",
+        "item-6",
+        "item-7"
+      ],
+      "settings": {
+        "color_scheme": "",
+        "subheading": "",
+        "heading": "Collapsible content",
+        "description": "",
+        "content_alignment": "ta-center m-auto",
+        "content_ordering": "text_first",
+        "remove_padding_top": false,
+        "remove_padding_bottom": false,
+        "image_ratio": "2/3",
+        "btn_text": "",
+        "btn_link": "",
+        "show_icon": false,
+        "expand_first_item_initially": false
+      }
+    },
+    "blog-post-list": {
+      "type": "blog-post-list",
+      "settings": {
+        "color_scheme": "",
+        "subheading": "",
+        "heading": "Blog posts list",
+        "description": "",
+        "blog": "",
+        "items_per_row_on_desktop": "4",
+        "content_alignment": "ta-center",
+        "items_to_show": 4,
+        "enable_carousel": false,
+        "show_navigation": false,
+        "remove_padding_top": false,
+        "remove_padding_bottom": false,
+        "show_view_all_button": false,
+        "btn_text": ""
+      }
+    },
+    "collapsible-content-2": {
+      "type": "collapsible-content",
+      "blocks": {
+        "item-1": {
+          "type": "content",
+          "settings": {}
+        },
+        "item-2": {
+          "type": "content",
+          "settings": {}
+        },
+        "item-3": {
+          "type": "content",
+          "settings": {}
+        },
+        "item-4": {
+          "type": "content",
+          "settings": {}
+        },
+        "item-5": {
+          "type": "content",
+          "settings": {}
+        },
+        "item-6": {
+          "type": "content",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "item-1",
+        "item-2",
+        "item-3",
+        "item-4",
+        "item-5",
+        "item-6"
+      ],
+      "settings": {
+        "color_scheme": "",
+        "subheading": "",
+        "heading": "Collapsible content",
+        "description": "",
+        "content_alignment": "ta-center m-auto",
+        "content_ordering": "text_first",
+        "remove_padding_top": false,
+        "remove_padding_bottom": false,
+        "image_ratio": "2/3",
+        "btn_text": "",
+        "btn_link": "",
+        "show_icon": false,
+        "expand_first_item_initially": false
+      }
+    },
+    "contact-form": {
+      "type": "contact-form",
+      "settings": {
+        "color_scheme": "",
+        "heading": "Contact form",
+        "content_ordering": "text_first",
+        "remove_padding_top": false,
+        "remove_padding_bottom": false,
+        "contact_image": "",
+        "image_ratio": "auto",
+        "button_label": ""
+      }
+    },
+    "running-text": {
+      "type": "running-text",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "accent_scheme": "color-accent-1",
+        "speed": "30",
+        "enable_play": true,
+        "text": "Highlight content",
+        "font_style": "marquee-font--heading",
+        "text_size": "h3",
+        "link": "",
+        "slope_style": "none",
+        "remove_padding_top": true,
+        "remove_padding_bottom": true
+      }
+    }
+  },
+  "order": [
+    "image-banner",
+    "main",
+    "collapsible-content-1",
+    "blog-post-list",
+    "collapsible-content-2",                                                                                                                                                          "contact-form",
+    "running-text"
+  ]
+}

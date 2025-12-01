@@ -1,0 +1,83 @@
+{% liquid
+  assign button_type = button_type | default: 'btn-primary'
+  assign classes = classes | append: ' ls-none d-flex fw-wrap hide-empty'
+%}
+<ul class="{{ classes }}">
+  {%- if settings.social_facebook_link != blank -%}
+    <li>
+      <a href="{{ settings.social_facebook_link }}" rel="noopener" aria-label="Facebook" class="btn btn-icon btn-large {{ button_type }} js-social-btn" >
+        {% render 'icon-facebook' %}
+      </a>
+    </li>
+  {%- endif -%}
+  {%- if settings.social_twitter_link != blank -%}
+    <li>
+    <a href="{{ settings.social_twitter_link }}" rel="noopener" title="Twitter" aria-label="Twitter" class="btn btn-icon btn-large {{ button_type }} js-social-btn">
+      {% render 'icon-x' %}
+    </a>
+    </li>
+  {%- endif -%}
+  {%- if settings.social_youtube_link != blank -%}
+    <li>
+    <a href="{{ settings.social_youtube_link }}" rel="noopener" title="Youtube" aria-label="Youtube" aria-label="Youtube" class="btn btn-icon btn-large {{ button_type }} js-social-btn">
+      {% render 'icon-youtube' %}
+    </a>
+    </li>
+  {%- endif -%}
+  {%- if settings.social_instagram_link != blank -%}
+    <li>
+    <a href="{{ settings.social_instagram_link }}" rel="noopener" title="Instagram" aria-label="Instagram" class="btn btn-icon btn-large {{ button_type }} js-social-btn">
+      {% render 'icon-instagram' %}
+    </a>
+    </li>
+  {%- endif -%}
+  {%- if settings.social_line_link != blank -%}
+    <li>
+    <a href="{{ settings.social_line_link }}" rel="noopener" title="Line" aria-label="Line" class="btn btn-icon btn-large {{ button_type }} js-social-btn">
+      {% render 'icon-line' %}
+    </a>
+    </li>
+  {%- endif -%}
+  {%- if settings.social_linkedin_link != blank -%}
+    <li>
+    <a href="{{ settings.social_linkedin_link }}" rel="noopener" title="Linkedin" aria-label="Linkedin" class="btn btn-icon btn-large {{ button_type }} js-social-btn">
+      {% render 'icon-linkedin' %}
+    </a>
+    </li>
+  {%- endif -%}
+  {%- if settings.social_pinterest_link != blank -%}
+    <li>
+    <a href="{{ settings.social_pinterest_link }}" rel="noopener" title="Pinterest" aria-label="Pinterest" class="btn btn-icon btn-large {{ button_type }} js-social-btn">
+      {% render 'icon-pinterest' %}
+    </a>
+    </li>
+  {%- endif -%}
+  {%- if settings.social_vimeo_link != blank -%}
+    <li>
+    <a href="{{ settings.social_vimeo_link }}" rel="noopener" title="Vimeo" aria-label="Vimeo" class="btn btn-icon btn-large {{ button_type }} js-social-btn">
+      {% render 'icon-vimeo' %}
+    </a>
+    </li>
+  {%- endif -%}
+  {%- if settings.social_tiktok_link != blank -%}
+    <li>
+    <a href="{{ settings.social_tiktok_link }}" rel="noopener" title="Tiktok" aria-label="Tiktok" class="btn btn-icon btn-large {{ button_type }} js-social-btn">
+      {% render 'icon-tiktok' %}
+    </a>
+    </li>
+  {%- endif -%}
+  {%- if settings.social_tumblr_link != blank -%}
+    <li>
+    <a href="{{ settings.social_tumblr_link }}" rel="noopener" title="Tumblr" aria-label="Tumblr" class="btn btn-icon btn-large {{ button_type }} js-social-btn">
+      {% render 'icon-tumblr' %}
+    </a>
+    </li>
+  {%- endif -%}
+  {%- if settings.social_snapchat_link != blank -%}
+    <li>
+    <a href="{{ settings.social_snapchat_link }}" rel="Snapchat" title="Tumblr" aria-label="Snapchat" class="btn btn-icon btn-large {{ button_type }} js-social-btn">
+      {% render 'icon-snapchat' %}
+    </a>
+    </li>
+  {%- endif -%}
+  </ul>

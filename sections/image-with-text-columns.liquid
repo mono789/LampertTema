@@ -1,0 +1,306 @@
+{%- liquid
+  assign md = 12.0 | divided_by : section.settings.items_per_row_on_desktop
+-%}
+<div class="section color-{{- section.settings.color_scheme }} {{ section.settings.remove_padding_top | replace: 'true', 'section-top-zero' | replace: section.settings.remove_padding_top, '' }} {{ section.settings.remove_padding_bottom | replace: 'true', 'section-bottom-zero' | replace: section.settings.remove_padding_bottom, '' }} {% render 'animation-loader', section: section %}" data-ui-component="Image With Text Columns Section" role="region" aria-labelledby="sectionHeading-{{ section.id | md5 | truncate: 12, "" }}">
+  <div class="ctnr {{ section.settings.content_alignment }}">
+    {% render 'section-header',
+      content_align: section.settings.content_alignment,
+      subheading: section.settings.subheading,
+      heading: section.settings.heading,
+      description: section.settings.description,
+      badge_text: section.settings.badge_text,
+      badge_position: section.settings.badge_position,
+      badge_shape: section.settings.badge_shape,
+      badge_color: section.settings.badge_color,
+      section: section
+    %}
+    <div class="s-content">
+      <sht-carousel-wrapper data-on-mobile-only="{{ section.settings.enable_carousel }}" data-css-class-on-container="carousel d-flex p-zero m-zero ox-auto p-relative disable-scrollbars fw-nowrap scrollable scrollable-x" data-css-class-on-item="carousel__item p-relative scrollable-aln-start d-flex middle-xs fg-1 fs-0">
+        <sht-carousel class="p-relative d-block">
+          <div class="rw gap-unequal js-carousel-items js-animate" role="list" xaria-label="{{ 'accessibility.slider' | t }}">
+            {% for block in section.blocks %}
+              {%- liquid
+                  assign image_item = 'image' | placeholder_svg_tag: 'placeholder media w-100'
+                  assign media_alt = block.settings.image.alt | default: block.settings.image.image | split: '/' | last
+                  assign image_item = block.settings.image | image_url: width: block.settings.image.width | image_tag: widths: '350, 450, 750, 950', sizes: '(min-width: 459px) calc(100vw/2), (min-width: 1025px) calc(100vw/4), 100vw', alt: media_alt, class: ' media of-cover w-100'
+                -%}
+              <sht-carousel-itm role="listitem" tabindex="-1" class="clm js-carousel-item anm anm-fadeInUp fd-column" style="--w-xs:12;--w-sm: 6;--w-md: {{- md -}}; --delay: {{ forloop.index | times: 0.05 -}}s; --duration: .6s">
+                {% render 'image',
+                  image_item: image_item,
+                  ratio: section.settings.image_ratio,
+                  image_wrap_classes: 'w-100'
+                %}
+                <div class="card__content card__content--outer wb-break-word w-100">
+                  <h3 class="h5 hide-empty mb-0">{{- block.settings.heading | escape -}}</h3>
+                  <div class="hide-empty mt-8 text-block">{{- block.settings.description -}}</div>
+                </div>
+              </sht-carousel-itm>
+            {% endfor %}
+          </div>
+          <div class="carousel-pagination middle-y w-100 p-absolute d-none-md no-js-hidden zi-1 {% if section.settings.show_navigation == false or section.settings.enable_carousel == false %} d-none-important {% endif %}">
+            <button type="button" data-step="1" class="js-carousel-prev-btn btn btn-primary btn-icon btn-small p-absolute middle-y zi-1 left-0" aria-label="{{ 'accessibility.previous_slide' | t }}" name="previous" disabled>{% render 'icon-chevron-left' %}</button>
+            <button type="button" data-step="1" class="js-carousel-next-btn btn btn-primary btn-icon btn-small p-absolute middle-y zi-1 right-0" aria-label="{{ 'accessibility.next_slide' | t }}" name="next" disabled>{% render 'icon-chevron-right' %}</button>
+          </div>
+        </sht-carousel>
+      </sht-carousel-wrapper>
+    </div>
+    <div class="s-footer {{ section.settings.text | default: 'd-none' | replace: section.settings.text, '' }}">
+      <a class="btn btn-primary btn-large hide-empty" href="{{- section.settings.link | default: '#' -}}">
+        {{- section.settings.text -}}
+      </a>
+      </div>
+  </div>
+</div>
+{% schema %}
+{
+  "name": "t:sections.image_with_text_columns.name",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_general.content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:general.settings.color_scheme.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "t:general.settings.section_subheading.label"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:general.settings.section_heading.label",
+      "default": "Image with text columns"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "t:general.settings.section_description.label"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_layout.content"
+    },
+    {
+      "type": "select",
+      "id": "items_per_row_on_desktop",
+      "label": "t:general.settings.items_per_row_on_desktop.label",
+      "default": "4",
+      "options": [
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        },
+        {
+          "value": "5",
+          "label": "5"
+        },
+        {
+          "value": "6",
+          "label": "6"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "t:general.settings.content_alignment.label",
+      "default": "ta-left",
+      "options": [
+        {
+          "value": "ta-left",
+          "label": "t:general.settings.option_left.label"
+        },
+        {
+          "value": "ta-center",
+          "label": "t:general.settings.option_center.label"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_carousel",
+      "label": "t:general.settings.enable_carousel_on_mobile.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_navigation",
+      "label": "t:general.settings.show_navigation_on_mobile.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_top",
+      "label": "t:general.settings.remove_padding_top.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_padding_bottom",
+      "label": "t:general.settings.remove_padding_bottom.label",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:sections.image_with_text_columns.headers.image_item.content"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "t:general.settings.image_ratio.label",
+      "default": "3/4",
+      "options": [
+        {
+          "value": "1/1",
+          "label": "t:general.settings.image_ratio.options.option_square.label"
+        },
+        {
+          "value": "3/4",
+          "label": "t:general.settings.image_ratio.options.option_portrait_1.label"
+        },
+        {
+          "value": "4/3",
+          "label": "t:general.settings.image_ratio.options.option_landscape_1.label"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_button.content"
+    },
+    {
+      "type": "text",
+      "label": "t:general.settings.label.label",
+      "info": "t:general.settings.hide_if_empty.info",
+      "id": "text",
+      "default": "Button Label"
+    },
+    {
+      "type": "url",
+      "label": "t:general.settings.link.label",
+      "id": "link"
+    },
+    {
+      "type": "header",
+      "content": "t:general.settings.headers.header_prominent_badge.content"
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "t:general.settings.text.label",
+      "info": "t:general.settings.prominent_badge.text.info"
+    },
+    {
+      "type": "select",
+      "id": "badge_color",
+      "label": "t:general.settings.accent_scheme.label",
+      "default": "color-accent-1",
+      "options": [
+        {
+          "value": "color-accent-1",
+          "label": "t:general.settings.main.label"
+        },
+        {
+          "value": "color-accent-2",
+          "label": "t:general.settings.extra.label"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "badge_position",
+      "label": "t:general.settings.badge_position.label",
+      "default": "p-badge--bottom-right",
+      "options": [
+        {
+          "value": "p-badge--bottom-left",
+          "label": "t:general.settings.option_left.label"
+        },
+        {
+          "value": "p-badge--bottom-right",
+          "label": "t:general.settings.option_right.label"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "badge_shape",
+      "label": "t:general.settings.badge_shape.label",
+      "default": "badge--star",
+      "options": [
+        {
+          "value": "badge--diamond",
+          "label": "t:general.settings.badge_shape.options.option_diamond.label"
+        },
+        {
+          "value": "badge--star",
+          "label": "t:general.settings.badge_shape.options.option_star.label"
+        },
+        {
+          "value": "badge--asterisk",
+          "label": "t:general.settings.badge_shape.options.option_asterisk.label"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "text",
+      "name": "t:sections.image_with_text_columns.blocks.column.name",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:general.settings.image.label"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:general.settings.heading.label",
+          "default": "Image column"
+        },
+        {
+          "type": "richtext",
+          "id": "description",
+          "label": "t:general.settings.description.label",
+          "default": "<p>Share information about your products, policies or services.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.image_with_text_columns.name",
+      "blocks": [
+        {
+          "type": "text"
+        },
+        {
+          "type": "text"
+        },
+        {
+          "type": "text"
+        },
+        {
+          "type": "text"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

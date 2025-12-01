@@ -1,0 +1,30 @@
+{% liquid
+  assign type_search = settings.search_result_type
+%}
+<sht-predictive-srch role="dialog" aria-modal="true" class="js-predictive-search {{ class }}" data-search-type="{{- type_search -}}">
+  <form action="{{ routes.search_url }}" method="get" role="search" class="predictive-search-form js-predictive-search-form p-relative zi-1">
+    <input type="hidden" name="type" value="{{- type_search -}}">
+    <input name="options[prefix]" type="hidden" value="last">
+    <div class="o-hidden p-sticky top-0 zi-1">
+      <div class="search__field d-flex ctnr gap-md-16">
+        <span class="icon--default d-flex middle-xs center-xs">
+          {% render 'icon-search' %}
+        </span>
+        <input id="predictiveSearch_Input" type="search" name="q" aria-label="{{ 'accessibility.search' | t }}" value="" placeholder="{{ 'general.search.input_placeholder' | t }}" role="combobox" aria-expanded="false" aria-owns="predictive-search-results-list" aria-controls="predictive-search-results-list" aria-haspopup="listbox" aria-autocomplete="list" autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false" class="search__field-input js-predictive-search-input w-100 b-zero">
+        <label class="field__label visually-hidden" for="predictiveSearch_Input">{{ 'general.search.search' | t }}</label>
+        <button aria-label="{{ 'accessibility.close' | t }}" class="btn-plain icon--default js-predictive-search-close-trigger c-pointer" type="button">
+          {% render 'icon-close' %}
+        </button>
+      </div>
+    </div>
+    <div class="search__result d-block opacity-0 js-predictive-search-results ctnr pt-24 pb-24" tabindex="-1" hidden>
+      <div class="js-predictive-search-loading ta-center" hidden>
+        {% render 'icon-spinner' %}
+      </div>
+      <div class="search__result-empty d-block js-predictive-search-message-placeholder ta-center color-light" hidden>
+        {{ 'general.search.search_message_placeholder' | t }}
+      </div>
+      <div class="js-predictive-search-results-panel"></div>
+    </div>
+  </form>
+</sht-predictive-srch>

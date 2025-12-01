@@ -1,0 +1,10 @@
+{%- if request.design_mode -%}
+  <div class="rating-wrapper d-flex gap-6">
+    <div class="rating" role="img" aria-label="product-rating">
+      <span aria-hidden="true" class="rating-star" style="--rating: 0; --rating-max: 5; --rating-decimal: 0;"></span>
+    </div>
+    <p class="rating-count color-light mb-0 subtext">
+      <span>{{- 'products.product.no_review' | t -}}</span>
+    </p>
+  </div>
+{%- endif -%}

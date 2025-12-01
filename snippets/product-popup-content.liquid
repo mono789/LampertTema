@@ -1,0 +1,22 @@
+<sht-dialog class="sht-dialog no-focus-visible middle-md bottom-xs center-xs p-fixed left-0 top-0 h-100 w-100 o-auto zi-9" id="dialogPopupContent{{ popup_content_dialog_id }}" hidden tabindex="-1">
+  <div class="dialog" role="dialog" aria-labelledby="dialogTitle{{- popup_content_dialog_id -}}" aria-modal="true">
+    <div class="dialog__content d-flex fd-column h-100">
+      <div class="dialog__header d-flex between-xs middle-xs p-sticky top-0">
+        <h3 class="h5 m-zero" id="dialogTitle{{- popup_content_dialog_id -}}">{{ popup_content_block.settings.text }}</h3>
+        <button type="button" aria-label="{{- "accessibility.close_modal" | t -}}" class="js-dialog-close-btn btn btn-icon btn-plain btn-large">
+          {%- render 'icon-close' -%}
+        </button>
+      </div>
+      <div class="dialog__body js-dialog-body">
+        <template>
+          <div class="hide-empty rte">
+            {{- popup_content_block.settings.static_page.content | default: '' -}}
+          </div>
+        </template>
+      </div>
+      <div class="dialog__footer d-none">
+        <button type="button" aria-label="{{- "accessibility.close_modal" | t -}}" class="js-dialog-close-btn js-dialog-close-btn--last d-none">{{- "accessibility.close_modal" | t -}}</button>
+      </div>
+    </div>
+  </div>
+</sht-dialog>
