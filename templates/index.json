@@ -238,6 +238,46 @@
         "badge_shape": "badge--star"
       }
     },
+    "featured_product_carousel_UbcCB9": {
+      "type": "featured-product-carousel",
+      "name": "Best sellers",
+      "settings": {
+        "color_scheme": "",
+        "subheading": "",
+        "heading": "Best sellers",
+        "description": "",
+        "items_per_row_on_desktop": "4",
+        "content_align": "ta-left",
+        "show_navigation": true,
+        "remove_padding_top": false,
+        "remove_padding_bottom": false,
+        "product_list": [
+          "ultra-safe-case-summer-vibes-rose-17",
+          "ultra-safe-case-lampert-essentials-01",
+          "ultra-safe-case-elysian-v-copy",
+          "ultra-safe-case-savage-green-snake",
+          "ultra-safe-case-basics-by-lampert-coffee",
+          "ultra-safe-case-lampert-essentials-samsung",
+          "authentic-hand-strap-charms",
+          "ultra-strong-screen-protector",
+          "ultra-safe-case-basics-by-lampert-bone",
+          "ultra-safe-case-basics-by-lampert-clear-side",
+          "ultra-safe-case-dad-copy"
+        ],
+        "show_ranking": false,
+        "ranking_badge_shape": "ribbon",
+        "ranking_badge_color": "color-accent-1",
+        "image_ratio": "1/1",
+        "image_overlay_opacity": 30,
+        "section_mask_overlay_color": "",
+        "section_content_overlay_color": "",
+        "star_rating_overlay": "",
+        "badge_text": "",
+        "badge_color": "color-accent-1",
+        "badge_position": "p-badge--bottom-right",
+        "badge_shape": "badge--star"
+      }
+    },
     "galeria_lampert_twhFga": {
       "type": "galeria-lampert",
       "blocks": {
@@ -870,6 +910,7 @@
     "galeria_lampert_rzdCfa",
     "featured_product_carousel_XHgX4W",
     "featured_product_carousel_zaBwqa",
+    "featured_product_carousel_UbcCB9",
     "galeria_lampert_twhFga",
     "featured_product_carousel_UAWfyy",
     "galeria_lampert_a4pCth",
