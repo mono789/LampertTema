@@ -107,10 +107,10 @@
                 
                 <div class="recommended-scroll-card__form-content">
                   {%- unless related_product.has_only_default_variant -%}
-                    <div class="recommended-scroll-card__variants mt-8">
+                    <div class="recommended-scroll-card__variants">
                       {%- for option in related_product.options_with_values -%}
                         {%- assign option_index = forloop.index | minus: 1 -%}
-                        <div class="recommended-scroll-card__variant-select mb-8">
+                        <div class="recommended-scroll-card__variant-select">
                           <select 
                             class="form__control recommended-scroll-card__variant-select-input js-recommended-variant-select" 
                             id="{{ form_id }}-option-{{ option_index }}"
