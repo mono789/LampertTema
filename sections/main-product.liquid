@@ -77,6 +77,23 @@
           </sht-prd-slideshow>
         </div>
       {%- endif -%}
+      {%- comment -%} Recommended products scroll {%- endcomment -%}
+      {%- if section.settings.enable_recommended_scroll -%}
+        {%- assign recommended_products_metafield = product.metafields.custom.recommended_products -%}
+        {%- if recommended_products_metafield != blank -%}
+          {%- assign recommended_products = recommended_products_metafield.value | default: empty -%}
+          {%- if recommended_products != empty and recommended_products.size > 0 -%}
+            {% render 'product-recommended-scroll',
+              related_products: recommended_products,
+              current_product: product,
+              section: section,
+              heading: section.settings.recommended_scroll_heading,
+              view_all_label: section.settings.recommended_scroll_view_all_label,
+              view_all_link: section.settings.recommended_scroll_view_all_link,
+              limit: section.settings.recommended_scroll_items %}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endif -%}
       {%- comment -%} Product description moved to left column {%- endcomment -%}
       {%- for block in section.blocks -%}
         {%- if block.type == 'basic_description' -%}
@@ -808,6 +825,42 @@
     {
       "type": "range",
       "id": "design_scroll_items",
+      "label": "Maximum items to show",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Recommended products scroll"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_recommended_scroll",
+      "label": "Show recommended products carousel",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "recommended_scroll_heading",
+      "label": "Heading",
+      "default": "Recomendados para ti"
+    },
+    {
+      "type": "text",
+      "id": "recommended_scroll_view_all_label",
+      "label": "View all label",
+      "default": "Ver todos"
+    },
+    {
+      "type": "url",
+      "id": "recommended_scroll_view_all_link",
+      "label": "View all link"
+    },
+    {
+      "type": "range",
+      "id": "recommended_scroll_items",
       "label": "Maximum items to show",
       "min": 2,
       "max": 12,
