@@ -20,17 +20,108 @@
         {%- if related_product.id != current_product.id -%}
           {%- assign cards_rendered = cards_rendered | plus: 1 -%}
           {%- if cards_rendered > recommended_scroll_limit -%}{% break %}{% endif -%}
-          <a class="recommended-scroll-card d-flex fd-column scrollable-aln-start" role="listitem" href="{{ related_product.url }}" title="{{ related_product.title | escape }}">
-            <div class="recommended-scroll-card__media media-wrapper of-cover">
-              {%- if related_product.featured_media -%}
-                {%- assign preview_image = related_product.featured_media | default: related_product.featured_image -%}
-                {%- assign preview_alt = preview_image.alt | default: related_product.title -%}
-                {{ preview_image | image_url: width: 360 | image_tag: sizes: '(min-width: 769px) 160px, 120px', class: 'media recommended-scroll-card__image', alt: preview_alt, decoding: 'async', loading: 'lazy' }}
-              {%- else -%}
-                {{ 'product-1' | placeholder_svg_tag: 'placeholder media recommended-scroll-card__image' }}
-              {%- endif -%}
+          {%- assign card_id = 'recommended-card-' | append: related_product.id | append: '-' | append: forloop.index -%}
+          {%- assign form_id = 'recommended-form-' | append: related_product.id | append: '-' | append: forloop.index -%}
+          {%- assign default_variant = related_product.selected_or_first_available_variant -%}
+          {%- assign default_image = default_variant.featured_media | default: related_product.featured_media | default: related_product.featured_image -%}
+          
+          <div class="recommended-scroll-card-wrapper" data-product-id="{{ related_product.id }}">
+            <script type="application/json" class="js-recommended-variants-data">
+              {
+                "productId": {{ related_product.id }},
+                "variants": [
+                  {%- for variant in related_product.variants -%}
+                    {
+                      "id": {{ variant.id }},
+                      "available": {{ variant.available }},
+                      "image": {% if variant.featured_media %}"{{ variant.featured_media | image_url: width: 360 }}"{% else %}null{% endif %},
+                      "options": [
+                        {%- for option in variant.options -%}
+                          {{ option | json }}{% unless forloop.last %},{% endunless %}
+                        {%- endfor -%}
+                      ]
+                    }{% unless forloop.last %},{% endunless %}
+                  {%- endfor -%}
+                ]
+              }
+            </script>
+            <div class="recommended-scroll-card d-flex fd-column scrollable-aln-start">
+              <a href="{{ related_product.url }}" class="recommended-scroll-card__link" title="{{ related_product.title | escape }}" tabindex="-1">
+                <div class="recommended-scroll-card__media media-wrapper of-cover">
+                  <img 
+                    class="media recommended-scroll-card__image js-recommended-card-image" 
+                    src="{{ default_image | image_url: width: 360 }}"
+                    srcset="{{ default_image | image_url: width: 120 }} 120w, {{ default_image | image_url: width: 160 }} 160w, {{ default_image | image_url: width: 360 }} 360w"
+                    sizes="(min-width: 769px) 160px, 120px"
+                    alt="{{ default_image.alt | default: related_product.title }}"
+                    decoding="async"
+                    loading="lazy"
+                    data-default-image="{{ default_image | image_url: width: 360 }}"
+                    data-product-id="{{ related_product.id }}"
+                  >
+                </div>
+                <span class="recommended-scroll-card__title subtext mt-8 d-block">{{ related_product.title }}</span>
+              </a>
+              
+              {%- form 'product', related_product, id: form_id, class: 'recommended-scroll-card__form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+                <input type="hidden" name="id" value="{{ default_variant.id }}" class="js-recommended-variant-id" data-product-id="{{ related_product.id }}">
+                
+                {%- unless related_product.has_only_default_variant -%}
+                  <div class="recommended-scroll-card__variants mt-8">
+                    {%- for option in related_product.options_with_values -%}
+                      {%- assign option_index = forloop.index | minus: 1 -%}
+                      <div class="recommended-scroll-card__variant-select mb-8">
+                        <label class="recommended-scroll-card__variant-label subtext d-block mb-4" for="{{ form_id }}-option-{{ option_index }}">
+                          {{ option.name }}
+                        </label>
+                        <select 
+                          class="form__control recommended-scroll-card__variant-select-input js-recommended-variant-select" 
+                          id="{{ form_id }}-option-{{ option_index }}"
+                          name="options[{{ option.name | escape }}]"
+                          form="{{ form_id }}"
+                          data-product-id="{{ related_product.id }}"
+                          data-option-index="{{ option_index }}"
+                        >
+                          {%- for value in option.values -%}
+                            {%- liquid
+                              assign option_disabled = true
+                              for variant in related_product.variants
+                                if variant.options[option_index] == value and variant.available
+                                  assign option_disabled = false
+                                  break
+                                endif
+                              endfor
+                            -%}
+                            <option 
+                              value="{{ value | escape }}"
+                              {% if default_variant.options[option_index] == value %}selected{% endif %}
+                              {% if option_disabled %}disabled{% endif %}
+                            >
+                              {{ value }}{% if option_disabled %} - {{ 'products.product.unavailable' | t }}{% endif %}
+                            </option>
+                          {%- endfor -%}
+                        </select>
+                      </div>
+                    {%- endfor -%}
+                  </div>
+                {%- endunless -%}
+                
+                <button 
+                  type="submit" 
+                  name="add" 
+                  class="recommended-scroll-card__add-to-cart btn btn-secondary btn-small w-100 mt-8 js-recommended-add-to-cart"
+                  data-product-id="{{ related_product.id }}"
+                  {% if default_variant.available == false %}disabled{% endif %}
+                >
+                  {%- if default_variant.available == false -%}
+                    {{ 'products.product.sold_out' | t }}
+                  {%- else -%}
+                    {{ 'products.product.add_to_cart' | t }}
+                  {%- endif -%}
+                </button>
+              {%- endform -%}
             </div>
-          </a>
+          </div>
         {%- endif -%}
       {%- endfor -%}
     </div>
@@ -42,27 +133,65 @@
       .product-recommended-scroll {
         margin-top: calc(var(--spacing) * 1.5);
       }
-      .recommended-scroll-card {
-        gap: 8px;
-        text-decoration: none;
+      .recommended-scroll-card-wrapper {
         min-width: 120px;
         scroll-snap-align: start;
         margin-right: calc(var(--spacing));
+      }
+      .recommended-scroll-card {
+        gap: 8px;
+        min-width: 100%;
+      }
+      .recommended-scroll-card__link {
+        text-decoration: none;
+        display: block;
       }
       .recommended-scroll-card__media {
         border-radius: 12px;
         overflow: hidden;
         aspect-ratio: 1/1;
         background-color: rgba(var(--color-normal-text-rgb), .06);
+        position: relative;
       }
       .recommended-scroll-card__image {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: opacity 0.3s ease;
       }
       .recommended-scroll-card__title {
         display: block;
         text-align: center;
+        color: inherit;
+      }
+      .recommended-scroll-card__form {
+        width: 100%;
+      }
+      .recommended-scroll-card__variants {
+        width: 100%;
+      }
+      .recommended-scroll-card__variant-select {
+        width: 100%;
+      }
+      .recommended-scroll-card__variant-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+      .recommended-scroll-card__variant-select-input {
+        width: 100%;
+        padding: 8px;
+        font-size: 0.875rem;
+        border: 1px solid rgba(var(--color-normal-text-rgb), 0.2);
+        border-radius: 4px;
+        background-color: var(--color-background);
+      }
+      .recommended-scroll-card__add-to-cart {
+        font-size: 0.875rem;
+        padding: 10px;
+      }
+      .recommended-scroll-card__add-to-cart:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
       }
       .recommended-scroll__container {
         display: flex;
@@ -91,11 +220,103 @@
         display: none;
       }
       @media (min-width: 769px) {
-        .recommended-scroll-card {
-          min-width: 160px;
+        .recommended-scroll-card-wrapper {
+          min-width: 200px;
         }
       }
     </style>
+    
+    <script>
+      (function() {
+        if (!document.querySelector('.recommended-scroll-card-wrapper')) return;
+        
+        // Store variant data for each product
+        const variantData = {};
+        
+        // Initialize variant data from JSON scripts
+        document.querySelectorAll('.js-recommended-variants-data').forEach(script => {
+          try {
+            const data = JSON.parse(script.textContent);
+            variantData[data.productId] = data.variants;
+          } catch (e) {
+            console.error('Error parsing variant data:', e);
+          }
+        });
+        
+        // Handle variant selection change
+        document.addEventListener('change', function(e) {
+          if (!e.target.classList.contains('js-recommended-variant-select')) return;
+          
+          const select = e.target;
+          const productId = parseInt(select.dataset.productId);
+          const card = select.closest('.recommended-scroll-card-wrapper');
+          const form = card.querySelector('form');
+          const variantIdInput = form.querySelector('.js-recommended-variant-id');
+          const image = card.querySelector('.js-recommended-card-image');
+          const addToCartBtn = card.querySelector('.js-recommended-add-to-cart');
+          
+          // Get all selected options
+          const selectedOptions = [];
+          card.querySelectorAll('.js-recommended-variant-select').forEach(s => {
+            selectedOptions.push(s.value);
+          });
+          
+          // Find matching variant
+          const variants = variantData[productId];
+          let matchedVariant = null;
+          
+          if (variants && variants.length > 0) {
+            matchedVariant = variants.find(variant => {
+              if (!variant.options || variant.options.length !== selectedOptions.length) return false;
+              return variant.options.every((opt, idx) => opt === selectedOptions[idx]);
+            });
+          }
+          
+          if (matchedVariant) {
+            // Update variant ID
+            variantIdInput.value = matchedVariant.id;
+            
+            // Update image if variant has a different image
+            if (matchedVariant.image && image) {
+              const currentSrc = image.src.split('?')[0];
+              const newImageSrc = matchedVariant.image.split('?')[0];
+              if (currentSrc !== newImageSrc) {
+                image.style.opacity = '0';
+                setTimeout(() => {
+                  image.src = matchedVariant.image;
+                  // Generate srcset with different sizes
+                  const baseUrl = matchedVariant.image;
+                  const url120 = baseUrl.replace(/width=\d+/i, 'width=120').replace(/_(\d+)x(\d+)/i, '_120x120');
+                  const url160 = baseUrl.replace(/width=\d+/i, 'width=160').replace(/_(\d+)x(\d+)/i, '_160x160');
+                  image.srcset = url120 + ' 120w, ' + url160 + ' 160w, ' + baseUrl + ' 360w';
+                  image.style.opacity = '1';
+                }, 150);
+              }
+            }
+            
+            // Update add to cart button
+            if (addToCartBtn) {
+              if (matchedVariant.available) {
+                addToCartBtn.disabled = false;
+                addToCartBtn.textContent = addToCartBtn.dataset.addToCartText || '{{ 'products.product.add_to_cart' | t }}';
+              } else {
+                addToCartBtn.disabled = true;
+                addToCartBtn.textContent = addToCartBtn.dataset.soldOutText || '{{ 'products.product.sold_out' | t }}';
+              }
+            }
+          }
+        });
+        
+        // Store button text in data attributes for later use
+        document.querySelectorAll('.js-recommended-add-to-cart').forEach(btn => {
+          if (!btn.dataset.addToCartText) {
+            btn.dataset.addToCartText = btn.textContent.trim();
+          }
+          if (!btn.dataset.soldOutText) {
+            btn.dataset.soldOutText = '{{ 'products.product.sold_out' | t }}';
+          }
+        });
+      })();
+    </script>
   {%- endunless -%}
 {%- endif -%}
-
