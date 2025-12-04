@@ -89,59 +89,63 @@
               {%- form 'product', related_product, id: form_id, class: 'recommended-scroll-card__form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
                 <input type="hidden" name="id" value="{{ default_variant.id }}" class="js-recommended-variant-id" data-product-id="{{ related_product.id }}">
                 
-                {%- unless related_product.has_only_default_variant -%}
-                  <div class="recommended-scroll-card__variants mt-8">
-                    {%- for option in related_product.options_with_values -%}
-                      {%- assign option_index = forloop.index | minus: 1 -%}
-                      <div class="recommended-scroll-card__variant-select mb-8">
-                        <label class="recommended-scroll-card__variant-label subtext d-block mb-4" for="{{ form_id }}-option-{{ option_index }}">
-                          {{ option.name }}
-                        </label>
-                        <select 
-                          class="form__control recommended-scroll-card__variant-select-input js-recommended-variant-select" 
-                          id="{{ form_id }}-option-{{ option_index }}"
-                          name="options[{{ option.name | escape }}]"
-                          form="{{ form_id }}" 
-                          data-product-id="{{ related_product.id }}"
-                          data-option-index="{{ option_index }}"
-                        >
-                          {%- for value in option.values -%}
-                            {%- liquid
-                              assign option_disabled = true
-                              for variant in related_product.variants
-                                if variant.options[option_index] == value and variant.available
-                                  assign option_disabled = false
-                                  break
-                                endif
-                              endfor
-                            -%}
-                            <option 
-                              value="{{ value | escape }}"
-                              {% if default_variant.options[option_index] == value %}selected{% endif %}
-                              {% if option_disabled %}disabled{% endif %}
-                            >
-                              {{ value }}{% if option_disabled %} - {{ 'products.product.unavailable' | t }}{% endif %}
-                            </option>
-                          {%- endfor -%}
-                        </select>
-                      </div>
-                    {%- endfor -%}
-                  </div>
-                {%- endunless -%}
-                
-                <button 
-                  type="submit" 
-                  name="add" 
-                  class="recommended-scroll-card__add-to-cart btn btn-secondary btn-small w-100 mt-8 js-recommended-add-to-cart"
-                  data-product-id="{{ related_product.id }}"
-                  {% if default_variant.available == false %}disabled{% endif %}
-                >
-                  {%- if default_variant.available == false -%}
-                    {{ 'products.product.sold_out' | t }}
+                <div class="recommended-scroll-card__form-content">
+                  {%- unless related_product.has_only_default_variant -%}
+                    <div class="recommended-scroll-card__variants mt-8">
+                      {%- for option in related_product.options_with_values -%}
+                        {%- assign option_index = forloop.index | minus: 1 -%}
+                        <div class="recommended-scroll-card__variant-select mb-8">
+                          <label class="recommended-scroll-card__variant-label d-block mb-4" for="{{ form_id }}-option-{{ option_index }}">
+                            {{ option.name }}
+                          </label>
+                          <select 
+                            class="form__control recommended-scroll-card__variant-select-input js-recommended-variant-select" 
+                            id="{{ form_id }}-option-{{ option_index }}"
+                            name="options[{{ option.name | escape }}]"
+                            form="{{ form_id }}" 
+                            data-product-id="{{ related_product.id }}"
+                            data-option-index="{{ option_index }}"
+                          >
+                            {%- for value in option.values -%}
+                              {%- liquid
+                                assign option_disabled = true
+                                for variant in related_product.variants
+                                  if variant.options[option_index] == value and variant.available
+                                    assign option_disabled = false
+                                    break
+                                  endif
+                                endfor
+                              -%}
+                              <option 
+                                value="{{ value | escape }}"
+                                {% if default_variant.options[option_index] == value %}selected{% endif %}
+                                {% if option_disabled %}disabled{% endif %}
+                              >
+                                {{ value }}{% if option_disabled %} - {{ 'products.product.unavailable' | t }}{% endif %}
+                              </option>
+                            {%- endfor -%}
+                          </select>
+                        </div>
+                      {%- endfor -%}
+                    </div>
                   {%- else -%}
-                    {{ 'products.product.add_to_cart' | t }}
-                  {%- endif -%}
-                </button>
+                    <div class="recommended-scroll-card__variants-placeholder"></div>
+                  {%- endunless -%}
+                  
+                  <button 
+                    type="submit" 
+                    name="add" 
+                    class="recommended-scroll-card__add-to-cart btn btn-secondary btn-small w-100 mt-8 js-recommended-add-to-cart"
+                    data-product-id="{{ related_product.id }}"
+                    {% if default_variant.available == false %}disabled{% endif %}
+                  >
+                    {%- if default_variant.available == false -%}
+                      {{ 'products.product.sold_out' | t }}
+                    {%- else -%}
+                      {{ 'products.product.add_to_cart' | t }}
+                    {%- endif -%}
+                  </button>
+                </div>
               {%- endform -%}
             </div>
           </div>
@@ -165,6 +169,8 @@
       .recommended-scroll-card {
         gap: 8px;
         min-width: 100%;
+        display: flex;
+        flex-direction: column;
       }
       .recommended-scroll-card__link {
         text-decoration: none;
@@ -187,31 +193,50 @@
         display: block;
         text-align: center;
         color: inherit;
+        font-size: 0.9375rem;
+        line-height: 1.4;
       }
       .recommended-scroll-card__form {
         width: 100%;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+      }
+      .recommended-scroll-card__form-content {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
       }
       .recommended-scroll-card__variants {
+        width: 100%;
+        min-height: 60px;
+      }
+      .recommended-scroll-card__variants-placeholder {
+        min-height: 60px;
         width: 100%;
       }
       .recommended-scroll-card__variant-select {
         width: 100%;
       }
       .recommended-scroll-card__variant-label {
-        font-size: 0.875rem;
+        font-size: 0.9375rem;
         font-weight: 500;
+        line-height: 1.4;
       }
       .recommended-scroll-card__variant-select-input {
         width: 100%;
-        padding: 8px;
-        font-size: 0.875rem;
+        padding: 10px 12px;
+        font-size: 0.9375rem;
+        line-height: 1.4;
         border: 1px solid rgba(var(--color-normal-text-rgb), 0.2);
         border-radius: 4px;
         background-color: var(--color-background);
       }
       .recommended-scroll-card__add-to-cart {
-        font-size: 0.875rem;
-        padding: 10px;
+        font-size: 0.9375rem;
+        padding: 12px;
+        line-height: 1.4;
+        margin-top: auto;
       }
       .recommended-scroll-card__add-to-cart:disabled {
         opacity: 0.6;
