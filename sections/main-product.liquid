@@ -77,6 +77,14 @@
           </sht-prd-slideshow>
         </div>
       {%- endif -%}
+      {%- comment -%} Product description moved to left column {%- endcomment -%}
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'basic_description' -%}
+          <div class="product__description wb-break-word rte mt-24" {{ block.shopify_attributes }}>
+            <span class="d-block mb-16 h5">{{ 'products.product.description' | t }}</span>{{ product.description }}
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
     </div>
     <div class="product__info-wrapper product-detail__item w-100 {{ max_width_content }} {{ section.settings.enable_sticky_content | default: '' | replace: 'true', 'product-detail__item--sticky' }}">
       <div id="productInfo-{{ section.id }}" class="main-product-info-container product__info-container d-flex fd-column" role="region" aria-label="{{- 'accessibility.view_product_info' | t -}}">
@@ -162,9 +170,7 @@
                 <span class="variant-sku color-light subtext"><span class="variant-sku__label">SKU: </span>{{ product.selected_or_first_available_variant.sku }}</span>
               </div>
             {%- when 'basic_description' -%}
-            <div class="product__info ord-{{ forloop.index }} product__description wb-break-word rte" {{ block.shopify_attributes }}>
-              <span class="d-block mb-16 h5">{{ 'products.product.description' | t }}</span>{{ product.description }}
-            </div>
+            {%- comment -%} Description moved to left column, skipping here {%- endcomment -%}
             {%- when 'variants' -%}
             <div class="product__info ord-{{ forloop.index }} product__variants gap-24 d-flex fd-column" {{ block.shopify_attributes }}>
               {%- unless product.has_only_default_variant -%}
