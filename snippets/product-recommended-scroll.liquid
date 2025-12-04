@@ -45,6 +45,10 @@
                       "id": {{ variant.id }},
                       "available": {{ variant.available }},
                       "image": {% if variant.featured_media %}"{{ variant.featured_media | image_url: width: 360 }}"{% else %}null{% endif %},
+                      "price": {{ variant.price }},
+                      "price_formatted": "{{ variant.price | money }}",
+                      "compare_at_price": {% if variant.compare_at_price %}{{ variant.compare_at_price }}{% else %}null{% endif %},
+                      "compare_at_price_formatted": {% if variant.compare_at_price %}"{{ variant.compare_at_price | money }}"{% else %}null{% endif %},
                       "options": [
                         {%- for option in variant.options -%}
                           {{ option | json }}{% unless forloop.last %},{% endunless %}
@@ -86,6 +90,18 @@
                 </div>
               </a>
               
+              <div class="recommended-scroll-card__info mt-8">
+                <h3 class="recommended-scroll-card__title mb-4">{{ related_product.title }}</h3>
+                <div class="recommended-scroll-card__price js-recommended-card-price" data-product-id="{{ related_product.id }}">
+                  {%- if default_variant.compare_at_price > default_variant.price -%}
+                    <span class="price-item price-item--last mt-4 mb-4 d-inline-block">{{ default_variant.price | money }}</span>
+                    <s class="price-item price-item--regular color-light subtext d-inline-block ml-8">{{ default_variant.compare_at_price | money }}</s>
+                  {%- else -%}
+                    <span class="price-item price-item--regular price-item--last mt-4 mb-4 d-inline-block">{{ default_variant.price | money }}</span>
+                  {%- endif -%}
+                </div>
+              </div>
+              
               {%- form 'product', related_product, id: form_id, class: 'recommended-scroll-card__form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
                 <input type="hidden" name="id" value="{{ default_variant.id }}" class="js-recommended-variant-id" data-product-id="{{ related_product.id }}">
                 
@@ -95,9 +111,6 @@
                       {%- for option in related_product.options_with_values -%}
                         {%- assign option_index = forloop.index | minus: 1 -%}
                         <div class="recommended-scroll-card__variant-select mb-8">
-                          <label class="recommended-scroll-card__variant-label d-block mb-4" for="{{ form_id }}-option-{{ option_index }}">
-                            {{ option.name }}
-                          </label>
                           <select 
                             class="form__control recommended-scroll-card__variant-select-input js-recommended-variant-select" 
                             id="{{ form_id }}-option-{{ option_index }}"
@@ -189,10 +202,19 @@
         object-fit: cover;
         transition: opacity 0.3s ease;
       }
+      .recommended-scroll-card__info {
+        width: 100%;
+      }
       .recommended-scroll-card__title {
         display: block;
-        text-align: center;
+        text-align: left;
         color: inherit;
+        font-size: 0.9375rem;
+        line-height: 1.4;
+        font-weight: 500;
+        margin: 0;
+      }
+      .recommended-scroll-card__price {
         font-size: 0.9375rem;
         line-height: 1.4;
       }
@@ -344,6 +366,15 @@
                   image.style.opacity = '1';
                 }, 150);
               }
+            }
+            
+            // Update price
+            const priceElement = card.querySelector('.js-recommended-card-price');
+            if (priceElement && matchedVariant.price_formatted) {
+              const priceHtml = matchedVariant.compare_at_price && matchedVariant.compare_at_price > matchedVariant.price
+                ? `<span class="price-item price-item--last mt-4 mb-4 d-inline-block">${matchedVariant.price_formatted}</span><s class="price-item price-item--regular color-light subtext d-inline-block ml-8">${matchedVariant.compare_at_price_formatted}</s>`
+                : `<span class="price-item price-item--regular price-item--last mt-4 mb-4 d-inline-block">${matchedVariant.price_formatted}</span>`;
+              priceElement.innerHTML = priceHtml;
             }
             
             // Update add to cart button
