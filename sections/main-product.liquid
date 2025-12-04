@@ -97,7 +97,7 @@
       {%- comment -%} Product description moved to left column {%- endcomment -%}
       {%- for block in section.blocks -%}
         {%- if block.type == 'basic_description' -%}
-          <div class="product__description wb-break-word rte mt-24" {{ block.shopify_attributes }}>
+          <div class="product__description wb-break-word rte mt-24 pl-16 pr-16 pl-md-0 pr-md-0" {{ block.shopify_attributes }}>
             <span class="d-block mb-16 h5">{{ 'products.product.description' | t }}</span>{{ product.description }}
           </div>
         {%- endif -%}
