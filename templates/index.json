@@ -31,6 +31,7 @@
         },
         "image_slide_ATKNGH": {
           "type": "image_slide",
+          "disabled": true,
           "settings": {
             "image_desktop": "shopify://shop_images/Banners_Desktop_iPhone_17.png",
             "image_mobile": "shopify://shop_images/Banners_Mobile.png",
@@ -39,6 +40,7 @@
         },
         "image_slide_gmC87e": {
           "type": "image_slide",
+          "disabled": true,
           "settings": {
             "image_desktop": "shopify://shop_images/Undergold_Desktop.jpg",
             "image_mobile": "shopify://shop_images/IMG_7171.jpg",
@@ -47,6 +49,7 @@
         },
         "image_slide_VHFRUj": {
           "type": "image_slide",
+          "disabled": true,
           "settings": {
             "image_desktop": "shopify://shop_images/Banner_PopSocket_Desktop.jpg",
             "image_mobile": "shopify://shop_images/Banner_PopSocket_Mobile.jpg",
