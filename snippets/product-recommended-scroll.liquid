@@ -48,12 +48,26 @@
             <div class="recommended-scroll-card d-flex fd-column scrollable-aln-start">
               <a href="{{ related_product.url }}" class="recommended-scroll-card__link" title="{{ related_product.title | escape }}" tabindex="-1">
                 <div class="recommended-scroll-card__media media-wrapper of-cover">
+                  {%- liquid
+                    assign img_width = 360
+                    assign img_height = 360
+                    if default_image.width and default_image.height
+                      assign aspect_ratio = default_image.width | divided_by: default_image.height
+                      if aspect_ratio > 1
+                        assign img_height = 360 | divided_by: aspect_ratio | round
+                      elsif aspect_ratio < 1
+                        assign img_width = 360 | times: aspect_ratio | round
+                      endif
+                    endif
+                  -%}
                   <img 
                     class="media recommended-scroll-card__image js-recommended-card-image" 
                     src="{{ default_image | image_url: width: 360 }}"
                     srcset="{{ default_image | image_url: width: 120 }} 120w, {{ default_image | image_url: width: 160 }} 160w, {{ default_image | image_url: width: 360 }} 360w"
                     sizes="(min-width: 769px) 160px, 120px"
                     alt="{{ default_image.alt | default: related_product.title }}"
+                    width="{{ img_width }}"
+                    height="{{ img_height }}"
                     decoding="async"
                     loading="lazy"
                     data-default-image="{{ default_image | image_url: width: 360 }}"
@@ -289,6 +303,9 @@
                   const url120 = baseUrl.replace(/width=\d+/i, 'width=120').replace(/_(\d+)x(\d+)/i, '_120x120');
                   const url160 = baseUrl.replace(/width=\d+/i, 'width=160').replace(/_(\d+)x(\d+)/i, '_160x160');
                   image.srcset = url120 + ' 120w, ' + url160 + ' 160w, ' + baseUrl + ' 360w';
+                  // Maintain width and height attributes (images are square 1:1 aspect ratio)
+                  if (!image.width) image.width = 360;
+                  if (!image.height) image.height = 360;
                   image.style.opacity = '1';
                 }, 150);
               }
