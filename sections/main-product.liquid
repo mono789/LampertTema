@@ -97,12 +97,24 @@
       {%- comment -%} Product description moved to left column {%- endcomment -%}
       {%- for block in section.blocks -%}
         {%- if block.type == 'basic_description' -%}
-          <div class="product__description wb-break-word rte mt-24 pl-16 pr-16 pl-md-0 pr-md-0" {{ block.shopify_attributes }}>
+          <div class="product__description product__description--left-column wb-break-word rte mt-24" {{ block.shopify_attributes }}>
             <span class="d-block mb-16 h5">{{ 'products.product.description' | t }}</span>{{ product.description }}
           </div>
         {%- endif -%}
       {%- endfor -%}
     </div>
+    <style>
+      .product__description--left-column {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+      @media (min-width: 769px) {
+        .product__description--left-column {
+          padding-left: 0;
+          padding-right: 0;
+        }
+      }
+    </style>
     <div class="product__info-wrapper product-detail__item w-100 {{ max_width_content }} {{ section.settings.enable_sticky_content | default: '' | replace: 'true', 'product-detail__item--sticky' }}">
       <div id="productInfo-{{ section.id }}" class="main-product-info-container product__info-container d-flex fd-column" role="region" aria-label="{{- 'accessibility.view_product_info' | t -}}">
         {%- for block in section.blocks -%}
