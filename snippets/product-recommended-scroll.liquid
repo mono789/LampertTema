@@ -18,12 +18,22 @@
     <div class="recommended-scroll__container scrollable scrollable-x disable-scrollbars" role="list" aria-label="{{ heading_text | escape }}">
       {%- for related_product in product_cards -%}
         {%- if related_product.id != current_product.id -%}
-          {%- assign cards_rendered = cards_rendered | plus: 1 -%}
-          {%- if cards_rendered > recommended_scroll_limit -%}{% break %}{% endif -%}
-          {%- assign card_id = 'recommended-card-' | append: related_product.id | append: '-' | append: forloop.index -%}
-          {%- assign form_id = 'recommended-form-' | append: related_product.id | append: '-' | append: forloop.index -%}
-          {%- assign default_variant = related_product.selected_or_first_available_variant -%}
-          {%- assign default_image = default_variant.featured_media | default: related_product.featured_media | default: related_product.featured_image -%}
+          {%- liquid
+            assign has_available_variant = false
+            for variant in related_product.variants
+              if variant.available
+                assign has_available_variant = true
+                break
+              endif
+            endfor
+          -%}
+          {%- if has_available_variant -%}
+            {%- assign cards_rendered = cards_rendered | plus: 1 -%}
+            {%- if cards_rendered > recommended_scroll_limit -%}{% break %}{% endif -%}
+            {%- assign card_id = 'recommended-card-' | append: related_product.id | append: '-' | append: forloop.index -%}
+            {%- assign form_id = 'recommended-form-' | append: related_product.id | append: '-' | append: forloop.index -%}
+            {%- assign default_variant = related_product.selected_or_first_available_variant -%}
+            {%- assign default_image = default_variant.featured_media | default: related_product.featured_media | default: related_product.featured_image -%}
           
           <div class="recommended-scroll-card-wrapper" data-product-id="{{ related_product.id }}">
             <script type="application/json" class="js-recommended-variants-data">
@@ -91,7 +101,7 @@
                           class="form__control recommended-scroll-card__variant-select-input js-recommended-variant-select" 
                           id="{{ form_id }}-option-{{ option_index }}"
                           name="options[{{ option.name | escape }}]"
-                          form="{{ form_id }}"
+                          form="{{ form_id }}" 
                           data-product-id="{{ related_product.id }}"
                           data-option-index="{{ option_index }}"
                         >
@@ -135,6 +145,7 @@
               {%- endform -%}
             </div>
           </div>
+          {%- endif -%}
         {%- endif -%}
       {%- endfor -%}
     </div>
