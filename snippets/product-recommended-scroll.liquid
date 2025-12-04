@@ -91,7 +91,6 @@
               </a>
               
               <div class="recommended-scroll-card__info mt-8">
-                <h3 class="recommended-scroll-card__title mb-4">{{ related_product.title }}</h3>
                 <div class="recommended-scroll-card__price js-recommended-card-price" data-product-id="{{ related_product.id }}">
                   {%- if default_variant.compare_at_price > default_variant.price -%}
                     <span class="price-item price-item--last mt-4 mb-4 d-inline-block">{{ default_variant.price | money }}</span>
