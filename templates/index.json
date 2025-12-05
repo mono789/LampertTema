@@ -14,6 +14,14 @@
       "blocks": {
         "image_slide_8HTKdd": {
           "type": "image_slide",
+          "settings": {
+            "image_desktop": "shopify://shop_images/BANNER-01-02-01_1.png",
+            "image_mobile": "shopify://shop_images/BANNER-01-02-02_1.png",
+            "link": "shopify://collections/expresso-collection"
+          }
+        },
+        "image_slide_6WTc9n": {
+          "type": "image_slide",
           "disabled": true,
           "settings": {
             "image_desktop": "shopify://shop_images/Mistery-Gift_2.jpg",
@@ -28,41 +36,12 @@
             "image_mobile": "shopify://shop_images/3_2.jpg",
             "link": "shopify://collections/origin"
           }
-        },
-        "image_slide_ATKNGH": {
-          "type": "image_slide",
-          "disabled": true,
-          "settings": {
-            "image_desktop": "shopify://shop_images/Banners_Desktop_iPhone_17.png",
-            "image_mobile": "shopify://shop_images/Banners_Mobile.png",
-            "link": "shopify://collections/iphone-17-nuevo"
-          }
-        },
-        "image_slide_gmC87e": {
-          "type": "image_slide",
-          "disabled": true,
-          "settings": {
-            "image_desktop": "shopify://shop_images/Undergold_Desktop.jpg",
-            "image_mobile": "shopify://shop_images/IMG_7171.jpg",
-            "link": "shopify://collections/undergold"
-          }
-        },
-        "image_slide_VHFRUj": {
-          "type": "image_slide",
-          "disabled": true,
-          "settings": {
-            "image_desktop": "shopify://shop_images/Banner_PopSocket_Desktop.jpg",
-            "image_mobile": "shopify://shop_images/Banner_PopSocket_Mobile.jpg",
-            "link": "shopify://collections/popsocket"
-          }
         }
       },
       "block_order": [
         "image_slide_8HTKdd",
-        "image_slide_KMjiDW",
-        "image_slide_ATKNGH",
-        "image_slide_gmC87e",
-        "image_slide_VHFRUj"
+        "image_slide_6WTc9n",
+        "image_slide_KMjiDW"
       ],
       "name": "Galería de Imágenes y Video",
       "settings": {
@@ -255,9 +234,11 @@
         "remove_padding_top": false,
         "remove_padding_bottom": false,
         "product_list": [
+          "ultra-safe-case-vision-board-copia-copia",
+          "hoja-stickers-espresso",
+          "ultra-safe-case-vision-board-copia",
           "ultra-safe-case-laura-sanchez-valentine",
-          "ultra-safe-case-laura-sanchez",
-          "hoja-stickers-espresso"
+          "ultra-safe-case-laura-sanchez"
         ],
         "show_ranking": false,
         "ranking_badge_shape": "ribbon",
