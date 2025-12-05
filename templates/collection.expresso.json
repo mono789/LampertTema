@@ -38,8 +38,8 @@
       "type": "imagen-boton-Lampert",
       "name": "Imagen con botón Lampert",
       "settings": {
-        "desktop_image": "shopify://shop_images/LS_Desktop_v3.jpg",
-        "mobile_image": "shopify://shop_images/LS_Mobile_v3.jpg",
+        "desktop_image": "shopify://shop_images/BANNER-01-02-01_1.png",
+        "mobile_image": "shopify://shop_images/BANNER-01-02-02_1.png",
         "button_text": "",
         "link_url": ""
       }
