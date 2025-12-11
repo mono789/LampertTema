@@ -15,8 +15,8 @@
         "image_slide_8HTKdd": {
           "type": "image_slide",
           "settings": {
-            "image_desktop": "shopify://shop_images/BANNER-01-02-01_1.png",
-            "image_mobile": "shopify://shop_images/BANNER-01-02-02_1.png",
+            "image_desktop": "shopify://shop_images/Banner_Lampert_2.jpg",
+            "image_mobile": "shopify://shop_images/Banner_mobile.jpg",
             "link": "shopify://collections/expresso-collection"
           }
         },
