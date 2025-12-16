@@ -49,6 +49,90 @@
         "section_width": 100
       }
     },
+    "content_collage_pRU8Gy": {
+      "type": "content-collage",
+      "blocks": {
+        "product_HGhDfk": {
+          "type": "product",
+          "settings": {
+            "product": "ultra-safe-case-vision-board-copia-copia",
+            "show_rating": false,
+            "product_overlay_opacity": 30,
+            "product_mask_overlay_color": "#000000",
+            "product_content_overlay_color": "#ffffff",
+            "star_rating_color": "#ffb82d"
+          }
+        },
+        "product_gzcjAQ": {
+          "type": "product",
+          "settings": {
+            "product": "ultra-safe-case-vision-board-copia",
+            "show_rating": false,
+            "product_overlay_opacity": 30,
+            "product_mask_overlay_color": "#000000",
+            "product_content_overlay_color": "#ffffff",
+            "star_rating_color": "#ffb82d"
+          }
+        }
+      },
+      "block_order": [
+        "product_HGhDfk",
+        "product_gzcjAQ"
+      ],
+      "name": "LAURA SANCHEZ X LAMPERT",
+      "settings": {
+        "color_scheme": "scheme-3",
+        "subheading": "",
+        "heading": "LAURA SANCHEZ ESPRESSO",
+        "description": "",
+        "collage_width_on_desktop": "wide",
+        "content_alignment": "ta-left",
+        "items_ordering": "equal",
+        "enable_stacked_layout": true,
+        "remove_padding_top": true,
+        "remove_padding_bottom": false,
+        "image_ratio": "1/1",
+        "show_items_button": true,
+        "badge_text": "",
+        "badge_color": "color-accent-1",
+        "badge_position": "p-badge--bottom-right",
+        "badge_shape": "badge--star"
+      }
+    },
+    "featured_product_carousel_fQPQBY": {
+      "type": "featured-product-carousel",
+      "name": "LAURA SANCHEZ X LAMPERT",
+      "settings": {
+        "color_scheme": "",
+        "subheading": "",
+        "heading": "",
+        "description": "",
+        "items_per_row_on_desktop": "4",
+        "content_align": "ta-left",
+        "show_navigation": true,
+        "remove_padding_top": false,
+        "remove_padding_bottom": false,
+        "product_list": [
+          "ultra-safe-case-vision-board-copia-copia",
+          "hoja-stickers-espresso",
+          "ultra-safe-case-vision-board-copia",
+          "ultra-safe-case-laura-sanchez-valentine",
+          "ultra-safe-case-laura-sanchez"
+        ],
+        "show_ranking": false,
+        "ranking_badge_shape": "ribbon",
+        "ranking_badge_color": "color-accent-1",
+        "image_ratio": "1/1",
+        "image_overlay_opacity": 0,
+        "section_mask_overlay_color": "",
+        "section_content_overlay_color": "",
+        "star_rating_overlay": "",
+        "badge_text": "",
+        "badge_color": "color-accent-1",
+        "badge_position": "p-badge--bottom-right",
+        "badge_shape": "badge--star"
+      }
+    },
     "featured_product_carousel_gaVUbb": {
       "type": "featured-product-carousel",
       "name": "Best sellers",
@@ -63,16 +147,16 @@
         "remove_padding_top": false,
         "remove_padding_bottom": false,
         "product_list": [
-          "ultra-safe-case-tissue-01",
-          "ultra-safe-case-white-neura",
-          "ultra-safe-case-purple-synapse",
-          "ultra-safe-case-cellular-noise",
-          "ultra-safe-case-fractal-core",
-          "ultra-safe-case-c-field",
           "ultra-safe-case-blue-matter",
           "ultra-safe-case-umbra-01",
-          "ultra-safe-case-tissue-02",
-          "ultra-safe-case-red-core"
+          "ultra-safe-case-fractal-core",
+          "ultra-safe-case-red-core",
+          "ultra-safe-case-tissue-01",
+          "ultra-safe-case-white-neura",
+          "ultra-safe-case-cellular-noise",
+          "ultra-safe-case-purple-synapse",
+          "ultra-safe-case-c-field",
+          "ultra-safe-case-tissue-02"
         ],
         "show_ranking": false,
         "ranking_badge_shape": "ribbon",
@@ -155,90 +239,6 @@
           "cardholder-be-the-energy",
           "cardholder-luisa-castro-01",
           "cardholder-dad"
-        ],
-        "show_ranking": false,
-        "ranking_badge_shape": "ribbon",
-        "ranking_badge_color": "color-accent-1",
-        "image_ratio": "1/1",
-        "image_overlay_opacity": 0,
-        "section_mask_overlay_color": "",
-        "section_content_overlay_color": "",
-        "star_rating_overlay": "",
-        "badge_text": "",
-        "badge_color": "color-accent-1",
-        "badge_position": "p-badge--bottom-right",
-        "badge_shape": "badge--star"
-      }
-    },
-    "content_collage_pRU8Gy": {
-      "type": "content-collage",
-      "blocks": {
-        "product_HGhDfk": {
-          "type": "product",
-          "settings": {
-            "product": "ultra-safe-case-vision-board-copia-copia",
-            "show_rating": false,
-            "product_overlay_opacity": 30,
-            "product_mask_overlay_color": "#000000",
-            "product_content_overlay_color": "#ffffff",
-            "star_rating_color": "#ffb82d"
-          }
-        },
-        "product_gzcjAQ": {
-          "type": "product",
-          "settings": {
-            "product": "ultra-safe-case-vision-board-copia",
-            "show_rating": false,
-            "product_overlay_opacity": 30,
-            "product_mask_overlay_color": "#000000",
-            "product_content_overlay_color": "#ffffff",
-            "star_rating_color": "#ffb82d"
-          }
-        }
-      },
-      "block_order": [
-        "product_HGhDfk",
-        "product_gzcjAQ"
-      ],
-      "name": "LAURA SANCHEZ X LAMPERT",
-      "settings": {
-        "color_scheme": "scheme-3",
-        "subheading": "",
-        "heading": "LAURA SANCHEZ ESPRESSO",
-        "description": "",
-        "collage_width_on_desktop": "wide",
-        "content_alignment": "ta-left",
-        "items_ordering": "equal",
-        "enable_stacked_layout": true,
-        "remove_padding_top": true,
-        "remove_padding_bottom": false,
-        "image_ratio": "1/1",
-        "show_items_button": true,
-        "badge_text": "",
-        "badge_color": "color-accent-1",
-        "badge_position": "p-badge--bottom-right",
-        "badge_shape": "badge--star"
-      }
-    },
-    "featured_product_carousel_fQPQBY": {
-      "type": "featured-product-carousel",
-      "name": "LAURA SANCHEZ X LAMPERT",
-      "settings": {
-        "color_scheme": "",
-        "subheading": "",
-        "heading": "",
-        "description": "",
-        "items_per_row_on_desktop": "4",
-        "content_align": "ta-left",
-        "show_navigation": true,
-        "remove_padding_top": false,
-        "remove_padding_bottom": false,
-        "product_list": [
-          "ultra-safe-case-vision-board-copia-copia",
-          "hoja-stickers-espresso",
-          "ultra-safe-case-vision-board-copia",
-          "ultra-safe-case-laura-sanchez-valentine",
-          "ultra-safe-case-laura-sanchez"
         ],
         "show_ranking": false,
         "ranking_badge_shape": "ribbon",
