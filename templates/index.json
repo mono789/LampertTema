@@ -88,6 +88,45 @@
         "badge_shape": "badge--star"
       }
     },
+    "featured_product_carousel_8cp4TF": {
+      "type": "featured-product-carousel",
+      "name": "Best sellers",
+      "settings": {
+        "color_scheme": "",
+        "subheading": "",
+        "heading": "Origin",
+        "description": "",
+        "items_per_row_on_desktop": "4",
+        "content_align": "ta-left",
+        "show_navigation": true,
+        "remove_padding_top": false,
+        "remove_padding_bottom": false,
+        "product_list": [
+          "ultra-safe-case-tissue-01",
+          "ultra-safe-case-white-neura",
+          "ultra-safe-case-purple-synapse",
+          "ultra-safe-case-cellular-noise",
+          "ultra-safe-case-fractal-core",
+          "ultra-safe-case-c-field",
+          "ultra-safe-case-blue-matter",
+          "ultra-safe-case-umbra-01",
+          "ultra-safe-case-tissue-02",
+          "ultra-safe-case-red-core"
+        ],
+        "show_ranking": false,
+        "ranking_badge_shape": "ribbon",
+        "ranking_badge_color": "color-accent-1",
+        "image_ratio": "1/1",
+        "image_overlay_opacity": 30,
+        "section_mask_overlay_color": "",
+        "section_content_overlay_color": "",
+        "star_rating_overlay": "",
+        "badge_text": "",
+        "badge_color": "color-accent-1",
+        "badge_position": "p-badge--bottom-right",
+        "badge_shape": "badge--star"
+      }
+    },
     "galeria_lampert_rzdCfa": {
       "type": "galeria-lampert",
       "blocks": {
@@ -873,6 +912,7 @@
   "order": [
     "galeria_lampert_c88Ahz",
     "featured_product_carousel_gaVUbb",
+    "featured_product_carousel_8cp4TF",
     "galeria_lampert_rzdCfa",
     "featured_product_carousel_XHgX4W",
     "content_collage_pRU8Gy",
