@@ -673,6 +673,16 @@
             
             console.log(`[Recommended Scroll] Card ${cardIdx + 1} matching variant:`, matchingVariant);
             if (matchingVariant && matchingVariant.available) {
+              // Check if user recently modified this card (within last 5 seconds)
+              const userModifiedTime = card.dataset.userModified ? parseInt(card.dataset.userModified) : 0;
+              const timeSinceModification = Date.now() - userModifiedTime;
+              const RECENT_MODIFICATION_THRESHOLD = 5000; // 5 seconds
+              
+              if (userModifiedTime > 0 && timeSinceModification < RECENT_MODIFICATION_THRESHOLD) {
+                console.log(`[Recommended Scroll] Card ${cardIdx + 1} was recently modified by user (${timeSinceModification}ms ago), skipping sync to preserve user's selection`);
+                return; // Skip this card to preserve user's selection
+              }
+              
               console.log(`[Recommended Scroll] Updating card ${cardIdx + 1} with matching variant`);
               
               // Construct options array if needed
@@ -892,15 +902,21 @@
             const valueWatcher = setInterval(() => {
               // Skip if we're updating a recommended product (prevents bidirectional sync)
               if (isUpdatingRecommendedProduct) {
+                // Don't update lastValue when flag is active, so we don't miss real changes
                 return;
               }
               const currentValue = variantIdInput.value;
               if (currentValue !== lastValue) {
                 console.log('[Recommended Scroll] Variant ID value changed from', lastValue, 'to', currentValue);
                 lastValue = currentValue;
+                // Double-check flag before syncing (in case it changed during the delay)
                 setTimeout(() => {
-                  console.log('[Recommended Scroll] Triggering sync after variant ID change...');
-                  syncRecommendedProductsWithMain();
+                  if (!isUpdatingRecommendedProduct) {
+                    console.log('[Recommended Scroll] Triggering sync after variant ID change...');
+                    syncRecommendedProductsWithMain();
+                  } else {
+                    console.log('[Recommended Scroll] Skipping sync - flag is now active');
+                  }
                 }, 150);
               }
             }, 100); // Check every 100ms for faster response
@@ -977,6 +993,15 @@
           isUpdatingRecommendedProduct = true;
           console.log('[Recommended Scroll] User changing recommended product variant - setting flag to prevent sync');
           
+          // Mark this select as user-modified with a timestamp
+          // This prevents sync from overwriting it even after the flag resets
+          const select = e.target;
+          const card = select.closest('.recommended-scroll-card-wrapper');
+          if (card) {
+            card.dataset.userModified = Date.now().toString();
+            console.log('[Recommended Scroll] Marked card as user-modified at', card.dataset.userModified);
+          }
+          
           const select = e.target;
           const productId = parseInt(select.dataset.productId);
           const card = select.closest('.recommended-scroll-card-wrapper');
@@ -1051,11 +1076,12 @@
             }
           }
           
-          // Reset flag after a delay to allow any events to settle
+          // Reset flag after a longer delay to allow any events to settle
+          // This prevents the variant ID watcher from triggering sync immediately after
           setTimeout(() => {
             isUpdatingRecommendedProduct = false;
             console.log('[Recommended Scroll] Flag reset - sync can resume');
-          }, 500);
+          }, 2000); // Increased to 2 seconds to prevent immediate overwrite
         }, true); // Use capture phase to execute BEFORE other listeners
         
         // Store button text in data attributes for later use
