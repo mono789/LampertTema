@@ -623,6 +623,8 @@
             }
             
             // Find matching variant in recommended product
+            // Match if the recommended variant CONTAINS the main product variant (flexible matching)
+            // Example: Main "iPhone 14 Pro" matches Recommended "iPhone 13 Pro Max / 14 Pro"
             console.log(`[Recommended Scroll] Looking for matching variant in card ${cardIdx + 1}...`);
             const matchingVariant = variants.find((variant, variantIdx) => {
               console.log(`[Recommended Scroll] Checking variant ${variantIdx}:`, variant);
@@ -637,25 +639,68 @@
                 console.log(`[Recommended Scroll] Variant ${variantIdx} constructed options from option1/2/3:`, currentVariantOptions);
               }
               
-              if (!currentVariantOptions || currentVariantOptions.length !== mainProductOptions.length) {
-                console.log(`[Recommended Scroll] Variant ${variantIdx} options length mismatch:`, currentVariantOptions?.length, 'vs', mainProductOptions.length);
+              if (!currentVariantOptions || currentVariantOptions.length === 0) {
+                console.log(`[Recommended Scroll] Variant ${variantIdx} has no options`);
                 return false;
               }
               
-              // Check if options match (case-insensitive comparison)
-              const matches = currentVariantOptions.every((opt, idx) => {
-                const mainOpt = mainProductOptions[idx];
-                if (!opt || !mainOpt) {
-                  console.log(`[Recommended Scroll] Variant ${variantIdx} option ${idx} is empty`);
-                  return false;
-                }
-                const optStr = opt.toString().trim().toLowerCase();
-                const mainOptStr = mainOpt.toString().trim().toLowerCase();
-                const match = optStr === mainOptStr;
-                console.log(`[Recommended Scroll] Variant ${variantIdx} option ${idx} comparison:`, optStr, '===', mainOptStr, '=', match);
-                return match;
+              // Compare first option (device/model) - this is the most important one
+              // Check if recommended variant's first option contains main product's first option
+              const mainFirstOption = mainProductOptions[0];
+              const recommendedFirstOption = currentVariantOptions[0];
+              
+              if (!mainFirstOption || !recommendedFirstOption) {
+                console.log(`[Recommended Scroll] Variant ${variantIdx} missing first option`);
+                return false;
+              }
+              
+              const mainOptStr = mainFirstOption.toString().trim().toLowerCase();
+              const recommendedOptStr = recommendedFirstOption.toString().trim().toLowerCase();
+              
+              // Extract model numbers (e.g., "14 Pro" from "iPhone 14 Pro")
+              // This allows matching "iPhone 14 Pro" with "iPhone 13 Pro Max / 14 Pro"
+              const extractModelNumbers = (str) => {
+                // Extract patterns like "14 Pro", "13 Pro Max", "16 Plus", etc.
+                const modelPattern = /(\d+\s*(?:pro|plus|max)?(?:\s*(?:pro|plus|max))?)/gi;
+                const matches = str.match(modelPattern);
+                return matches ? matches.map(m => m.toLowerCase().trim()) : [];
+              };
+              
+              const mainModels = extractModelNumbers(mainOptStr);
+              const recommendedModels = extractModelNumbers(recommendedOptStr);
+              
+              // Check if any main product model is contained in recommended variant
+              // OR if recommended variant contains main product model as substring
+              let matches = false;
+              
+              if (mainModels.length > 0 && recommendedModels.length > 0) {
+                // Check if any main model matches any recommended model
+                matches = mainModels.some(mainModel => {
+                  return recommendedModels.some(recModel => {
+                    // Exact match or contains match
+                    return recModel === mainModel || recModel.includes(mainModel) || mainModel.includes(recModel);
+                  });
+                });
+              }
+              
+              // Fallback: check if recommended option contains main option as substring
+              if (!matches) {
+                matches = recommendedOptStr.includes(mainOptStr) || mainOptStr.includes(recommendedOptStr);
+              }
+              
+              // Also check for exact match (for backwards compatibility)
+              if (!matches) {
+                matches = recommendedOptStr === mainOptStr;
+              }
+              
+              console.log(`[Recommended Scroll] Variant ${variantIdx} comparison:`, {
+                main: mainOptStr,
+                recommended: recommendedOptStr,
+                mainModels: mainModels,
+                recommendedModels: recommendedModels,
+                matches: matches
               });
-              console.log(`[Recommended Scroll] Variant ${variantIdx} matches:`, matches);
+              
               return matches;
             });
             
