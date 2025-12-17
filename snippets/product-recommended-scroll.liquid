@@ -329,9 +329,7 @@
         
         // Get main product variant selector
         const getMainProductSelectedOptions = (changedSelect = null) => {
-          console.log('[Recommended Scroll] Getting main product selected options...');
           const mainProductForm = document.querySelector('[data-type="add-to-cart-form"]');
-          console.log('[Recommended Scroll] Main product form found:', !!mainProductForm);
           if (!mainProductForm) return null;
           
           // Helper function to filter out recommended product selects
@@ -348,7 +346,6 @@
           // Search in the entire document but within the product section context
           const productSection = mainProductForm.closest('[data-section]') || document;
           const variantSelectsContainer = productSection.querySelector('sht-variant-selects, sht-variant-radios');
-          console.log('[Recommended Scroll] Variant container found:', !!variantSelectsContainer);
           
           // Try multiple search strategies
           let mainProductSelects = [];
@@ -357,34 +354,26 @@
           if (variantSelectsContainer) {
             const found = variantSelectsContainer.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked, select[name*="option"], input[type="radio"][name*="option"]:checked');
             mainProductSelects = Array.from(found).filter(isMainProductSelect);
-            console.log('[Recommended Scroll] Found in custom element:', mainProductSelects.length, '(filtered from', found.length, ')');
           }
           
           // Strategy 2: Search in the entire product section, but exclude recommended products area
           if (mainProductSelects.length === 0) {
             const found = productSection.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked, select[name*="option"], input[type="radio"][name*="option"]:checked');
             mainProductSelects = Array.from(found).filter(isMainProductSelect);
-            console.log('[Recommended Scroll] Found in product section:', mainProductSelects.length, '(filtered from', found.length, ')');
           }
           
           // Strategy 3: Search in the entire document (fallback)
           if (mainProductSelects.length === 0) {
             const found = document.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked, select[name*="option"], input[type="radio"][name*="option"]:checked');
             mainProductSelects = Array.from(found).filter(isMainProductSelect);
-            console.log('[Recommended Scroll] Found in document:', mainProductSelects.length, '(filtered from', found.length, ')');
           }
-          
-          console.log('[Recommended Scroll] Total variant selects/radios found (main product only):', mainProductSelects.length);
           
           // If we have a specific select that changed, use it directly
           if (changedSelect && (changedSelect.tagName === 'SELECT' || (changedSelect.tagName === 'INPUT' && changedSelect.type === 'radio'))) {
             // Make sure it's not a recommended product select
             if (!isMainProductSelect(changedSelect)) {
-              console.log('[Recommended Scroll] Changed select is from recommended product, ignoring');
               return null;
             }
-            
-            console.log('[Recommended Scroll] Using changed select directly:', changedSelect);
             const selectedOptions = [];
             
             // Get all selects/radios for this product to build the full options array
@@ -405,17 +394,13 @@
               return position & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
             });
             
-            console.log('[Recommended Scroll] All variant inputs found (main product only):', allVariantInputs.length);
-            
             allVariantInputs.forEach((input, idx) => {
               let value = null;
               if (input.tagName === 'SELECT') {
                 value = input.value;
-                console.log(`[Recommended Scroll] Input ${idx} (SELECT):`, { name: input.name, value: value });
               } else if (input.tagName === 'INPUT' && input.type === 'radio') {
                 if (input.checked) {
                   value = input.value;
-                  console.log(`[Recommended Scroll] Input ${idx} (RADIO):`, { name: input.name, value: value, checked: input.checked });
                 }
               }
               if (value) {
@@ -424,7 +409,6 @@
             });
             
             if (selectedOptions.length > 0) {
-              console.log('[Recommended Scroll] Selected options from changed select:', selectedOptions);
               return selectedOptions;
             }
           }
@@ -461,30 +445,16 @@
               return aIndex - bIndex;
             });
             
-            console.log('[Recommended Scroll] Sorted selects:', sortedSelects.length);
             sortedSelects.forEach((select, idx) => {
               let optionValue = null;
               if (select.tagName === 'SELECT') {
                 optionValue = select.value;
-                console.log(`[Recommended Scroll] Select ${idx} (SELECT):`, {
-                  id: select.id,
-                  name: select.name,
-                  value: optionValue,
-                  selectedIndex: select.selectedIndex,
-                  options: Array.from(select.options).map(opt => ({ value: opt.value, text: opt.text, selected: opt.selected }))
-                });
                 if (optionValue) {
                   selectedOptions.push(optionValue);
                 }
               } else if (select.tagName === 'INPUT' && select.type === 'radio') {
                 if (select.checked) {
                   optionValue = select.value;
-                  console.log(`[Recommended Scroll] Select ${idx} (RADIO):`, {
-                    id: select.id,
-                    name: select.name,
-                    value: optionValue,
-                    checked: select.checked
-                  });
                   if (optionValue) {
                     selectedOptions.push(optionValue);
                   }
@@ -493,53 +463,42 @@
             });
             
             if (selectedOptions.length > 0) {
-              console.log('[Recommended Scroll] Selected options from selects:', selectedOptions);
               return selectedOptions;
             }
           }
           
           // Fallback: try to get from variant ID and find options
           const variantIdInput = mainProductForm.querySelector('input[name="id"]');
-          console.log('[Recommended Scroll] Variant ID input found:', !!variantIdInput);
           if (variantIdInput && variantIdInput.value) {
             const variantId = parseInt(variantIdInput.value);
-            console.log('[Recommended Scroll] Variant ID:', variantId);
             // Try to find variant data in the page
             // First, try to find script within variant container
             let variantScripts = [];
             if (variantSelectsContainer) {
               variantScripts = Array.from(variantSelectsContainer.querySelectorAll('script[type="application/json"]'));
-              console.log('[Recommended Scroll] Found JSON scripts in variant container:', variantScripts.length);
             }
             // If not found, search in product section
             if (variantScripts.length === 0) {
               variantScripts = Array.from(productSection.querySelectorAll('script[type="application/json"]'));
-              console.log('[Recommended Scroll] Found JSON scripts in product section:', variantScripts.length);
             }
             // If still not found, search in entire document
             if (variantScripts.length === 0) {
               variantScripts = Array.from(document.querySelectorAll('script[type="application/json"]'));
-              console.log('[Recommended Scroll] Found JSON scripts in document:', variantScripts.length);
             }
             for (let script of variantScripts) {
               try {
                 const data = JSON.parse(script.textContent);
-                console.log('[Recommended Scroll] Parsed script data:', data);
                 
                 // Check if it's an array of variants
                 if (Array.isArray(data)) {
-                  console.log('[Recommended Scroll] Found variants array with', data.length, 'variants');
                   const variant = data.find(v => {
                     const vId = parseInt(v.id) || v.id;
                     const targetId = parseInt(variantId) || variantId;
                     return vId == targetId;
                   });
                   if (variant) {
-                    console.log('[Recommended Scroll] Found matching variant:', variant);
-                    console.log('[Recommended Scroll] Variant keys:', Object.keys(variant));
                     // Try different possible property names for options
                     if (variant.options && Array.isArray(variant.options)) {
-                      console.log('[Recommended Scroll] Variant options (array):', variant.options);
                       return variant.options;
                     } else if (variant.option1 || variant.option2 || variant.option3) {
                       // Build options array from option1, option2, option3 (Shopify standard format)
@@ -547,45 +506,34 @@
                       if (variant.option1) options.push(variant.option1);
                       if (variant.option2) options.push(variant.option2);
                       if (variant.option3) options.push(variant.option3);
-                      console.log('[Recommended Scroll] Built options from option1/2/3:', options);
                       return options.length > 0 ? options : null;
-                    } else {
-                      console.log('[Recommended Scroll] Variant has no options property');
                     }
-                  } else {
-                    console.log('[Recommended Scroll] Variant not found with ID:', variantId);
-                    console.log('[Recommended Scroll] Available variant IDs:', data.map(v => v.id || parseInt(v.id)));
                   }
                 } else if (data.variants && Array.isArray(data.variants)) {
                   // Check if data has a variants property
-                  console.log('[Recommended Scroll] Found variants in data.variants:', data.variants.length);
                   const variant = data.variants.find(v => {
                     const vId = parseInt(v.id) || v.id;
                     const targetId = parseInt(variantId) || variantId;
                     return vId == targetId;
                   });
                   if (variant) {
-                    console.log('[Recommended Scroll] Found matching variant:', variant);
                     if (variant.options && Array.isArray(variant.options)) {
-                      console.log('[Recommended Scroll] Variant options (array):', variant.options);
                       return variant.options;
                     } else if (variant.option1 || variant.option2 || variant.option3) {
                       const options = [];
                       if (variant.option1) options.push(variant.option1);
                       if (variant.option2) options.push(variant.option2);
                       if (variant.option3) options.push(variant.option3);
-                      console.log('[Recommended Scroll] Built options from option1/2/3:', options);
                       return options.length > 0 ? options : null;
                     }
                   }
                 }
               } catch (e) {
-                console.log('[Recommended Scroll] Error parsing script:', e);
+                // Silently ignore parsing errors
               }
             }
           }
           
-          console.log('[Recommended Scroll] No options found, returning null');
           return null;
         };
         
@@ -601,34 +549,25 @@
         
         // Sync recommended products with main product variant
         const syncRecommendedProductsWithMain = (changedSelect = null) => {
-          console.log('[Recommended Scroll] ===== Starting sync with main product =====');
           const mainProductOptions = getMainProductSelectedOptions(changedSelect);
-          console.log('[Recommended Scroll] Main product options:', mainProductOptions);
+          console.log('[DEBUG] Main product options:', mainProductOptions);
           if (!mainProductOptions || mainProductOptions.length === 0) {
-            console.log('[Recommended Scroll] No main product options, aborting sync');
             return;
           }
           
           const recommendedCards = document.querySelectorAll('.recommended-scroll-card-wrapper');
-          console.log('[Recommended Scroll] Found recommended cards:', recommendedCards.length);
           
           recommendedCards.forEach((card, cardIdx) => {
             const productId = parseInt(card.dataset.productId);
-            console.log(`[Recommended Scroll] Processing card ${cardIdx + 1}, product ID:`, productId);
             const variants = variantData[productId];
-            console.log(`[Recommended Scroll] Card ${cardIdx + 1} variants:`, variants);
             if (!variants || variants.length === 0) {
-              console.log(`[Recommended Scroll] Card ${cardIdx + 1} has no variants, skipping`);
               return;
             }
             
             // Find matching variant in recommended product
             // Match if the recommended variant CONTAINS the main product variant (flexible matching)
             // Example: Main "iPhone 14 Pro" matches Recommended "iPhone 13 Pro Max / 14 Pro"
-            console.log(`[Recommended Scroll] Looking for matching variant in card ${cardIdx + 1}...`);
             const matchingVariant = variants.find((variant, variantIdx) => {
-              console.log(`[Recommended Scroll] Checking variant ${variantIdx}:`, variant);
-              
               // Construct options array from option1, option2, option3 if options doesn't exist
               let currentVariantOptions = variant.options;
               if (!currentVariantOptions && (variant.option1 || variant.option2 || variant.option3)) {
@@ -636,11 +575,9 @@
                 if (variant.option1) currentVariantOptions.push(variant.option1);
                 if (variant.option2) currentVariantOptions.push(variant.option2);
                 if (variant.option3) currentVariantOptions.push(variant.option3);
-                console.log(`[Recommended Scroll] Variant ${variantIdx} constructed options from option1/2/3:`, currentVariantOptions);
               }
               
               if (!currentVariantOptions || currentVariantOptions.length === 0) {
-                console.log(`[Recommended Scroll] Variant ${variantIdx} has no options`);
                 return false;
               }
               
@@ -724,9 +661,9 @@
                     });
                     if (modelMatch) {
                       matches = true;
-                      console.log(`[Recommended Scroll] Variant ${variantIdx} matched by model numbers:`, {
-                        mainOption: mainOptStr,
-                        recommendedOption: recommendedOptStr,
+                      console.log(`[DEBUG] Variant ${variantIdx} MATCHED - model numbers:`, {
+                        main: mainOptStr,
+                        recommended: recommendedOptStr,
                         mainModels: mainModels,
                         recommendedModels: recommendedModels
                       });
@@ -755,9 +692,11 @@
                       
                       if (validBefore && validAfter) {
                         matches = true;
-                        console.log(`[Recommended Scroll] Variant ${variantIdx} matched by substring (recommended contains main with suffix):`, {
-                          mainOption: mainOptStr,
-                          recommendedOption: recommendedOptStr
+                        console.log(`[DEBUG] Variant ${variantIdx} MATCHED - recommended contains main with suffix:`, {
+                          main: mainOptStr,
+                          recommended: recommendedOptStr,
+                          mainModels: mainModels,
+                          recommendedModels: recommendedModels
                         });
                         break;
                       }
@@ -767,9 +706,9 @@
                       const afterMatch = recommendedOptStr.substring(matchIndex + mainOptStr.length);
                       if (matchIndex >= 0 && (afterMatch === '' || /^[\s\/\-]/.test(afterMatch))) {
                         matches = true;
-                        console.log(`[Recommended Scroll] Variant ${variantIdx} matched by substring (recommended contains main):`, {
-                          mainOption: mainOptStr,
-                          recommendedOption: recommendedOptStr
+                        console.log(`[DEBUG] Variant ${variantIdx} MATCHED - recommended contains main:`, {
+                          main: mainOptStr,
+                          recommended: recommendedOptStr
                         });
                         break;
                       }
@@ -788,9 +727,9 @@
                       // This prevents "15" from matching "15 Pro"
                     } else if (recommendedOptStr.length > 5) {
                       matches = true;
-                      console.log(`[Recommended Scroll] Variant ${variantIdx} matched by substring (main contains recommended):`, {
-                        mainOption: mainOptStr,
-                        recommendedOption: recommendedOptStr
+                      console.log(`[DEBUG] Variant ${variantIdx} MATCHED - main contains recommended:`, {
+                        main: mainOptStr,
+                        recommended: recommendedOptStr
                       });
                       break;
                     }
@@ -799,9 +738,9 @@
                   // Strategy 3: Exact match
                   if (recommendedOptStr === mainOptStr) {
                     matches = true;
-                    console.log(`[Recommended Scroll] Variant ${variantIdx} matched by exact match:`, {
-                      mainOption: mainOptStr,
-                      recommendedOption: recommendedOptStr
+                    console.log(`[DEBUG] Variant ${variantIdx} MATCHED - exact match:`, {
+                      main: mainOptStr,
+                      recommended: recommendedOptStr
                     });
                     break;
                   }
@@ -810,14 +749,13 @@
                 if (matches) break;
               }
               
-              console.log(`[Recommended Scroll] Variant ${variantIdx} final match result:`, matches);
+              if (!matches) {
+                console.log(`[DEBUG] Variant ${variantIdx} NO MATCH - options:`, currentVariantOptions);
+              }
               return matches;
             });
             
-            console.log(`[Recommended Scroll] Card ${cardIdx + 1} matching variant:`, matchingVariant);
             if (matchingVariant && matchingVariant.available) {
-              console.log(`[Recommended Scroll] Updating card ${cardIdx + 1} with matching variant`);
-              
               // Construct options array if needed
               let variantOptions = matchingVariant.options;
               if (!variantOptions && (matchingVariant.option1 || matchingVariant.option2 || matchingVariant.option3)) {
@@ -825,14 +763,13 @@
                 if (matchingVariant.option1) variantOptions.push(matchingVariant.option1);
                 if (matchingVariant.option2) variantOptions.push(matchingVariant.option2);
                 if (matchingVariant.option3) variantOptions.push(matchingVariant.option3);
-                console.log(`[Recommended Scroll] Constructed variant options:`, variantOptions);
               }
               
               // Update selects in recommended product
               // Update ALL selects with ALL options from the matching variant
               // This ensures products with multiple options (e.g., "Transparente" + "15 Pro") update correctly
               const selects = card.querySelectorAll('.js-recommended-variant-select');
-              console.log(`[Recommended Scroll] Card ${cardIdx + 1} has ${selects.length} selects`);
+              console.log(`[DEBUG] Card ${cardIdx + 1} - Updating ${selects.length} selects with variant options:`, variantOptions);
               
               // Update each select with the corresponding option from the matching variant
               selects.forEach((select, selectIdx) => {
@@ -842,7 +779,6 @@
                 // Get the corresponding option value from the matching variant
                 if (variantOptions && variantOptions[optionIndex]) {
                   const optionValue = variantOptions[optionIndex].toString().trim();
-                  console.log(`[Recommended Scroll] Card ${cardIdx + 1}, select ${selectIdx} (option index ${optionIndex}), looking for option:`, optionValue);
                   
                   // Find and select matching option in the select
                   const options = select.querySelectorAll('option');
@@ -855,15 +791,13 @@
                       // Case-insensitive comparison
                       if (optValue.toLowerCase() === targetValue.toLowerCase()) {
                         if (select.value !== opt.value) {
-                          console.log(`[Recommended Scroll] Setting select ${selectIdx} (option index ${optionIndex}) to:`, opt.value);
+                          console.log(`[DEBUG] Card ${cardIdx + 1}, select ${selectIdx} -> "${opt.value}"`);
                           select.value = opt.value;
                           // Trigger change event to update image, price, etc.
                           // Use a small delay to ensure all selects are updated before triggering events
                           setTimeout(() => {
                             select.dispatchEvent(new Event('change', { bubbles: true }));
                           }, selectIdx * 10); // Stagger events slightly
-                        } else {
-                          console.log(`[Recommended Scroll] Select ${selectIdx} already has value:`, opt.value);
                         }
                         found = true;
                       }
@@ -871,17 +805,14 @@
                   });
                   
                   if (!found) {
-                    console.log(`[Recommended Scroll] Could not find option "${optionValue}" in select ${selectIdx}`);
+                    console.log(`[DEBUG] Card ${cardIdx + 1}, select ${selectIdx} - Could not find option "${optionValue}"`);
                   }
-                } else {
-                  console.log(`[Recommended Scroll] No option value for select ${selectIdx} (option index ${optionIndex})`);
                 }
               });
             } else {
-              console.log(`[Recommended Scroll] Card ${cardIdx + 1} - no matching variant or not available`);
+              console.log(`[DEBUG] Card ${cardIdx + 1} - No matching variant or not available`);
             }
           });
-          console.log('[Recommended Scroll] ===== Sync completed =====');
         };
         
         // Listen for changes in main product variant ONLY
@@ -891,7 +822,6 @@
           mainProductForm.addEventListener('change', (e) => {
             // Only sync if it's a main product variant selector (not recommended products)
             if (e.target.matches('.js-variant-select-item, .js-variant-radio-item') && !e.target.classList.contains('js-recommended-variant-select')) {
-              console.log('[Recommended Scroll] Main product variant changed, syncing...');
               setTimeout(() => syncRecommendedProductsWithMain(e.target), 200);
             }
           });
@@ -902,23 +832,19 @@
           
           if (variantRadios) {
             variantRadios.addEventListener('change', () => {
-              console.log('[Recommended Scroll] Main product variant radios changed, syncing...');
               setTimeout(syncRecommendedProductsWithMain, 200);
             });
           }
           
           if (variantSelects) {
             variantSelects.addEventListener('change', () => {
-              console.log('[Recommended Scroll] Main product variant selects changed, syncing...');
               setTimeout(syncRecommendedProductsWithMain, 200);
             });
           }
         }
         
         // Initial sync on page load
-        console.log('[Recommended Scroll] Setting up initial sync in 500ms...');
         setTimeout(() => {
-          console.log('[Recommended Scroll] Running initial sync...');
           syncRecommendedProductsWithMain();
         }, 500);
         
