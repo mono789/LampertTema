@@ -647,10 +647,24 @@
               // Extract model numbers from a string (e.g., "14 Pro" from "iPhone 14 Pro")
               // This allows matching "iPhone 14 Pro" with "iPhone 13 Pro Max / 14 Pro"
               const extractModelNumbers = (str) => {
-                // Extract patterns like "14 Pro", "13 Pro Max", "16 Plus", etc.
-                const modelPattern = /(\d+\s*(?:pro|plus|max)?(?:\s*(?:pro|plus|max))?)/gi;
-                const matches = str.match(modelPattern);
-                return matches ? matches.map(m => m.toLowerCase().trim()) : [];
+                const models = [];
+                
+                // First, extract full patterns with suffixes: "15 Pro", "14 Pro Max", "16 Plus"
+                const fullPattern = /(\d+\s+(?:pro|plus|max)(?:\s+(?:max|plus))?)/gi;
+                let match;
+                while ((match = fullPattern.exec(str)) !== null) {
+                  models.push(match[1].toLowerCase().trim());
+                }
+                
+                // Also extract standalone numbers (but only if no full matches found)
+                if (models.length === 0) {
+                  const numberPattern = /(\d+)/g;
+                  while ((match = numberPattern.exec(str)) !== null) {
+                    models.push(match[1].toLowerCase().trim());
+                  }
+                }
+                
+                return models;
               };
               
               // Compare ALL options from main product with ALL options from recommended variant
@@ -723,16 +737,35 @@
                   // Strategy 2: Check if one contains the other as substring (strict)
                   // Check if recommended contains main (e.g., "13 Pro Max / 14 Pro" contains "14 Pro")
                   if (recommendedOptStr.includes(mainOptStr)) {
-                    // But be careful: "15 Pro" should not match "15" 
-                    // Check if mainOptStr ends with a word boundary or is followed by a separator
-                    const mainEndsWithWord = /\w$/.test(mainOptStr);
-                    if (mainEndsWithWord) {
-                      // Check if the match is at word boundary (not just "15" matching "15 Pro")
+                    // CRITICAL: If main has a suffix (pro, plus, max), ensure recommended also has it
+                    // This prevents "15 Pro" from matching "15"
+                    const mainHasSuffix = /\s*(pro|plus|max)\s*$/i.test(mainOptStr);
+                    if (mainHasSuffix) {
+                      // Main is "15 pro" - verify that recommended actually contains "15 pro" (not just "15")
+                      // Check if the match is complete (not partial)
+                      const matchIndex = recommendedOptStr.indexOf(mainOptStr);
+                      const beforeMatch = recommendedOptStr.substring(0, matchIndex);
+                      const afterMatch = recommendedOptStr.substring(matchIndex + mainOptStr.length);
+                      
+                      // Verify the match is at a word boundary
+                      // Before should end with space/slash/dash or be empty
+                      // After should start with space/slash/dash or be empty
+                      const validBefore = matchIndex === 0 || /[\s\/\-]$/.test(beforeMatch);
+                      const validAfter = afterMatch === '' || /^[\s\/\-]/.test(afterMatch);
+                      
+                      if (validBefore && validAfter) {
+                        matches = true;
+                        console.log(`[Recommended Scroll] Variant ${variantIdx} matched by substring (recommended contains main with suffix):`, {
+                          mainOption: mainOptStr,
+                          recommendedOption: recommendedOptStr
+                        });
+                        break;
+                      }
+                    } else {
+                      // Main doesn't have suffix - can match more flexibly
                       const matchIndex = recommendedOptStr.indexOf(mainOptStr);
                       const afterMatch = recommendedOptStr.substring(matchIndex + mainOptStr.length);
-                      // If main is "15 Pro" and recommended is "15", this would fail the boundary check
-                      // If main is "15 Pro" and recommended is "13 Pro Max / 15 Pro", afterMatch would be empty or start with space/slash
-                      if (matchIndex >= 0 && (afterMatch === '' || /^[\s\/\-]/.test(afterMatch) || mainOptStr.length > 5)) {
+                      if (matchIndex >= 0 && (afterMatch === '' || /^[\s\/\-]/.test(afterMatch))) {
                         matches = true;
                         console.log(`[Recommended Scroll] Variant ${variantIdx} matched by substring (recommended contains main):`, {
                           mainOption: mainOptStr,
@@ -740,24 +773,27 @@
                         });
                         break;
                       }
-                    } else {
+                    }
+                  }
+                  
+                  // Also check if main contains recommended (for reverse cases, but be strict)
+                  // Only allow if recommended is longer (to avoid "15 Pro" matching "15")
+                  if (mainOptStr.includes(recommendedOptStr)) {
+                    const recommendedHasSuffix = /\s*(pro|plus|max)\s*$/i.test(recommendedOptStr);
+                    const mainHasSuffix = /\s*(pro|plus|max)\s*$/i.test(mainOptStr);
+                    
+                    // If recommended has suffix, main must also have it (or contain it)
+                    if (recommendedHasSuffix && !mainHasSuffix) {
+                      // Recommended is "15 Pro" but main is "15" - don't match
+                      // This prevents "15" from matching "15 Pro"
+                    } else if (recommendedOptStr.length > 5) {
                       matches = true;
-                      console.log(`[Recommended Scroll] Variant ${variantIdx} matched by substring (recommended contains main):`, {
+                      console.log(`[Recommended Scroll] Variant ${variantIdx} matched by substring (main contains recommended):`, {
                         mainOption: mainOptStr,
                         recommendedOption: recommendedOptStr
                       });
                       break;
                     }
-                  }
-                  
-                  // Also check if main contains recommended (for reverse cases, but be strict)
-                  if (mainOptStr.includes(recommendedOptStr) && recommendedOptStr.length > 5) {
-                    matches = true;
-                    console.log(`[Recommended Scroll] Variant ${variantIdx} matched by substring (main contains recommended):`, {
-                      mainOption: mainOptStr,
-                      recommendedOption: recommendedOptStr
-                    });
-                    break;
                   }
                   
                   // Strategy 3: Exact match
@@ -793,32 +829,52 @@
               }
               
               // Update selects in recommended product
+              // Update ALL selects with ALL options from the matching variant
+              // This ensures products with multiple options (e.g., "Transparente" + "15 Pro") update correctly
               const selects = card.querySelectorAll('.js-recommended-variant-select');
               console.log(`[Recommended Scroll] Card ${cardIdx + 1} has ${selects.length} selects`);
               
-              selects.forEach((select, idx) => {
-                if (variantOptions && variantOptions[idx]) {
-                  const optionValue = variantOptions[idx].toString().trim();
-                  console.log(`[Recommended Scroll] Card ${cardIdx + 1}, select ${idx}, looking for option:`, optionValue);
+              // Update each select with the corresponding option from the matching variant
+              selects.forEach((select, selectIdx) => {
+                // Get the option index for this select (from data attribute or use index)
+                const optionIndex = parseInt(select.dataset.optionIndex || selectIdx);
+                
+                // Get the corresponding option value from the matching variant
+                if (variantOptions && variantOptions[optionIndex]) {
+                  const optionValue = variantOptions[optionIndex].toString().trim();
+                  console.log(`[Recommended Scroll] Card ${cardIdx + 1}, select ${selectIdx} (option index ${optionIndex}), looking for option:`, optionValue);
                   
-                  // Find and select matching option
+                  // Find and select matching option in the select
                   const options = select.querySelectorAll('option');
                   let found = false;
                   options.forEach(opt => {
-                    if (!found && opt.value) {
-                      const optValue = opt.value.toString().trim().toLowerCase();
-                      const targetValue = optionValue.toLowerCase();
-                      if (optValue === targetValue && !opt.disabled) {
+                    if (!found && opt.value && !opt.disabled) {
+                      const optValue = opt.value.toString().trim();
+                      const targetValue = optionValue;
+                      
+                      // Case-insensitive comparison
+                      if (optValue.toLowerCase() === targetValue.toLowerCase()) {
                         if (select.value !== opt.value) {
-                          console.log(`[Recommended Scroll] Setting select ${idx} to:`, opt.value);
+                          console.log(`[Recommended Scroll] Setting select ${selectIdx} (option index ${optionIndex}) to:`, opt.value);
                           select.value = opt.value;
                           // Trigger change event to update image, price, etc.
-                          select.dispatchEvent(new Event('change', { bubbles: true }));
+                          // Use a small delay to ensure all selects are updated before triggering events
+                          setTimeout(() => {
+                            select.dispatchEvent(new Event('change', { bubbles: true }));
+                          }, selectIdx * 10); // Stagger events slightly
+                        } else {
+                          console.log(`[Recommended Scroll] Select ${selectIdx} already has value:`, opt.value);
                         }
                         found = true;
                       }
                     }
                   });
+                  
+                  if (!found) {
+                    console.log(`[Recommended Scroll] Could not find option "${optionValue}" in select ${selectIdx}`);
+                  }
+                } else {
+                  console.log(`[Recommended Scroll] No option value for select ${selectIdx} (option index ${optionIndex})`);
                 }
               });
             } else {
