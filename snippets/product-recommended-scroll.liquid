@@ -644,20 +644,7 @@
                 return false;
               }
               
-              // Compare first option (device/model) - this is the most important one
-              // Check if recommended variant's first option contains main product's first option
-              const mainFirstOption = mainProductOptions[0];
-              const recommendedFirstOption = currentVariantOptions[0];
-              
-              if (!mainFirstOption || !recommendedFirstOption) {
-                console.log(`[Recommended Scroll] Variant ${variantIdx} missing first option`);
-                return false;
-              }
-              
-              const mainOptStr = mainFirstOption.toString().trim().toLowerCase();
-              const recommendedOptStr = recommendedFirstOption.toString().trim().toLowerCase();
-              
-              // Extract model numbers (e.g., "14 Pro" from "iPhone 14 Pro")
+              // Extract model numbers from a string (e.g., "14 Pro" from "iPhone 14 Pro")
               // This allows matching "iPhone 14 Pro" with "iPhone 13 Pro Max / 14 Pro"
               const extractModelNumbers = (str) => {
                 // Extract patterns like "14 Pro", "13 Pro Max", "16 Plus", etc.
@@ -666,41 +653,75 @@
                 return matches ? matches.map(m => m.toLowerCase().trim()) : [];
               };
               
-              const mainModels = extractModelNumbers(mainOptStr);
-              const recommendedModels = extractModelNumbers(recommendedOptStr);
+              // Compare ALL options from main product with ALL options from recommended variant
+              // This handles cases where:
+              // - Main: "iPhone 14 Pro" (1 option)
+              // - Recommended: "Transparente" + "iPhone 14 Pro" (2 options)
+              // We need to find if ANY recommended option matches ANY main product option
               
-              // Check if any main product model is contained in recommended variant
-              // OR if recommended variant contains main product model as substring
               let matches = false;
               
-              if (mainModels.length > 0 && recommendedModels.length > 0) {
-                // Check if any main model matches any recommended model
-                matches = mainModels.some(mainModel => {
-                  return recommendedModels.some(recModel => {
-                    // Exact match or contains match
-                    return recModel === mainModel || recModel.includes(mainModel) || mainModel.includes(recModel);
-                  });
-                });
+              // For each main product option, check if it matches any recommended variant option
+              for (let mainIdx = 0; mainIdx < mainProductOptions.length; mainIdx++) {
+                const mainOpt = mainProductOptions[mainIdx];
+                if (!mainOpt) continue;
+                
+                const mainOptStr = mainOpt.toString().trim().toLowerCase();
+                const mainModels = extractModelNumbers(mainOptStr);
+                
+                // Check if this main option matches any recommended option
+                for (let recIdx = 0; recIdx < currentVariantOptions.length; recIdx++) {
+                  const recommendedOpt = currentVariantOptions[recIdx];
+                  if (!recommendedOpt) continue;
+                  
+                  const recommendedOptStr = recommendedOpt.toString().trim().toLowerCase();
+                  const recommendedModels = extractModelNumbers(recommendedOptStr);
+                  
+                  // Strategy 1: Compare extracted model numbers
+                  if (mainModels.length > 0 && recommendedModels.length > 0) {
+                    const modelMatch = mainModels.some(mainModel => {
+                      return recommendedModels.some(recModel => {
+                        // Exact match or contains match
+                        return recModel === mainModel || recModel.includes(mainModel) || mainModel.includes(recModel);
+                      });
+                    });
+                    if (modelMatch) {
+                      matches = true;
+                      console.log(`[Recommended Scroll] Variant ${variantIdx} matched by model numbers:`, {
+                        mainOption: mainOptStr,
+                        recommendedOption: recommendedOptStr,
+                        mainModels: mainModels,
+                        recommendedModels: recommendedModels
+                      });
+                      break;
+                    }
+                  }
+                  
+                  // Strategy 2: Check if one contains the other as substring
+                  if (recommendedOptStr.includes(mainOptStr) || mainOptStr.includes(recommendedOptStr)) {
+                    matches = true;
+                    console.log(`[Recommended Scroll] Variant ${variantIdx} matched by substring:`, {
+                      mainOption: mainOptStr,
+                      recommendedOption: recommendedOptStr
+                    });
+                    break;
+                  }
+                  
+                  // Strategy 3: Exact match
+                  if (recommendedOptStr === mainOptStr) {
+                    matches = true;
+                    console.log(`[Recommended Scroll] Variant ${variantIdx} matched by exact match:`, {
+                      mainOption: mainOptStr,
+                      recommendedOption: recommendedOptStr
+                    });
+                    break;
+                  }
+                }
+                
+                if (matches) break;
               }
               
-              // Fallback: check if recommended option contains main option as substring
-              if (!matches) {
-                matches = recommendedOptStr.includes(mainOptStr) || mainOptStr.includes(recommendedOptStr);
-              }
-              
-              // Also check for exact match (for backwards compatibility)
-              if (!matches) {
-                matches = recommendedOptStr === mainOptStr;
-              }
-              
-              console.log(`[Recommended Scroll] Variant ${variantIdx} comparison:`, {
-                main: mainOptStr,
-                recommended: recommendedOptStr,
-                mainModels: mainModels,
-                recommendedModels: recommendedModels,
-                matches: matches
-              });
-              
+              console.log(`[Recommended Scroll] Variant ${variantIdx} final match result:`, matches);
               return matches;
             });
             
