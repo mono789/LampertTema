@@ -327,59 +327,6 @@
         // Store variant data for each product
         const variantData = {};
         
-        // Get main product variant selector
-        const getMainProductSelectedOptions = () => {
-          const mainProductForm = document.querySelector('[data-type="add-to-cart-form"]');
-          if (!mainProductForm) return null;
-          
-          // Try to get from variant selects/radios first (most reliable)
-          const mainProductSelects = mainProductForm.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked');
-          if (mainProductSelects.length > 0) {
-            const selectedOptions = [];
-            // Sort selects by their option index if available
-            const sortedSelects = Array.from(mainProductSelects).sort((a, b) => {
-              const aIndex = parseInt(a.dataset.optionIndex || a.closest('[data-option-index]')?.dataset.optionIndex || '0');
-              const bIndex = parseInt(b.dataset.optionIndex || b.closest('[data-option-index]')?.dataset.optionIndex || '0');
-              return aIndex - bIndex;
-            });
-            
-            sortedSelects.forEach(select => {
-              if (select.tagName === 'SELECT' && select.value) {
-                selectedOptions.push(select.value);
-              } else if (select.tagName === 'INPUT' && select.checked && select.value) {
-                selectedOptions.push(select.value);
-              }
-            });
-            
-            if (selectedOptions.length > 0) {
-              return selectedOptions;
-            }
-          }
-          
-          // Fallback: try to get from variant ID and find options
-          const variantIdInput = mainProductForm.querySelector('input[name="id"]');
-          if (variantIdInput && variantIdInput.value) {
-            const variantId = variantIdInput.value;
-            // Try to find variant data in the page
-            const variantScripts = document.querySelectorAll('script[type="application/json"]');
-            for (let script of variantScripts) {
-              try {
-                const variants = JSON.parse(script.textContent);
-                if (Array.isArray(variants)) {
-                  const variant = variants.find(v => v.id == variantId);
-                  if (variant && variant.options && Array.isArray(variant.options)) {
-                    return variant.options;
-                  }
-                }
-              } catch (e) {
-                // Continue searching
-              }
-            }
-          }
-          
-          return null;
-        };
-        
         // Initialize variant data from JSON scripts
         document.querySelectorAll('.js-recommended-variants-data').forEach(script => {
           try {
@@ -390,113 +337,7 @@
           }
         });
         
-        // Sync recommended products with main product variant
-        const syncRecommendedProductsWithMain = () => {
-          const mainProductOptions = getMainProductSelectedOptions();
-          if (!mainProductOptions || mainProductOptions.length === 0) return;
-          
-          document.querySelectorAll('.recommended-scroll-card-wrapper').forEach(card => {
-            const productId = parseInt(card.dataset.productId);
-            const variants = variantData[productId];
-            if (!variants || variants.length === 0) return;
-            
-            // Find matching variant in recommended product
-            const matchingVariant = variants.find(variant => {
-              if (!variant.options || variant.options.length !== mainProductOptions.length) return false;
-              // Check if options match (case-insensitive comparison)
-              return variant.options.every((opt, idx) => {
-                const mainOpt = mainProductOptions[idx];
-                if (!opt || !mainOpt) return false;
-                const optStr = opt.toString().trim().toLowerCase();
-                const mainOptStr = mainOpt.toString().trim().toLowerCase();
-                return optStr === mainOptStr;
-              });
-            });
-            
-            if (matchingVariant && matchingVariant.available) {
-              // Update selects in recommended product
-              const selects = card.querySelectorAll('.js-recommended-variant-select');
-              selects.forEach((select, idx) => {
-                if (matchingVariant.options[idx]) {
-                  const optionValue = matchingVariant.options[idx].toString().trim();
-                  // Find and select matching option
-                  const options = select.querySelectorAll('option');
-                  let found = false;
-                  options.forEach(opt => {
-                    if (!found && opt.value) {
-                      const optValue = opt.value.toString().trim().toLowerCase();
-                      const targetValue = optionValue.toLowerCase();
-                      if (optValue === targetValue && !opt.disabled) {
-                        if (select.value !== opt.value) {
-                          select.value = opt.value;
-                          found = true;
-                          // Trigger change event to update image, price, etc.
-                          select.dispatchEvent(new Event('change', { bubbles: true }));
-                        }
-                      }
-                    }
-                  });
-                }
-              });
-            }
-          });
-        };
-        
-        // Listen for changes in main product variant
-        const mainProductForm = document.querySelector('[data-type="add-to-cart-form"]');
-        if (mainProductForm) {
-          // Listen to variant selects/radios changes
-          mainProductForm.addEventListener('change', (e) => {
-            if (e.target.matches('.js-variant-select-item, .js-variant-radio-item')) {
-              setTimeout(syncRecommendedProductsWithMain, 100);
-            }
-          });
-          
-          // Also listen to variant ID input changes (for programmatic changes)
-          const variantIdInput = mainProductForm.querySelector('input[name="id"]');
-          if (variantIdInput) {
-            const observer = new MutationObserver(() => {
-              setTimeout(syncRecommendedProductsWithMain, 100);
-            });
-            observer.observe(variantIdInput, { attributes: true, attributeFilter: ['value'] });
-          }
-        }
-        
-        // Initial sync on page load
-        setTimeout(syncRecommendedProductsWithMain, 500);
-        
-        // Update main product variant when recommended product variant changes
-        const updateMainProductVariant = (selectedOptions) => {
-          const mainProductForm = document.querySelector('[data-type="add-to-cart-form"]');
-          if (!mainProductForm) return;
-          
-          const mainProductSelects = mainProductForm.querySelectorAll('.js-variant-select-item, .js-variant-radio-item');
-          if (mainProductSelects.length === 0) return;
-          
-          // Try to find matching options in main product
-          mainProductSelects.forEach((select, idx) => {
-            if (selectedOptions[idx]) {
-              const optionValue = selectedOptions[idx].toString().toLowerCase();
-              
-              if (select.tagName === 'SELECT') {
-                const options = select.querySelectorAll('option');
-                options.forEach(opt => {
-                  if (opt.value && opt.value.toString().toLowerCase() === optionValue && !opt.disabled) {
-                    select.value = opt.value;
-                    select.dispatchEvent(new Event('change', { bubbles: true }));
-                  }
-                });
-              } else if (select.tagName === 'INPUT' && select.type === 'radio') {
-                if (select.value && select.value.toString().toLowerCase() === optionValue && !select.disabled) {
-                  select.checked = true;
-                  select.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-              }
-            }
-          });
-        };
-        
-        // Handle variant selection change in recommended products
+        // Handle variant selection change
         document.addEventListener('change', function(e) {
           if (!e.target.classList.contains('js-recommended-variant-select')) return;
           
@@ -513,9 +354,6 @@
           card.querySelectorAll('.js-recommended-variant-select').forEach(s => {
             selectedOptions.push(s.value);
           });
-          
-          // Update main product variant if possible
-          updateMainProductVariant(selectedOptions);
           
           // Find matching variant
           const variants = variantData[productId];
@@ -557,7 +395,7 @@
             const priceElement = card.querySelector('.js-recommended-card-price');
             if (priceElement && matchedVariant.price_formatted) {
               const priceHtml = matchedVariant.compare_at_price && matchedVariant.compare_at_price > matchedVariant.price
-                ? `<span class="price-item price-item--last mt-4 mb-4 d-inline-block">${matchedVariant.price_formatted}</span><s class="price-item price-item--regular color-light subtext d-inline-block ml-4">${matchedVariant.compare_at_price_formatted}</s>`
+                ? `<span class="price-item price-item--last mt-4 mb-4 d-inline-block">${matchedVariant.price_formatted}</span><s class="price-item price-item--regular color-light subtext d-inline-block ml-8">${matchedVariant.compare_at_price_formatted}</s>`
                 : `<span class="price-item price-item--regular price-item--last mt-4 mb-4 d-inline-block">${matchedVariant.price_formatted}</span>`;
               priceElement.innerHTML = priceHtml;
             }
