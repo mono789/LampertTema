@@ -550,8 +550,28 @@
         // Listen for changes in main product variant
         const mainProductForm = document.querySelector('[data-type="add-to-cart-form"]');
         console.log('[Recommended Scroll] Setting up main product listeners, form found:', !!mainProductForm);
+        
+        // Listen to ALL change events in the document (delegation)
+        document.addEventListener('change', (e) => {
+          console.log('[Recommended Scroll] Change event detected anywhere:', e.target);
+          // Check if it's a variant selector
+          if (e.target.matches('.js-variant-select-item, .js-variant-radio-item, input[name*="option"], select[name*="option"]')) {
+            console.log('[Recommended Scroll] Variant selector changed, syncing in 200ms...');
+            setTimeout(syncRecommendedProductsWithMain, 200);
+          }
+        }, true); // Use capture phase to catch events early
+        
+        // Listen to click events on variant labels/buttons (for radio buttons)
+        document.addEventListener('click', (e) => {
+          const variantLabel = e.target.closest('.js-variant-option-label, .product-option__label, label[for*="Option"]');
+          if (variantLabel) {
+            console.log('[Recommended Scroll] Variant label clicked, syncing in 300ms...');
+            setTimeout(syncRecommendedProductsWithMain, 300);
+          }
+        }, true);
+        
         if (mainProductForm) {
-          // Listen to variant selects/radios changes
+          // Listen to variant selects/radios changes within form
           mainProductForm.addEventListener('change', (e) => {
             console.log('[Recommended Scroll] Change event detected in main product form:', e.target);
             if (e.target.matches('.js-variant-select-item, .js-variant-radio-item')) {
@@ -564,26 +584,66 @@
           const variantIdInput = mainProductForm.querySelector('input[name="id"]');
           console.log('[Recommended Scroll] Variant ID input found:', !!variantIdInput);
           if (variantIdInput) {
+            // Use both MutationObserver and value property watching
             const observer = new MutationObserver((mutations) => {
               console.log('[Recommended Scroll] MutationObserver detected change:', mutations);
               setTimeout(syncRecommendedProductsWithMain, 100);
             });
-            observer.observe(variantIdInput, { attributes: true, attributeFilter: ['value'] });
+            observer.observe(variantIdInput, { 
+              attributes: true, 
+              attributeFilter: ['value'],
+              childList: false,
+              subtree: false
+            });
             console.log('[Recommended Scroll] MutationObserver set up for variant ID input');
-          }
-          
-          // Also listen to input value changes (not just attributes)
-          if (variantIdInput) {
+            
+            // Watch for value property changes
             let lastValue = variantIdInput.value;
-            setInterval(() => {
-              if (variantIdInput.value !== lastValue) {
-                console.log('[Recommended Scroll] Variant ID value changed from', lastValue, 'to', variantIdInput.value);
-                lastValue = variantIdInput.value;
+            const valueWatcher = setInterval(() => {
+              const currentValue = variantIdInput.value;
+              if (currentValue !== lastValue) {
+                console.log('[Recommended Scroll] Variant ID value changed from', lastValue, 'to', currentValue);
+                lastValue = currentValue;
                 setTimeout(syncRecommendedProductsWithMain, 100);
               }
-            }, 200);
+            }, 150);
+            
+            // Store watcher to clear if needed
+            if (window.recommendedScrollWatchers) {
+              window.recommendedScrollWatchers.push(valueWatcher);
+            } else {
+              window.recommendedScrollWatchers = [valueWatcher];
+            }
+          }
+          
+          // Listen to custom events from variant components
+          const variantRadios = document.querySelector('sht-variant-radios');
+          const variantSelects = document.querySelector('sht-variant-selects');
+          console.log('[Recommended Scroll] Variant radios found:', !!variantRadios);
+          console.log('[Recommended Scroll] Variant selects found:', !!variantSelects);
+          
+          if (variantRadios) {
+            variantRadios.addEventListener('change', () => {
+              console.log('[Recommended Scroll] sht-variant-radios change event');
+              setTimeout(syncRecommendedProductsWithMain, 100);
+            });
+          }
+          
+          if (variantSelects) {
+            variantSelects.addEventListener('change', () => {
+              console.log('[Recommended Scroll] sht-variant-selects change event');
+              setTimeout(syncRecommendedProductsWithMain, 100);
+            });
           }
         }
+        
+        // Also listen to any input/select changes in the entire document that might affect variants
+        document.addEventListener('input', (e) => {
+          if (e.target.matches('input[name="id"], input[name*="option"], select[name*="option"]')) {
+            console.log('[Recommended Scroll] Input event on variant field:', e.target);
+            setTimeout(syncRecommendedProductsWithMain, 150);
+          }
+        }, true);
         
         // Initial sync on page load
         console.log('[Recommended Scroll] Setting up initial sync in 500ms...');
