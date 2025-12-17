@@ -337,6 +337,16 @@
           console.log('[Recommended Scroll] Main product form found:', !!mainProductForm);
           if (!mainProductForm) return null;
           
+          // Helper function to filter out recommended product selects
+          const isMainProductSelect = (element) => {
+            // Exclude if it's a recommended product select
+            if (element.classList.contains('js-recommended-variant-select')) return false;
+            if (element.closest('.recommended-scroll-card-wrapper')) return false;
+            if (element.id && element.id.includes('recommended-form-')) return false;
+            if (element.dataset.productId) return false; // Recommended products have data-product-id
+            return true;
+          };
+          
           // Try to get from variant selects/radios first (most reliable)
           // Search in the entire document but within the product section context
           const productSection = mainProductForm.closest('[data-section]') || document;
@@ -348,35 +358,58 @@
           
           // Strategy 1: Search within custom elements
           if (variantSelectsContainer) {
-            mainProductSelects = variantSelectsContainer.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked, select[name*="option"], input[type="radio"][name*="option"]:checked');
-            console.log('[Recommended Scroll] Found in custom element:', mainProductSelects.length);
+            const found = variantSelectsContainer.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked, select[name*="option"], input[type="radio"][name*="option"]:checked');
+            mainProductSelects = Array.from(found).filter(isMainProductSelect);
+            console.log('[Recommended Scroll] Found in custom element:', mainProductSelects.length, '(filtered from', found.length, ')');
           }
           
-          // Strategy 2: Search in the entire product section
+          // Strategy 2: Search in the entire product section, but exclude recommended products area
           if (mainProductSelects.length === 0) {
-            mainProductSelects = productSection.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked, select[name*="option"], input[type="radio"][name*="option"]:checked');
-            console.log('[Recommended Scroll] Found in product section:', mainProductSelects.length);
+            const found = productSection.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked, select[name*="option"], input[type="radio"][name*="option"]:checked');
+            mainProductSelects = Array.from(found).filter(isMainProductSelect);
+            console.log('[Recommended Scroll] Found in product section:', mainProductSelects.length, '(filtered from', found.length, ')');
           }
           
           // Strategy 3: Search in the entire document (fallback)
           if (mainProductSelects.length === 0) {
-            mainProductSelects = document.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked, select[name*="option"]:not(.js-recommended-variant-select), input[type="radio"][name*="option"]:checked:not([data-product-id])');
-            console.log('[Recommended Scroll] Found in document:', mainProductSelects.length);
+            const found = document.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked, select[name*="option"], input[type="radio"][name*="option"]:checked');
+            mainProductSelects = Array.from(found).filter(isMainProductSelect);
+            console.log('[Recommended Scroll] Found in document:', mainProductSelects.length, '(filtered from', found.length, ')');
           }
           
-          console.log('[Recommended Scroll] Total variant selects/radios found:', mainProductSelects.length);
+          console.log('[Recommended Scroll] Total variant selects/radios found (main product only):', mainProductSelects.length);
+          
+          // Helper function to filter out recommended product selects
+          const isMainProductSelect = (element) => {
+            // Exclude if it's a recommended product select
+            if (element.classList.contains('js-recommended-variant-select')) return false;
+            if (element.closest('.recommended-scroll-card-wrapper')) return false;
+            if (element.id && element.id.includes('recommended-form-')) return false;
+            if (element.dataset.productId) return false; // Recommended products have data-product-id
+            return true;
+          };
           
           // If we have a specific select that changed, use it directly
           if (changedSelect && (changedSelect.tagName === 'SELECT' || (changedSelect.tagName === 'INPUT' && changedSelect.type === 'radio'))) {
+            // Make sure it's not a recommended product select
+            if (!isMainProductSelect(changedSelect)) {
+              console.log('[Recommended Scroll] Changed select is from recommended product, ignoring');
+              return null;
+            }
+            
             console.log('[Recommended Scroll] Using changed select directly:', changedSelect);
             const selectedOptions = [];
             
             // Get all selects/radios for this product to build the full options array
-            const allSelects = Array.from(productSection.querySelectorAll('.js-variant-select-item, select[name*="option"]:not(.js-recommended-variant-select)'));
-            const allRadios = Array.from(productSection.querySelectorAll('.js-variant-radio-item, input[type="radio"][name*="option"]:not([data-product-id])'));
+            const allSelects = Array.from(productSection.querySelectorAll('.js-variant-select-item, select[name*="option"]'));
+            const allRadios = Array.from(productSection.querySelectorAll('.js-variant-radio-item, input[type="radio"][name*="option"]'));
+            
+            // Filter to only main product selects
+            const filteredSelects = allSelects.filter(isMainProductSelect);
+            const filteredRadios = allRadios.filter(isMainProductSelect);
             
             // Combine and sort by DOM order or option index
-            const allVariantInputs = [...allSelects, ...allRadios].sort((a, b) => {
+            const allVariantInputs = [...filteredSelects, ...filteredRadios].sort((a, b) => {
               const aIndex = parseInt(a.dataset.optionIndex || a.closest('[data-option-index]')?.dataset.optionIndex || '0');
               const bIndex = parseInt(b.dataset.optionIndex || b.closest('[data-option-index]')?.dataset.optionIndex || '0');
               if (aIndex !== bIndex) return aIndex - bIndex;
@@ -385,7 +418,7 @@
               return position & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
             });
             
-            console.log('[Recommended Scroll] All variant inputs found:', allVariantInputs.length);
+            console.log('[Recommended Scroll] All variant inputs found (main product only):', allVariantInputs.length);
             
             allVariantInputs.forEach((input, idx) => {
               let value = null;
