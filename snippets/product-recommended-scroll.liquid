@@ -607,6 +607,12 @@
         
         // Sync recommended products with main product variant
         const syncRecommendedProductsWithMain = (changedSelect = null) => {
+          // Skip if we're updating a recommended product (prevents overwriting user's selection)
+          if (isUpdatingRecommendedProduct) {
+            console.log('[Recommended Scroll] Skipping sync - user is updating recommended product');
+            return;
+          }
+          
           console.log('[Recommended Scroll] ===== Starting sync with main product =====');
           const mainProductOptions = getMainProductSelectedOptions(changedSelect);
           console.log('[Recommended Scroll] Main product options:', mainProductOptions);
@@ -682,6 +688,12 @@
               // Update selects in recommended product
               const selects = card.querySelectorAll('.js-recommended-variant-select');
               console.log(`[Recommended Scroll] Card ${cardIdx + 1} has ${selects.length} selects`);
+              let selectWasUpdated = false;
+              
+              // Set flag temporarily to prevent change events from triggering sync
+              const wasUpdating = isUpdatingRecommendedProduct;
+              isUpdatingRecommendedProduct = true;
+              
               selects.forEach((select, idx) => {
                 if (variantOptions && variantOptions[idx]) {
                   const optionValue = variantOptions[idx].toString().trim();
@@ -700,10 +712,9 @@
                         if (select.value !== opt.value) {
                           console.log(`[Recommended Scroll] Setting select ${idx} to:`, opt.value);
                           select.value = opt.value;
+                          selectWasUpdated = true;
                           found = true;
-                          // Trigger change event to update image, price, etc.
-                          select.dispatchEvent(new Event('change', { bubbles: true }));
-                          console.log(`[Recommended Scroll] Change event dispatched for select ${idx}`);
+                          console.log(`[Recommended Scroll] Select ${idx} updated programmatically (no change event)`);
                         } else {
                           console.log(`[Recommended Scroll] Select ${idx} already has value:`, opt.value);
                           found = true; // Mark as found even if already set
@@ -726,6 +737,77 @@
                   }
                 }
               });
+              
+              // If we updated any selects, update the variant ID, image, price, and button
+              if (selectWasUpdated) {
+                setTimeout(() => {
+                  const form = card.querySelector('form');
+                  const variantIdInput = form.querySelector('.js-recommended-variant-id');
+                  const image = card.querySelector('.js-recommended-card-image');
+                  const addToCartBtn = card.querySelector('.js-recommended-add-to-cart');
+                  
+                  // Get all selected options
+                  const selectedOptions = [];
+                  selects.forEach(s => {
+                    selectedOptions.push(s.value);
+                  });
+                  
+                  // Find matching variant
+                  const matchedVariant = variants.find(variant => {
+                    if (!variant.options || variant.options.length !== selectedOptions.length) return false;
+                    return variant.options.every((opt, idx) => opt === selectedOptions[idx]);
+                  });
+                  
+                  if (matchedVariant && variantIdInput) {
+                    variantIdInput.value = matchedVariant.id;
+                    
+                    // Update image
+                    if (matchedVariant.image && image) {
+                      const currentSrc = image.src.split('?')[0];
+                      const newImageSrc = matchedVariant.image.split('?')[0];
+                      if (currentSrc !== newImageSrc) {
+                        image.style.opacity = '0';
+                        setTimeout(() => {
+                          image.src = matchedVariant.image;
+                          const baseUrl = matchedVariant.image;
+                          const url120 = baseUrl.replace(/width=\d+/i, 'width=120').replace(/_(\d+)x(\d+)/i, '_120x120');
+                          const url160 = baseUrl.replace(/width=\d+/i, 'width=160').replace(/_(\d+)x(\d+)/i, '_160x160');
+                          image.srcset = url120 + ' 120w, ' + url160 + ' 160w, ' + baseUrl + ' 360w';
+                          if (!image.width) image.width = 360;
+                          if (!image.height) image.height = 360;
+                          image.style.opacity = '1';
+                        }, 150);
+                      }
+                    }
+                    
+                    // Update price
+                    const priceElement = card.querySelector('.js-recommended-card-price');
+                    if (priceElement && matchedVariant.price_formatted) {
+                      const priceHtml = matchedVariant.compare_at_price && matchedVariant.compare_at_price > matchedVariant.price
+                        ? `<span class="price-item price-item--last mt-4 mb-4 d-inline-block">${matchedVariant.price_formatted}</span><s class="price-item price-item--regular color-light subtext d-inline-block ml-4">${matchedVariant.compare_at_price_formatted}</s>`
+                        : `<span class="price-item price-item--regular price-item--last mt-4 mb-4 d-inline-block">${matchedVariant.price_formatted}</span>`;
+                      priceElement.innerHTML = priceHtml;
+                    }
+                    
+                    // Update add to cart button
+                    if (addToCartBtn) {
+                      if (matchedVariant.available) {
+                        addToCartBtn.disabled = false;
+                        addToCartBtn.textContent = addToCartBtn.dataset.addToCartText || '{{ 'products.product.add_to_cart' | t }}';
+                      } else {
+                        addToCartBtn.disabled = true;
+                        addToCartBtn.textContent = addToCartBtn.dataset.soldOutText || '{{ 'products.product.sold_out' | t }}';
+                      }
+                    }
+                  }
+                  
+                  // Restore flag state
+                  isUpdatingRecommendedProduct = wasUpdating;
+                }, 50);
+              } else {
+                // Restore flag immediately if no updates were made
+                isUpdatingRecommendedProduct = wasUpdating;
+              }
             } else {
               console.log(`[Recommended Scroll] Card ${cardIdx + 1} - no matching variant or not available`);
             }
@@ -887,11 +969,13 @@
         }, 500);
         
         // Handle variant selection change in recommended products
+        // Use capture phase to set flag BEFORE other listeners can execute
         document.addEventListener('change', function(e) {
           if (!e.target.classList.contains('js-recommended-variant-select')) return;
           
-          // Set flag to prevent synchronization from triggering
+          // Set flag IMMEDIATELY to prevent synchronization from triggering
           isUpdatingRecommendedProduct = true;
+          console.log('[Recommended Scroll] User changing recommended product variant - setting flag to prevent sync');
           
           const select = e.target;
           const productId = parseInt(select.dataset.productId);
@@ -967,11 +1051,12 @@
             }
           }
           
-          // Reset flag after a short delay to allow any events to settle
+          // Reset flag after a delay to allow any events to settle
           setTimeout(() => {
             isUpdatingRecommendedProduct = false;
-          }, 100);
-        });
+            console.log('[Recommended Scroll] Flag reset - sync can resume');
+          }, 500);
+        }, true); // Use capture phase to execute BEFORE other listeners
         
         // Store button text in data attributes for later use
         document.querySelectorAll('.js-recommended-add-to-cart').forEach(btn => {
