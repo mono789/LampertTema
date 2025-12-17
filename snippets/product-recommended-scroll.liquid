@@ -372,22 +372,66 @@
           const variantIdInput = mainProductForm.querySelector('input[name="id"]');
           console.log('[Recommended Scroll] Variant ID input found:', !!variantIdInput);
           if (variantIdInput && variantIdInput.value) {
-            const variantId = variantIdInput.value;
+            const variantId = parseInt(variantIdInput.value);
             console.log('[Recommended Scroll] Variant ID:', variantId);
             // Try to find variant data in the page
             const variantScripts = document.querySelectorAll('script[type="application/json"]');
             console.log('[Recommended Scroll] Found JSON scripts:', variantScripts.length);
             for (let script of variantScripts) {
               try {
-                const variants = JSON.parse(script.textContent);
-                if (Array.isArray(variants)) {
-                  console.log('[Recommended Scroll] Found variants array with', variants.length, 'variants');
-                  const variant = variants.find(v => v.id == variantId);
+                const data = JSON.parse(script.textContent);
+                console.log('[Recommended Scroll] Parsed script data:', data);
+                
+                // Check if it's an array of variants
+                if (Array.isArray(data)) {
+                  console.log('[Recommended Scroll] Found variants array with', data.length, 'variants');
+                  const variant = data.find(v => {
+                    const vId = parseInt(v.id) || v.id;
+                    const targetId = parseInt(variantId) || variantId;
+                    return vId == targetId;
+                  });
+                  if (variant) {
+                    console.log('[Recommended Scroll] Found matching variant:', variant);
+                    console.log('[Recommended Scroll] Variant keys:', Object.keys(variant));
+                    // Try different possible property names for options
+                    if (variant.options && Array.isArray(variant.options)) {
+                      console.log('[Recommended Scroll] Variant options (array):', variant.options);
+                      return variant.options;
+                    } else if (variant.option1 || variant.option2 || variant.option3) {
+                      // Build options array from option1, option2, option3 (Shopify standard format)
+                      const options = [];
+                      if (variant.option1) options.push(variant.option1);
+                      if (variant.option2) options.push(variant.option2);
+                      if (variant.option3) options.push(variant.option3);
+                      console.log('[Recommended Scroll] Built options from option1/2/3:', options);
+                      return options.length > 0 ? options : null;
+                    } else {
+                      console.log('[Recommended Scroll] Variant has no options property');
+                    }
+                  } else {
+                    console.log('[Recommended Scroll] Variant not found with ID:', variantId);
+                    console.log('[Recommended Scroll] Available variant IDs:', data.map(v => v.id || parseInt(v.id)));
+                  }
+                } else if (data.variants && Array.isArray(data.variants)) {
+                  // Check if data has a variants property
+                  console.log('[Recommended Scroll] Found variants in data.variants:', data.variants.length);
+                  const variant = data.variants.find(v => {
+                    const vId = parseInt(v.id) || v.id;
+                    const targetId = parseInt(variantId) || variantId;
+                    return vId == targetId;
+                  });
                   if (variant) {
                     console.log('[Recommended Scroll] Found matching variant:', variant);
                     if (variant.options && Array.isArray(variant.options)) {
-                      console.log('[Recommended Scroll] Variant options:', variant.options);
+                      console.log('[Recommended Scroll] Variant options (array):', variant.options);
                       return variant.options;
+                    } else if (variant.option1 || variant.option2 || variant.option3) {
+                      const options = [];
+                      if (variant.option1) options.push(variant.option1);
+                      if (variant.option2) options.push(variant.option2);
+                      if (variant.option3) options.push(variant.option3);
+                      console.log('[Recommended Scroll] Built options from option1/2/3:', options);
+                      return options.length > 0 ? options : null;
                     }
                   }
                 }
