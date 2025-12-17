@@ -77,7 +77,49 @@
           </sht-prd-slideshow>
         </div>
       {%- endif -%}
+      {%- comment -%} Desktop version - inside media wrapper {%- endcomment -%}
+      <div class="product__left-column-content d-none d-block-md">
+        {%- if section.settings.enable_recommended_scroll -%}
+          {%- assign recommended_products_metafield = product.metafields.custom.recommended_products -%}
+          {%- if recommended_products_metafield != blank -%}
+            {%- assign recommended_products = recommended_products_metafield.value | default: empty -%}
+            {%- if recommended_products != empty and recommended_products.size > 0 -%}
+              {% render 'product-recommended-scroll',
+                related_products: recommended_products,
+                current_product: product,
+                section: section,
+                heading: section.settings.recommended_scroll_heading,
+                view_all_label: section.settings.recommended_scroll_view_all_label,
+                view_all_link: section.settings.recommended_scroll_view_all_link,
+                limit: section.settings.recommended_scroll_items %}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endif -%}
+        {%- comment -%} Product description moved to left column {%- endcomment -%}
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'basic_description' -%}
+            <div class="product__description product__description--left-column wb-break-word rte mt-24" {{ block.shopify_attributes }}>
+              <span class="d-block mb-16 h5">{{ 'products.product.description' | t }}</span>{{ product.description }}
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
     </div>
+    <style>
+      .product__description--left-column {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+      @media (min-width: 769px) {
+        .product__description--left-column {
+          padding-left: 0;
+          padding-right: 0;
+        }
+        .product__left-column-content {
+          display: block !important;
+        }
+      }
+    </style>
     <div class="product__info-wrapper product-detail__item w-100 {{ max_width_content }} {{ section.settings.enable_sticky_content | default: '' | replace: 'true', 'product-detail__item--sticky' }}">
       <div id="productInfo-{{ section.id }}" class="main-product-info-container product__info-container d-flex fd-column" role="region" aria-label="{{- 'accessibility.view_product_info' | t -}}">
         {%- for block in section.blocks -%}
@@ -162,9 +204,7 @@
                 <span class="variant-sku color-light subtext"><span class="variant-sku__label">SKU: </span>{{ product.selected_or_first_available_variant.sku }}</span>
               </div>
             {%- when 'basic_description' -%}
-            <div class="product__info ord-{{ forloop.index }} product__description wb-break-word rte" {{ block.shopify_attributes }}>
-              <span class="d-block mb-16 h5">{{ 'products.product.description' | t }}</span>{{ product.description }}
-            </div>
+            {%- comment -%} Description moved to left column, skipping here {%- endcomment -%}
             {%- when 'variants' -%}
             <div class="product__info ord-{{ forloop.index }} product__variants gap-24 d-flex fd-column" {{ block.shopify_attributes }}>
               {%- unless product.has_only_default_variant -%}
@@ -578,6 +618,33 @@
       </div>
     </div>
   </div>
+  {%- comment -%} Mobile version - shown after product info {%- endcomment -%}
+  <div class="product__left-column-content-mobile d-none-md">
+    {%- if section.settings.enable_recommended_scroll -%}
+      {%- assign recommended_products_metafield = product.metafields.custom.recommended_products -%}
+      {%- if recommended_products_metafield != blank -%}
+        {%- assign recommended_products = recommended_products_metafield.value | default: empty -%}
+        {%- if recommended_products != empty and recommended_products.size > 0 -%}
+          {% render 'product-recommended-scroll',
+            related_products: recommended_products,
+            current_product: product,
+            section: section,
+            heading: section.settings.recommended_scroll_heading,
+            view_all_label: section.settings.recommended_scroll_view_all_label,
+            view_all_link: section.settings.recommended_scroll_view_all_link,
+            limit: section.settings.recommended_scroll_items %}
+        {%- endif -%}
+      {%- endif -%}
+    {%- endif -%}
+    {%- comment -%} Product description moved to left column {%- endcomment -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'basic_description' -%}
+        <div class="product__description product__description--left-column wb-break-word rte mt-24" {{ block.shopify_attributes }}>
+          <span class="d-block mb-16 h5">{{ 'products.product.description' | t }}</span>{{ product.description }}
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
   <div class="ctnr">
     <div class="rw">
       <div class="clm hide-empty" style="--w-xs: 12;">
@@ -802,6 +869,42 @@
     {
       "type": "range",
       "id": "design_scroll_items",
+      "label": "Maximum items to show",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Recommended products scroll"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_recommended_scroll",
+      "label": "Show recommended products carousel",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "recommended_scroll_heading",
+      "label": "Heading",
+      "default": "Recomendados para ti"
+    },
+    {
+      "type": "text",
+      "id": "recommended_scroll_view_all_label",
+      "label": "View all label",
+      "default": "Ver todos"
+    },
+    {
+      "type": "url",
+      "id": "recommended_scroll_view_all_link",
+      "label": "View all link"
+    },
+    {
+      "type": "range",
+      "id": "recommended_scroll_items",
       "label": "Maximum items to show",
       "min": 2,
       "max": 12,
