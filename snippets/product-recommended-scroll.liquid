@@ -327,38 +327,148 @@
         // Store variant data for each product
         const variantData = {};
         
+        // Store the last changed select element to read its value directly
+        let lastChangedSelect = null;
+        
         // Get main product variant selector
-        const getMainProductSelectedOptions = () => {
+        const getMainProductSelectedOptions = (changedSelect = null) => {
           console.log('[Recommended Scroll] Getting main product selected options...');
           const mainProductForm = document.querySelector('[data-type="add-to-cart-form"]');
           console.log('[Recommended Scroll] Main product form found:', !!mainProductForm);
           if (!mainProductForm) return null;
           
           // Try to get from variant selects/radios first (most reliable)
-          const mainProductSelects = mainProductForm.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked');
-          console.log('[Recommended Scroll] Found variant selects/radios:', mainProductSelects.length);
+          // Search in the entire document but within the product section context
+          const productSection = mainProductForm.closest('[data-section]') || document;
+          const variantSelectsContainer = productSection.querySelector('sht-variant-selects, sht-variant-radios');
+          console.log('[Recommended Scroll] Variant container found:', !!variantSelectsContainer);
+          
+          // Try multiple search strategies
+          let mainProductSelects = [];
+          
+          // Strategy 1: Search within custom elements
+          if (variantSelectsContainer) {
+            mainProductSelects = variantSelectsContainer.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked, select[name*="option"], input[type="radio"][name*="option"]:checked');
+            console.log('[Recommended Scroll] Found in custom element:', mainProductSelects.length);
+          }
+          
+          // Strategy 2: Search in the entire product section
+          if (mainProductSelects.length === 0) {
+            mainProductSelects = productSection.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked, select[name*="option"], input[type="radio"][name*="option"]:checked');
+            console.log('[Recommended Scroll] Found in product section:', mainProductSelects.length);
+          }
+          
+          // Strategy 3: Search in the entire document (fallback)
+          if (mainProductSelects.length === 0) {
+            mainProductSelects = document.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked, select[name*="option"]:not(.js-recommended-variant-select), input[type="radio"][name*="option"]:checked:not([data-product-id])');
+            console.log('[Recommended Scroll] Found in document:', mainProductSelects.length);
+          }
+          
+          console.log('[Recommended Scroll] Total variant selects/radios found:', mainProductSelects.length);
+          
+          // If we have a specific select that changed, use it directly
+          if (changedSelect && (changedSelect.tagName === 'SELECT' || (changedSelect.tagName === 'INPUT' && changedSelect.type === 'radio'))) {
+            console.log('[Recommended Scroll] Using changed select directly:', changedSelect);
+            const selectedOptions = [];
+            
+            // Get all selects/radios for this product to build the full options array
+            const allSelects = Array.from(productSection.querySelectorAll('.js-variant-select-item, select[name*="option"]:not(.js-recommended-variant-select)'));
+            const allRadios = Array.from(productSection.querySelectorAll('.js-variant-radio-item, input[type="radio"][name*="option"]:not([data-product-id])'));
+            
+            // Combine and sort by DOM order or option index
+            const allVariantInputs = [...allSelects, ...allRadios].sort((a, b) => {
+              const aIndex = parseInt(a.dataset.optionIndex || a.closest('[data-option-index]')?.dataset.optionIndex || '0');
+              const bIndex = parseInt(b.dataset.optionIndex || b.closest('[data-option-index]')?.dataset.optionIndex || '0');
+              if (aIndex !== bIndex) return aIndex - bIndex;
+              // If same index, maintain DOM order
+              const position = a.compareDocumentPosition(b);
+              return position & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+            });
+            
+            console.log('[Recommended Scroll] All variant inputs found:', allVariantInputs.length);
+            
+            allVariantInputs.forEach((input, idx) => {
+              let value = null;
+              if (input.tagName === 'SELECT') {
+                value = input.value;
+                console.log(`[Recommended Scroll] Input ${idx} (SELECT):`, { name: input.name, value: value });
+              } else if (input.tagName === 'INPUT' && input.type === 'radio') {
+                if (input.checked) {
+                  value = input.value;
+                  console.log(`[Recommended Scroll] Input ${idx} (RADIO):`, { name: input.name, value: value, checked: input.checked });
+                }
+              }
+              if (value) {
+                selectedOptions.push(value);
+              }
+            });
+            
+            if (selectedOptions.length > 0) {
+              console.log('[Recommended Scroll] Selected options from changed select:', selectedOptions);
+              return selectedOptions;
+            }
+          }
           
           if (mainProductSelects.length > 0) {
             const selectedOptions = [];
-            // Sort selects by their option index if available
+            // Sort selects by their option index if available, or by DOM position
             const sortedSelects = Array.from(mainProductSelects).sort((a, b) => {
-              const aIndex = parseInt(a.dataset.optionIndex || a.closest('[data-option-index]')?.dataset.optionIndex || '0');
-              const bIndex = parseInt(b.dataset.optionIndex || b.closest('[data-option-index]')?.dataset.optionIndex || '0');
+              // Try to get option index from data attribute
+              let aIndex = parseInt(a.dataset.optionIndex || a.closest('[data-option-index]')?.dataset.optionIndex || '');
+              let bIndex = parseInt(b.dataset.optionIndex || b.closest('[data-option-index]')?.dataset.optionIndex || '');
+              
+              // If no data-option-index, try to extract from name attribute (e.g., "options[Dispositivo]" -> index 0)
+              if (isNaN(aIndex) && a.name) {
+                const nameMatch = a.name.match(/options\[([^\]]+)\]/);
+                if (nameMatch) {
+                  // Find position in options_with_values by comparing with all selects
+                  const allSelects = Array.from(mainProductSelects);
+                  aIndex = allSelects.indexOf(a);
+                }
+              }
+              if (isNaN(bIndex) && b.name) {
+                const nameMatch = b.name.match(/options\[([^\]]+)\]/);
+                if (nameMatch) {
+                  const allSelects = Array.from(mainProductSelects);
+                  bIndex = allSelects.indexOf(b);
+                }
+              }
+              
+              // Fallback to DOM position
+              if (isNaN(aIndex)) aIndex = Array.from(a.parentElement?.children || []).indexOf(a);
+              if (isNaN(bIndex)) bIndex = Array.from(b.parentElement?.children || []).indexOf(b);
+              
               return aIndex - bIndex;
             });
             
             console.log('[Recommended Scroll] Sorted selects:', sortedSelects.length);
             sortedSelects.forEach((select, idx) => {
-              console.log(`[Recommended Scroll] Select ${idx}:`, {
-                tagName: select.tagName,
-                value: select.value,
-                checked: select.checked,
-                dataset: select.dataset
-              });
-              if (select.tagName === 'SELECT' && select.value) {
-                selectedOptions.push(select.value);
-              } else if (select.tagName === 'INPUT' && select.checked && select.value) {
-                selectedOptions.push(select.value);
+              let optionValue = null;
+              if (select.tagName === 'SELECT') {
+                optionValue = select.value;
+                console.log(`[Recommended Scroll] Select ${idx} (SELECT):`, {
+                  id: select.id,
+                  name: select.name,
+                  value: optionValue,
+                  selectedIndex: select.selectedIndex,
+                  options: Array.from(select.options).map(opt => ({ value: opt.value, text: opt.text, selected: opt.selected }))
+                });
+                if (optionValue) {
+                  selectedOptions.push(optionValue);
+                }
+              } else if (select.tagName === 'INPUT' && select.type === 'radio') {
+                if (select.checked) {
+                  optionValue = select.value;
+                  console.log(`[Recommended Scroll] Select ${idx} (RADIO):`, {
+                    id: select.id,
+                    name: select.name,
+                    value: optionValue,
+                    checked: select.checked
+                  });
+                  if (optionValue) {
+                    selectedOptions.push(optionValue);
+                  }
+                }
               }
             });
             
@@ -375,8 +485,22 @@
             const variantId = parseInt(variantIdInput.value);
             console.log('[Recommended Scroll] Variant ID:', variantId);
             // Try to find variant data in the page
-            const variantScripts = document.querySelectorAll('script[type="application/json"]');
-            console.log('[Recommended Scroll] Found JSON scripts:', variantScripts.length);
+            // First, try to find script within variant container
+            let variantScripts = [];
+            if (variantSelectsContainer) {
+              variantScripts = Array.from(variantSelectsContainer.querySelectorAll('script[type="application/json"]'));
+              console.log('[Recommended Scroll] Found JSON scripts in variant container:', variantScripts.length);
+            }
+            // If not found, search in product section
+            if (variantScripts.length === 0) {
+              variantScripts = Array.from(productSection.querySelectorAll('script[type="application/json"]'));
+              console.log('[Recommended Scroll] Found JSON scripts in product section:', variantScripts.length);
+            }
+            // If still not found, search in entire document
+            if (variantScripts.length === 0) {
+              variantScripts = Array.from(document.querySelectorAll('script[type="application/json"]'));
+              console.log('[Recommended Scroll] Found JSON scripts in document:', variantScripts.length);
+            }
             for (let script of variantScripts) {
               try {
                 const data = JSON.parse(script.textContent);
@@ -456,9 +580,9 @@
         });
         
         // Sync recommended products with main product variant
-        const syncRecommendedProductsWithMain = () => {
+        const syncRecommendedProductsWithMain = (changedSelect = null) => {
           console.log('[Recommended Scroll] ===== Starting sync with main product =====');
-          const mainProductOptions = getMainProductSelectedOptions();
+          const mainProductOptions = getMainProductSelectedOptions(changedSelect);
           console.log('[Recommended Scroll] Main product options:', mainProductOptions);
           if (!mainProductOptions || mainProductOptions.length === 0) {
             console.log('[Recommended Scroll] No main product options, aborting sync');
@@ -591,9 +715,10 @@
         document.addEventListener('change', (e) => {
           console.log('[Recommended Scroll] Change event detected anywhere:', e.target);
           // Check if it's a variant selector
-          if (e.target.matches('.js-variant-select-item, .js-variant-radio-item, input[name*="option"], select[name*="option"]')) {
-            console.log('[Recommended Scroll] Variant selector changed, syncing in 200ms...');
-            setTimeout(syncRecommendedProductsWithMain, 200);
+          if (e.target.matches('.js-variant-select-item, .js-variant-radio-item, input[name*="option"], select[name*="option"]') && !e.target.classList.contains('js-recommended-variant-select')) {
+            console.log('[Recommended Scroll] Variant selector changed, syncing in 300ms to allow variant ID to update...');
+            lastChangedSelect = e.target;
+            setTimeout(() => syncRecommendedProductsWithMain(e.target), 300);
           }
         }, true); // Use capture phase to catch events early
         
@@ -610,9 +735,10 @@
           // Listen to variant selects/radios changes within form
           mainProductForm.addEventListener('change', (e) => {
             console.log('[Recommended Scroll] Change event detected in main product form:', e.target);
-            if (e.target.matches('.js-variant-select-item, .js-variant-radio-item')) {
-              console.log('[Recommended Scroll] Variant change detected, syncing in 100ms...');
-              setTimeout(syncRecommendedProductsWithMain, 100);
+            if (e.target.matches('.js-variant-select-item, .js-variant-radio-item') && !e.target.classList.contains('js-recommended-variant-select')) {
+              console.log('[Recommended Scroll] Variant change detected, syncing in 200ms to allow variant ID to update...');
+              lastChangedSelect = e.target;
+              setTimeout(() => syncRecommendedProductsWithMain(e.target), 200);
             }
           });
           
@@ -679,9 +805,14 @@
         
         // Also listen to any input/select changes in the entire document that might affect variants
         document.addEventListener('input', (e) => {
-          if (e.target.matches('input[name="id"], input[name*="option"], select[name*="option"]')) {
+          if (e.target.matches('input[name="id"], input[name*="option"], select[name*="option"]') && !e.target.classList.contains('js-recommended-variant-select')) {
             console.log('[Recommended Scroll] Input event on variant field:', e.target);
-            setTimeout(syncRecommendedProductsWithMain, 150);
+            if (e.target.tagName === 'SELECT' || (e.target.tagName === 'INPUT' && e.target.type === 'radio')) {
+              lastChangedSelect = e.target;
+              setTimeout(() => syncRecommendedProductsWithMain(e.target), 250);
+            } else {
+              setTimeout(() => syncRecommendedProductsWithMain(), 250);
+            }
           }
         }, true);
         
