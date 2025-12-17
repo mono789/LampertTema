@@ -327,12 +327,6 @@
         // Store variant data for each product
         const variantData = {};
         
-        // Store the last changed select element to read its value directly
-        let lastChangedSelect = null;
-        
-        // Flag to prevent synchronization when user changes recommended product variants
-        let isUpdatingRecommendedProduct = false;
-        
         // Get main product variant selector
         const getMainProductSelectedOptions = (changedSelect = null) => {
           console.log('[Recommended Scroll] Getting main product selected options...');
@@ -607,12 +601,6 @@
         
         // Sync recommended products with main product variant
         const syncRecommendedProductsWithMain = (changedSelect = null) => {
-          // Skip if we're updating a recommended product (prevents overwriting user's selection)
-          if (isUpdatingRecommendedProduct) {
-            console.log('[Recommended Scroll] Skipping sync - user is updating recommended product');
-            return;
-          }
-          
           console.log('[Recommended Scroll] ===== Starting sync with main product =====');
           const mainProductOptions = getMainProductSelectedOptions(changedSelect);
           console.log('[Recommended Scroll] Main product options:', mainProductOptions);
@@ -673,16 +661,6 @@
             
             console.log(`[Recommended Scroll] Card ${cardIdx + 1} matching variant:`, matchingVariant);
             if (matchingVariant && matchingVariant.available) {
-              // Check if user recently modified this card (within last 5 seconds)
-              const userModifiedTime = card.dataset.userModified ? parseInt(card.dataset.userModified) : 0;
-              const timeSinceModification = Date.now() - userModifiedTime;
-              const RECENT_MODIFICATION_THRESHOLD = 5000; // 5 seconds
-              
-              if (userModifiedTime > 0 && timeSinceModification < RECENT_MODIFICATION_THRESHOLD) {
-                console.log(`[Recommended Scroll] Card ${cardIdx + 1} was recently modified by user (${timeSinceModification}ms ago), skipping sync to preserve user's selection`);
-                return; // Skip this card to preserve user's selection
-              }
-              
               console.log(`[Recommended Scroll] Updating card ${cardIdx + 1} with matching variant`);
               
               // Construct options array if needed
@@ -698,17 +676,11 @@
               // Update selects in recommended product
               const selects = card.querySelectorAll('.js-recommended-variant-select');
               console.log(`[Recommended Scroll] Card ${cardIdx + 1} has ${selects.length} selects`);
-              let selectWasUpdated = false;
-              
-              // Set flag temporarily to prevent change events from triggering sync
-              const wasUpdating = isUpdatingRecommendedProduct;
-              isUpdatingRecommendedProduct = true;
               
               selects.forEach((select, idx) => {
                 if (variantOptions && variantOptions[idx]) {
                   const optionValue = variantOptions[idx].toString().trim();
                   console.log(`[Recommended Scroll] Card ${cardIdx + 1}, select ${idx}, looking for option:`, optionValue);
-                  console.log(`[Recommended Scroll] Current select value:`, select.value);
                   
                   // Find and select matching option
                   const options = select.querySelectorAll('option');
@@ -717,107 +689,19 @@
                     if (!found && opt.value) {
                       const optValue = opt.value.toString().trim().toLowerCase();
                       const targetValue = optionValue.toLowerCase();
-                      console.log(`[Recommended Scroll] Comparing option:`, optValue, '===', targetValue, 'disabled:', opt.disabled, 'option.value:', opt.value);
                       if (optValue === targetValue && !opt.disabled) {
                         if (select.value !== opt.value) {
                           console.log(`[Recommended Scroll] Setting select ${idx} to:`, opt.value);
                           select.value = opt.value;
-                          selectWasUpdated = true;
-                          found = true;
-                          console.log(`[Recommended Scroll] Select ${idx} updated programmatically (no change event)`);
-                        } else {
-                          console.log(`[Recommended Scroll] Select ${idx} already has value:`, opt.value);
-                          found = true; // Mark as found even if already set
+                          // Trigger change event to update image, price, etc.
+                          select.dispatchEvent(new Event('change', { bubbles: true }));
                         }
+                        found = true;
                       }
                     }
                   });
-                  if (!found) {
-                    // Fallback: check if current select value already matches (case-insensitive)
-                    const currentValue = select.value.toString().trim().toLowerCase();
-                    const targetValueLower = optionValue.toLowerCase();
-                    if (currentValue === targetValueLower) {
-                      console.log(`[Recommended Scroll] Select ${idx} already matches target value (case-insensitive check)`);
-                      found = true;
-                    } else {
-                      console.log(`[Recommended Scroll] Option not found in select ${idx} for value:`, optionValue);
-                      console.log(`[Recommended Scroll] Current select value:`, select.value);
-                      console.log(`[Recommended Scroll] Available options in select:`, Array.from(options).map(o => ({ value: o.value, text: o.text, disabled: o.disabled })));
-                    }
-                  }
                 }
               });
-              
-              // If we updated any selects, update the variant ID, image, price, and button
-              if (selectWasUpdated) {
-                setTimeout(() => {
-                  const form = card.querySelector('form');
-                  const variantIdInput = form.querySelector('.js-recommended-variant-id');
-                  const image = card.querySelector('.js-recommended-card-image');
-                  const addToCartBtn = card.querySelector('.js-recommended-add-to-cart');
-                  
-                  // Get all selected options
-                  const selectedOptions = [];
-                  selects.forEach(s => {
-                    selectedOptions.push(s.value);
-                  });
-                  
-                  // Find matching variant
-                  const matchedVariant = variants.find(variant => {
-                    if (!variant.options || variant.options.length !== selectedOptions.length) return false;
-                    return variant.options.every((opt, idx) => opt === selectedOptions[idx]);
-                  });
-                  
-                  if (matchedVariant && variantIdInput) {
-                    variantIdInput.value = matchedVariant.id;
-                    
-                    // Update image
-                    if (matchedVariant.image && image) {
-                      const currentSrc = image.src.split('?')[0];
-                      const newImageSrc = matchedVariant.image.split('?')[0];
-                      if (currentSrc !== newImageSrc) {
-                        image.style.opacity = '0';
-                        setTimeout(() => {
-                          image.src = matchedVariant.image;
-                          const baseUrl = matchedVariant.image;
-                          const url120 = baseUrl.replace(/width=\d+/i, 'width=120').replace(/_(\d+)x(\d+)/i, '_120x120');
-                          const url160 = baseUrl.replace(/width=\d+/i, 'width=160').replace(/_(\d+)x(\d+)/i, '_160x160');
-                          image.srcset = url120 + ' 120w, ' + url160 + ' 160w, ' + baseUrl + ' 360w';
-                          if (!image.width) image.width = 360;
-                          if (!image.height) image.height = 360;
-                          image.style.opacity = '1';
-                        }, 150);
-                      }
-                    }
-                    
-                    // Update price
-                    const priceElement = card.querySelector('.js-recommended-card-price');
-                    if (priceElement && matchedVariant.price_formatted) {
-                      const priceHtml = matchedVariant.compare_at_price && matchedVariant.compare_at_price > matchedVariant.price
-                        ? `<span class="price-item price-item--last mt-4 mb-4 d-inline-block">${matchedVariant.price_formatted}</span><s class="price-item price-item--regular color-light subtext d-inline-block ml-4">${matchedVariant.compare_at_price_formatted}</s>`
-                        : `<span class="price-item price-item--regular price-item--last mt-4 mb-4 d-inline-block">${matchedVariant.price_formatted}</span>`;
-                      priceElement.innerHTML = priceHtml;
-                    }
-                    
-                    // Update add to cart button
-                    if (addToCartBtn) {
-                      if (matchedVariant.available) {
-                        addToCartBtn.disabled = false;
-                        addToCartBtn.textContent = addToCartBtn.dataset.addToCartText || '{{ 'products.product.add_to_cart' | t }}';
-                      } else {
-                        addToCartBtn.disabled = true;
-                        addToCartBtn.textContent = addToCartBtn.dataset.soldOutText || '{{ 'products.product.sold_out' | t }}';
-                      }
-                    }
-                  }
-                  
-                  // Restore flag state
-                  isUpdatingRecommendedProduct = wasUpdating;
-                }, 50);
-              } else {
-                // Restore flag immediately if no updates were made
-                isUpdatingRecommendedProduct = wasUpdating;
-              }
             } else {
               console.log(`[Recommended Scroll] Card ${cardIdx + 1} - no matching variant or not available`);
             }
@@ -825,157 +709,36 @@
           console.log('[Recommended Scroll] ===== Sync completed =====');
         };
         
-        // Listen for changes in main product variant
+        // Listen for changes in main product variant ONLY
         const mainProductForm = document.querySelector('[data-type="add-to-cart-form"]');
-        console.log('[Recommended Scroll] Setting up main product listeners, form found:', !!mainProductForm);
-        
-        // Listen to ALL change events in the document (delegation)
-        document.addEventListener('change', (e) => {
-          console.log('[Recommended Scroll] Change event detected anywhere:', e.target);
-          // Skip if we're updating a recommended product (prevents bidirectional sync)
-          if (isUpdatingRecommendedProduct) {
-            console.log('[Recommended Scroll] Skipping sync - updating recommended product');
-            return;
-          }
-          // Check if it's a variant selector
-          if (e.target.matches('.js-variant-select-item, .js-variant-radio-item, input[name*="option"], select[name*="option"]') && !e.target.classList.contains('js-recommended-variant-select')) {
-            console.log('[Recommended Scroll] Variant selector changed, syncing in 300ms to allow variant ID to update...');
-            lastChangedSelect = e.target;
-            setTimeout(() => syncRecommendedProductsWithMain(e.target), 300);
-          }
-        }, true); // Use capture phase to catch events early
-        
-        // Listen to click events on variant labels/buttons (for radio buttons)
-        document.addEventListener('click', (e) => {
-          // Skip if we're updating a recommended product (prevents bidirectional sync)
-          if (isUpdatingRecommendedProduct) {
-            return;
-          }
-          const variantLabel = e.target.closest('.js-variant-option-label, .product-option__label, label[for*="Option"]');
-          if (variantLabel) {
-            console.log('[Recommended Scroll] Variant label clicked, syncing in 300ms...');
-            setTimeout(syncRecommendedProductsWithMain, 300);
-          }
-        }, true);
-        
         if (mainProductForm) {
-          // Listen to variant selects/radios changes within form
+          // Listen to variant selects/radios changes within main product form ONLY
           mainProductForm.addEventListener('change', (e) => {
-            // Skip if we're updating a recommended product (prevents bidirectional sync)
-            if (isUpdatingRecommendedProduct) {
-              console.log('[Recommended Scroll] Skipping sync - updating recommended product');
-              return;
-            }
-            console.log('[Recommended Scroll] Change event detected in main product form:', e.target);
+            // Only sync if it's a main product variant selector (not recommended products)
             if (e.target.matches('.js-variant-select-item, .js-variant-radio-item') && !e.target.classList.contains('js-recommended-variant-select')) {
-              console.log('[Recommended Scroll] Variant change detected, syncing in 200ms to allow variant ID to update...');
-              lastChangedSelect = e.target;
+              console.log('[Recommended Scroll] Main product variant changed, syncing...');
               setTimeout(() => syncRecommendedProductsWithMain(e.target), 200);
             }
           });
           
-          // Also listen to variant ID input changes (for programmatic changes)
-          const variantIdInput = mainProductForm.querySelector('input[name="id"]');
-          console.log('[Recommended Scroll] Variant ID input found:', !!variantIdInput);
-          if (variantIdInput) {
-            // Use both MutationObserver and value property watching
-            const observer = new MutationObserver((mutations) => {
-              // Skip if we're updating a recommended product (prevents bidirectional sync)
-              if (isUpdatingRecommendedProduct) {
-                console.log('[Recommended Scroll] Skipping sync - updating recommended product');
-                return;
-              }
-              console.log('[Recommended Scroll] MutationObserver detected change:', mutations);
-              setTimeout(syncRecommendedProductsWithMain, 100);
-            });
-            observer.observe(variantIdInput, { 
-              attributes: true, 
-              attributeFilter: ['value'],
-              childList: false,
-              subtree: false
-            });
-            console.log('[Recommended Scroll] MutationObserver set up for variant ID input');
-            
-            // Watch for value property changes (more frequent check)
-            let lastValue = variantIdInput.value;
-            console.log('[Recommended Scroll] Initial variant ID value:', lastValue);
-            const valueWatcher = setInterval(() => {
-              // Skip if we're updating a recommended product (prevents bidirectional sync)
-              if (isUpdatingRecommendedProduct) {
-                // Don't update lastValue when flag is active, so we don't miss real changes
-                return;
-              }
-              const currentValue = variantIdInput.value;
-              if (currentValue !== lastValue) {
-                console.log('[Recommended Scroll] Variant ID value changed from', lastValue, 'to', currentValue);
-                lastValue = currentValue;
-                // Double-check flag before syncing (in case it changed during the delay)
-                setTimeout(() => {
-                  if (!isUpdatingRecommendedProduct) {
-                    console.log('[Recommended Scroll] Triggering sync after variant ID change...');
-                    syncRecommendedProductsWithMain();
-                  } else {
-                    console.log('[Recommended Scroll] Skipping sync - flag is now active');
-                  }
-                }, 150);
-              }
-            }, 100); // Check every 100ms for faster response
-            
-            // Store watcher to clear if needed
-            if (window.recommendedScrollWatchers) {
-              window.recommendedScrollWatchers.push(valueWatcher);
-            } else {
-              window.recommendedScrollWatchers = [valueWatcher];
-            }
-          }
-          
-          // Listen to custom events from variant components
+          // Listen to custom elements for variant changes
           const variantRadios = document.querySelector('sht-variant-radios');
           const variantSelects = document.querySelector('sht-variant-selects');
-          console.log('[Recommended Scroll] Variant radios found:', !!variantRadios);
-          console.log('[Recommended Scroll] Variant selects found:', !!variantSelects);
           
           if (variantRadios) {
             variantRadios.addEventListener('change', () => {
-              // Skip if we're updating a recommended product (prevents bidirectional sync)
-              if (isUpdatingRecommendedProduct) {
-                console.log('[Recommended Scroll] Skipping sync - updating recommended product');
-                return;
-              }
-              console.log('[Recommended Scroll] sht-variant-radios change event');
-              setTimeout(syncRecommendedProductsWithMain, 100);
+              console.log('[Recommended Scroll] Main product variant radios changed, syncing...');
+              setTimeout(syncRecommendedProductsWithMain, 200);
             });
           }
           
           if (variantSelects) {
             variantSelects.addEventListener('change', () => {
-              // Skip if we're updating a recommended product (prevents bidirectional sync)
-              if (isUpdatingRecommendedProduct) {
-                console.log('[Recommended Scroll] Skipping sync - updating recommended product');
-                return;
-              }
-              console.log('[Recommended Scroll] sht-variant-selects change event');
-              setTimeout(syncRecommendedProductsWithMain, 100);
+              console.log('[Recommended Scroll] Main product variant selects changed, syncing...');
+              setTimeout(syncRecommendedProductsWithMain, 200);
             });
           }
         }
-        
-        // Also listen to any input/select changes in the entire document that might affect variants
-        document.addEventListener('input', (e) => {
-          // Skip if we're updating a recommended product (prevents bidirectional sync)
-          if (isUpdatingRecommendedProduct) {
-            return;
-          }
-          if (e.target.matches('input[name="id"], input[name*="option"], select[name*="option"]') && !e.target.classList.contains('js-recommended-variant-select')) {
-            console.log('[Recommended Scroll] Input event on variant field:', e.target);
-            if (e.target.tagName === 'SELECT' || (e.target.tagName === 'INPUT' && e.target.type === 'radio')) {
-              lastChangedSelect = e.target;
-              setTimeout(() => syncRecommendedProductsWithMain(e.target), 250);
-            } else {
-              setTimeout(() => syncRecommendedProductsWithMain(), 250);
-            }
-          }
-        }, true);
         
         // Initial sync on page load
         console.log('[Recommended Scroll] Setting up initial sync in 500ms...');
@@ -985,22 +748,9 @@
         }, 500);
         
         // Handle variant selection change in recommended products
-        // Use capture phase to set flag BEFORE other listeners can execute
+        // This does NOT trigger any sync - it only updates the recommended product itself
         document.addEventListener('change', function(e) {
           if (!e.target.classList.contains('js-recommended-variant-select')) return;
-          
-          // Set flag IMMEDIATELY to prevent synchronization from triggering
-          isUpdatingRecommendedProduct = true;
-          console.log('[Recommended Scroll] User changing recommended product variant - setting flag to prevent sync');
-          
-          // Mark this select as user-modified with a timestamp
-          // This prevents sync from overwriting it even after the flag resets
-          const select = e.target;
-          const card = select.closest('.recommended-scroll-card-wrapper');
-          if (card) {
-            card.dataset.userModified = Date.now().toString();
-            console.log('[Recommended Scroll] Marked card as user-modified at', card.dataset.userModified);
-          }
           
           const select = e.target;
           const productId = parseInt(select.dataset.productId);
@@ -1015,9 +765,6 @@
           card.querySelectorAll('.js-recommended-variant-select').forEach(s => {
             selectedOptions.push(s.value);
           });
-          
-          // NOTE: We do NOT update the main product variant when recommended product changes
-          // This is intentional - synchronization is one-way only (main -> recommended)
           
           // Find matching variant
           const variants = variantData[productId];
@@ -1042,12 +789,10 @@
                 image.style.opacity = '0';
                 setTimeout(() => {
                   image.src = matchedVariant.image;
-                  // Generate srcset with different sizes
                   const baseUrl = matchedVariant.image;
                   const url120 = baseUrl.replace(/width=\d+/i, 'width=120').replace(/_(\d+)x(\d+)/i, '_120x120');
                   const url160 = baseUrl.replace(/width=\d+/i, 'width=160').replace(/_(\d+)x(\d+)/i, '_160x160');
                   image.srcset = url120 + ' 120w, ' + url160 + ' 160w, ' + baseUrl + ' 360w';
-                  // Maintain width and height attributes (images are square 1:1 aspect ratio)
                   if (!image.width) image.width = 360;
                   if (!image.height) image.height = 360;
                   image.style.opacity = '1';
@@ -1075,14 +820,7 @@
               }
             }
           }
-          
-          // Reset flag after a longer delay to allow any events to settle
-          // This prevents the variant ID watcher from triggering sync immediately after
-          setTimeout(() => {
-            isUpdatingRecommendedProduct = false;
-            console.log('[Recommended Scroll] Flag reset - sync can resume');
-          }, 2000); // Increased to 2 seconds to prevent immediate overwrite
-        }, true); // Use capture phase to execute BEFORE other listeners
+        });
         
         // Store button text in data attributes for later use
         document.querySelectorAll('.js-recommended-add-to-cart').forEach(btn => {
