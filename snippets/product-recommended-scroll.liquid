@@ -330,6 +330,9 @@
         // Store the last changed select element to read its value directly
         let lastChangedSelect = null;
         
+        // Flag to prevent synchronization when user changes recommended product variants
+        let isUpdatingRecommendedProduct = false;
+        
         // Get main product variant selector
         const getMainProductSelectedOptions = (changedSelect = null) => {
           console.log('[Recommended Scroll] Getting main product selected options...');
@@ -737,6 +740,11 @@
         // Listen to ALL change events in the document (delegation)
         document.addEventListener('change', (e) => {
           console.log('[Recommended Scroll] Change event detected anywhere:', e.target);
+          // Skip if we're updating a recommended product (prevents bidirectional sync)
+          if (isUpdatingRecommendedProduct) {
+            console.log('[Recommended Scroll] Skipping sync - updating recommended product');
+            return;
+          }
           // Check if it's a variant selector
           if (e.target.matches('.js-variant-select-item, .js-variant-radio-item, input[name*="option"], select[name*="option"]') && !e.target.classList.contains('js-recommended-variant-select')) {
             console.log('[Recommended Scroll] Variant selector changed, syncing in 300ms to allow variant ID to update...');
@@ -747,6 +755,10 @@
         
         // Listen to click events on variant labels/buttons (for radio buttons)
         document.addEventListener('click', (e) => {
+          // Skip if we're updating a recommended product (prevents bidirectional sync)
+          if (isUpdatingRecommendedProduct) {
+            return;
+          }
           const variantLabel = e.target.closest('.js-variant-option-label, .product-option__label, label[for*="Option"]');
           if (variantLabel) {
             console.log('[Recommended Scroll] Variant label clicked, syncing in 300ms...');
@@ -757,6 +769,11 @@
         if (mainProductForm) {
           // Listen to variant selects/radios changes within form
           mainProductForm.addEventListener('change', (e) => {
+            // Skip if we're updating a recommended product (prevents bidirectional sync)
+            if (isUpdatingRecommendedProduct) {
+              console.log('[Recommended Scroll] Skipping sync - updating recommended product');
+              return;
+            }
             console.log('[Recommended Scroll] Change event detected in main product form:', e.target);
             if (e.target.matches('.js-variant-select-item, .js-variant-radio-item') && !e.target.classList.contains('js-recommended-variant-select')) {
               console.log('[Recommended Scroll] Variant change detected, syncing in 200ms to allow variant ID to update...');
@@ -771,6 +788,11 @@
           if (variantIdInput) {
             // Use both MutationObserver and value property watching
             const observer = new MutationObserver((mutations) => {
+              // Skip if we're updating a recommended product (prevents bidirectional sync)
+              if (isUpdatingRecommendedProduct) {
+                console.log('[Recommended Scroll] Skipping sync - updating recommended product');
+                return;
+              }
               console.log('[Recommended Scroll] MutationObserver detected change:', mutations);
               setTimeout(syncRecommendedProductsWithMain, 100);
             });
@@ -786,6 +808,10 @@
             let lastValue = variantIdInput.value;
             console.log('[Recommended Scroll] Initial variant ID value:', lastValue);
             const valueWatcher = setInterval(() => {
+              // Skip if we're updating a recommended product (prevents bidirectional sync)
+              if (isUpdatingRecommendedProduct) {
+                return;
+              }
               const currentValue = variantIdInput.value;
               if (currentValue !== lastValue) {
                 console.log('[Recommended Scroll] Variant ID value changed from', lastValue, 'to', currentValue);
@@ -813,6 +839,11 @@
           
           if (variantRadios) {
             variantRadios.addEventListener('change', () => {
+              // Skip if we're updating a recommended product (prevents bidirectional sync)
+              if (isUpdatingRecommendedProduct) {
+                console.log('[Recommended Scroll] Skipping sync - updating recommended product');
+                return;
+              }
               console.log('[Recommended Scroll] sht-variant-radios change event');
               setTimeout(syncRecommendedProductsWithMain, 100);
             });
@@ -820,6 +851,11 @@
           
           if (variantSelects) {
             variantSelects.addEventListener('change', () => {
+              // Skip if we're updating a recommended product (prevents bidirectional sync)
+              if (isUpdatingRecommendedProduct) {
+                console.log('[Recommended Scroll] Skipping sync - updating recommended product');
+                return;
+              }
               console.log('[Recommended Scroll] sht-variant-selects change event');
               setTimeout(syncRecommendedProductsWithMain, 100);
             });
@@ -828,6 +864,10 @@
         
         // Also listen to any input/select changes in the entire document that might affect variants
         document.addEventListener('input', (e) => {
+          // Skip if we're updating a recommended product (prevents bidirectional sync)
+          if (isUpdatingRecommendedProduct) {
+            return;
+          }
           if (e.target.matches('input[name="id"], input[name*="option"], select[name*="option"]') && !e.target.classList.contains('js-recommended-variant-select')) {
             console.log('[Recommended Scroll] Input event on variant field:', e.target);
             if (e.target.tagName === 'SELECT' || (e.target.tagName === 'INPUT' && e.target.type === 'radio')) {
@@ -846,40 +886,12 @@
           syncRecommendedProductsWithMain();
         }, 500);
         
-        // Update main product variant when recommended product variant changes
-        const updateMainProductVariant = (selectedOptions) => {
-          const mainProductForm = document.querySelector('[data-type="add-to-cart-form"]');
-          if (!mainProductForm) return;
-          
-          const mainProductSelects = mainProductForm.querySelectorAll('.js-variant-select-item, .js-variant-radio-item');
-          if (mainProductSelects.length === 0) return;
-          
-          // Try to find matching options in main product
-          mainProductSelects.forEach((select, idx) => {
-            if (selectedOptions[idx]) {
-              const optionValue = selectedOptions[idx].toString().toLowerCase();
-              
-              if (select.tagName === 'SELECT') {
-                const options = select.querySelectorAll('option');
-                options.forEach(opt => {
-                  if (opt.value && opt.value.toString().toLowerCase() === optionValue && !opt.disabled) {
-                    select.value = opt.value;
-                    select.dispatchEvent(new Event('change', { bubbles: true }));
-                  }
-                });
-              } else if (select.tagName === 'INPUT' && select.type === 'radio') {
-                if (select.value && select.value.toString().toLowerCase() === optionValue && !select.disabled) {
-                  select.checked = true;
-                  select.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-              }
-            }
-          });
-        };
-        
         // Handle variant selection change in recommended products
         document.addEventListener('change', function(e) {
           if (!e.target.classList.contains('js-recommended-variant-select')) return;
+          
+          // Set flag to prevent synchronization from triggering
+          isUpdatingRecommendedProduct = true;
           
           const select = e.target;
           const productId = parseInt(select.dataset.productId);
@@ -895,8 +907,8 @@
             selectedOptions.push(s.value);
           });
           
-          // Update main product variant if possible
-          updateMainProductVariant(selectedOptions);
+          // NOTE: We do NOT update the main product variant when recommended product changes
+          // This is intentional - synchronization is one-way only (main -> recommended)
           
           // Find matching variant
           const variants = variantData[productId];
@@ -954,6 +966,11 @@
               }
             }
           }
+          
+          // Reset flag after a short delay to allow any events to settle
+          setTimeout(() => {
+            isUpdatingRecommendedProduct = false;
+          }, 100);
         });
         
         // Store button text in data attributes for later use
