@@ -677,12 +677,35 @@
                   const recommendedOptStr = recommendedOpt.toString().trim().toLowerCase();
                   const recommendedModels = extractModelNumbers(recommendedOptStr);
                   
-                  // Strategy 1: Compare extracted model numbers
+                  // Strategy 1: Compare extracted model numbers (with suffix awareness)
                   if (mainModels.length > 0 && recommendedModels.length > 0) {
                     const modelMatch = mainModels.some(mainModel => {
                       return recommendedModels.some(recModel => {
-                        // Exact match or contains match
-                        return recModel === mainModel || recModel.includes(mainModel) || mainModel.includes(recModel);
+                        // Check if main model has a suffix (pro, plus, max)
+                        const mainHasSuffix = /\s*(pro|plus|max)/i.test(mainModel);
+                        const recHasSuffix = /\s*(pro|plus|max)/i.test(recModel);
+                        
+                        // Exact match
+                        if (recModel === mainModel) {
+                          return true;
+                        }
+                        
+                        // If main model has a suffix (e.g., "15 pro"), require that recommended also contains that suffix
+                        // This prevents "15 Pro" from matching "15"
+                        if (mainHasSuffix) {
+                          // Main is "15 pro" - only match if recommended contains "15 pro" (not just "15")
+                          // Check if recommended model includes the full main model (number + suffix)
+                          return recModel.includes(mainModel);
+                        }
+                        
+                        // If main model is just a number (e.g., "15"), it can match "15" or "15 pro"
+                        // But "15 pro" should NOT match "15" (handled above)
+                        if (!mainHasSuffix) {
+                          // Main is just "15" - can match "15" or "15 pro" in recommended
+                          return recModel === mainModel || recModel.startsWith(mainModel + ' ');
+                        }
+                        
+                        return false;
                       });
                     });
                     if (modelMatch) {
@@ -697,10 +720,40 @@
                     }
                   }
                   
-                  // Strategy 2: Check if one contains the other as substring
-                  if (recommendedOptStr.includes(mainOptStr) || mainOptStr.includes(recommendedOptStr)) {
+                  // Strategy 2: Check if one contains the other as substring (strict)
+                  // Check if recommended contains main (e.g., "13 Pro Max / 14 Pro" contains "14 Pro")
+                  if (recommendedOptStr.includes(mainOptStr)) {
+                    // But be careful: "15 Pro" should not match "15" 
+                    // Check if mainOptStr ends with a word boundary or is followed by a separator
+                    const mainEndsWithWord = /\w$/.test(mainOptStr);
+                    if (mainEndsWithWord) {
+                      // Check if the match is at word boundary (not just "15" matching "15 Pro")
+                      const matchIndex = recommendedOptStr.indexOf(mainOptStr);
+                      const afterMatch = recommendedOptStr.substring(matchIndex + mainOptStr.length);
+                      // If main is "15 Pro" and recommended is "15", this would fail the boundary check
+                      // If main is "15 Pro" and recommended is "13 Pro Max / 15 Pro", afterMatch would be empty or start with space/slash
+                      if (matchIndex >= 0 && (afterMatch === '' || /^[\s\/\-]/.test(afterMatch) || mainOptStr.length > 5)) {
+                        matches = true;
+                        console.log(`[Recommended Scroll] Variant ${variantIdx} matched by substring (recommended contains main):`, {
+                          mainOption: mainOptStr,
+                          recommendedOption: recommendedOptStr
+                        });
+                        break;
+                      }
+                    } else {
+                      matches = true;
+                      console.log(`[Recommended Scroll] Variant ${variantIdx} matched by substring (recommended contains main):`, {
+                        mainOption: mainOptStr,
+                        recommendedOption: recommendedOptStr
+                      });
+                      break;
+                    }
+                  }
+                  
+                  // Also check if main contains recommended (for reverse cases, but be strict)
+                  if (mainOptStr.includes(recommendedOptStr) && recommendedOptStr.length > 5) {
                     matches = true;
-                    console.log(`[Recommended Scroll] Variant ${variantIdx} matched by substring:`, {
+                    console.log(`[Recommended Scroll] Variant ${variantIdx} matched by substring (main contains recommended):`, {
                       mainOption: mainOptStr,
                       recommendedOption: recommendedOptStr
                     });
