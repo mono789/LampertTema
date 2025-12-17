@@ -716,16 +716,22 @@
                   }
                   
                   // Also check if main contains recommended (for reverse cases, but be strict)
-                  // Only allow if recommended is longer (to avoid "15 Pro" matching "15")
+                  // CRITICAL: If main has suffix (pro/plus/max) and recommended doesn't, don't match
+                  // Example: "15 Plus" should NOT match "15"
                   if (mainOptStr.includes(recommendedOptStr)) {
                     const recommendedHasSuffix = /\s*(pro|plus|max)\s*$/i.test(recommendedOptStr);
                     const mainHasSuffix = /\s*(pro|plus|max)\s*$/i.test(mainOptStr);
                     
-                    // If recommended has suffix, main must also have it (or contain it)
-                    if (recommendedHasSuffix && !mainHasSuffix) {
+                    // If main has suffix but recommended doesn't, don't match
+                    // This prevents "15 Plus" from matching "15"
+                    if (mainHasSuffix && !recommendedHasSuffix) {
+                      // Main is "15 Plus" but recommended is "15" - don't match
+                      // Skip this match
+                    } else if (recommendedHasSuffix && !mainHasSuffix) {
                       // Recommended is "15 Pro" but main is "15" - don't match
                       // This prevents "15" from matching "15 Pro"
                     } else if (recommendedOptStr.length > 5) {
+                      // Both have suffix or neither has suffix, and recommended is long enough
                       matches = true;
                       console.log(`[DEBUG] Variant ${variantIdx} MATCHED - main contains recommended:`, {
                         main: mainOptStr,
