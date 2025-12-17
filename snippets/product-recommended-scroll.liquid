@@ -379,16 +379,6 @@
           
           console.log('[Recommended Scroll] Total variant selects/radios found (main product only):', mainProductSelects.length);
           
-          // Helper function to filter out recommended product selects
-          const isMainProductSelect = (element) => {
-            // Exclude if it's a recommended product select
-            if (element.classList.contains('js-recommended-variant-select')) return false;
-            if (element.closest('.recommended-scroll-card-wrapper')) return false;
-            if (element.id && element.id.includes('recommended-form-')) return false;
-            if (element.dataset.productId) return false; // Recommended products have data-product-id
-            return true;
-          };
-          
           // If we have a specific select that changed, use it directly
           if (changedSelect && (changedSelect.tagName === 'SELECT' || (changedSelect.tagName === 'INPUT' && changedSelect.type === 'radio'))) {
             // Make sure it's not a recommended product select
