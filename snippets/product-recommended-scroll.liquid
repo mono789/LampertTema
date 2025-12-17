@@ -482,12 +482,24 @@
             console.log(`[Recommended Scroll] Looking for matching variant in card ${cardIdx + 1}...`);
             const matchingVariant = variants.find((variant, variantIdx) => {
               console.log(`[Recommended Scroll] Checking variant ${variantIdx}:`, variant);
-              if (!variant.options || variant.options.length !== mainProductOptions.length) {
-                console.log(`[Recommended Scroll] Variant ${variantIdx} options length mismatch:`, variant.options?.length, 'vs', mainProductOptions.length);
+              
+              // Construct options array from option1, option2, option3 if options doesn't exist
+              let currentVariantOptions = variant.options;
+              if (!currentVariantOptions && (variant.option1 || variant.option2 || variant.option3)) {
+                currentVariantOptions = [];
+                if (variant.option1) currentVariantOptions.push(variant.option1);
+                if (variant.option2) currentVariantOptions.push(variant.option2);
+                if (variant.option3) currentVariantOptions.push(variant.option3);
+                console.log(`[Recommended Scroll] Variant ${variantIdx} constructed options from option1/2/3:`, currentVariantOptions);
+              }
+              
+              if (!currentVariantOptions || currentVariantOptions.length !== mainProductOptions.length) {
+                console.log(`[Recommended Scroll] Variant ${variantIdx} options length mismatch:`, currentVariantOptions?.length, 'vs', mainProductOptions.length);
                 return false;
               }
+              
               // Check if options match (case-insensitive comparison)
-              const matches = variant.options.every((opt, idx) => {
+              const matches = currentVariantOptions.every((opt, idx) => {
                 const mainOpt = mainProductOptions[idx];
                 if (!opt || !mainOpt) {
                   console.log(`[Recommended Scroll] Variant ${variantIdx} option ${idx} is empty`);
@@ -506,13 +518,26 @@
             console.log(`[Recommended Scroll] Card ${cardIdx + 1} matching variant:`, matchingVariant);
             if (matchingVariant && matchingVariant.available) {
               console.log(`[Recommended Scroll] Updating card ${cardIdx + 1} with matching variant`);
+              
+              // Construct options array if needed
+              let variantOptions = matchingVariant.options;
+              if (!variantOptions && (matchingVariant.option1 || matchingVariant.option2 || matchingVariant.option3)) {
+                variantOptions = [];
+                if (matchingVariant.option1) variantOptions.push(matchingVariant.option1);
+                if (matchingVariant.option2) variantOptions.push(matchingVariant.option2);
+                if (matchingVariant.option3) variantOptions.push(matchingVariant.option3);
+                console.log(`[Recommended Scroll] Constructed variant options:`, variantOptions);
+              }
+              
               // Update selects in recommended product
               const selects = card.querySelectorAll('.js-recommended-variant-select');
               console.log(`[Recommended Scroll] Card ${cardIdx + 1} has ${selects.length} selects`);
               selects.forEach((select, idx) => {
-                if (matchingVariant.options[idx]) {
-                  const optionValue = matchingVariant.options[idx].toString().trim();
+                if (variantOptions && variantOptions[idx]) {
+                  const optionValue = variantOptions[idx].toString().trim();
                   console.log(`[Recommended Scroll] Card ${cardIdx + 1}, select ${idx}, looking for option:`, optionValue);
+                  console.log(`[Recommended Scroll] Current select value:`, select.value);
+                  
                   // Find and select matching option
                   const options = select.querySelectorAll('option');
                   let found = false;
@@ -520,7 +545,7 @@
                     if (!found && opt.value) {
                       const optValue = opt.value.toString().trim().toLowerCase();
                       const targetValue = optionValue.toLowerCase();
-                      console.log(`[Recommended Scroll] Comparing option:`, optValue, '===', targetValue, 'disabled:', opt.disabled);
+                      console.log(`[Recommended Scroll] Comparing option:`, optValue, '===', targetValue, 'disabled:', opt.disabled, 'option.value:', opt.value);
                       if (optValue === targetValue && !opt.disabled) {
                         if (select.value !== opt.value) {
                           console.log(`[Recommended Scroll] Setting select ${idx} to:`, opt.value);
@@ -531,12 +556,23 @@
                           console.log(`[Recommended Scroll] Change event dispatched for select ${idx}`);
                         } else {
                           console.log(`[Recommended Scroll] Select ${idx} already has value:`, opt.value);
+                          found = true; // Mark as found even if already set
                         }
                       }
                     }
                   });
                   if (!found) {
-                    console.log(`[Recommended Scroll] Option not found in select ${idx}`);
+                    // Fallback: check if current select value already matches (case-insensitive)
+                    const currentValue = select.value.toString().trim().toLowerCase();
+                    const targetValueLower = optionValue.toLowerCase();
+                    if (currentValue === targetValueLower) {
+                      console.log(`[Recommended Scroll] Select ${idx} already matches target value (case-insensitive check)`);
+                      found = true;
+                    } else {
+                      console.log(`[Recommended Scroll] Option not found in select ${idx} for value:`, optionValue);
+                      console.log(`[Recommended Scroll] Current select value:`, select.value);
+                      console.log(`[Recommended Scroll] Available options in select:`, Array.from(options).map(o => ({ value: o.value, text: o.text, disabled: o.disabled })));
+                    }
                   }
                 }
               });
@@ -597,16 +633,20 @@
             });
             console.log('[Recommended Scroll] MutationObserver set up for variant ID input');
             
-            // Watch for value property changes
+            // Watch for value property changes (more frequent check)
             let lastValue = variantIdInput.value;
+            console.log('[Recommended Scroll] Initial variant ID value:', lastValue);
             const valueWatcher = setInterval(() => {
               const currentValue = variantIdInput.value;
               if (currentValue !== lastValue) {
                 console.log('[Recommended Scroll] Variant ID value changed from', lastValue, 'to', currentValue);
                 lastValue = currentValue;
-                setTimeout(syncRecommendedProductsWithMain, 100);
+                setTimeout(() => {
+                  console.log('[Recommended Scroll] Triggering sync after variant ID change...');
+                  syncRecommendedProductsWithMain();
+                }, 150);
               }
-            }, 150);
+            }, 100); // Check every 100ms for faster response
             
             // Store watcher to clear if needed
             if (window.recommendedScrollWatchers) {
