@@ -36,7 +36,17 @@
             For rich_text_field: use metafield_tag filter to convert JSON to HTML
           endcomment
           assign item_title = item.title.value | default: item.title | default: ''
-          assign item_icon = item.icon.value | default: item.icon | default: ''
+          comment
+            Get icon - try both .value and direct access
+            Icon name should match one of the available icons in icon-loader.liquid
+            Available icons are listed in PRODUCT_ACCORDION_ICONS.md
+          endcomment
+          assign item_icon = ''
+          if item.icon.value != blank
+            assign item_icon = item.icon.value
+          elsif item.icon != blank
+            assign item_icon = item.icon
+          endif
           assign item_id = 'product-accordion-item-' | append: forloop.index | append: '-' | append: product.id
           
           comment
@@ -124,6 +134,13 @@
       .product-accordion .accordion-content.rte strong,
       .product-accordion .accordion-content.rte b {
         font-weight: 600;
+      }
+      .product-accordion .accordion-content.rte img {
+        max-width: 100%;
+        height: auto;
+        margin: 16px 0;
+        border-radius: 8px;
+        display: block;
       }
     </style>
   {%- endunless -%}
