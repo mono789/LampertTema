@@ -30,13 +30,26 @@
     <sht-accordion data-properties='{"multiple": true}'>
       {%- for item in accordion_items -%}
         {%- liquid
-          assign item_title = item.title | default: ''
-          assign item_content = item.content | default: ''
-          assign item_icon = item.icon | default: ''
+          comment
+            Access metaobject fields
+            Rich text fields in metaobjects are automatically converted to HTML when rendered directly
+          endcomment
+          assign item_title = item.title.value | default: item.title | default: ''
+          assign item_icon = item.icon.value | default: item.icon | default: ''
           assign item_id = 'product-accordion-item-' | append: forloop.index | append: '-' | append: product.id
+          
+          comment
+            Check if content exists - rich text can be checked via item.content
+          endcomment
+          assign has_content = false
+          if item.content != blank
+            assign has_content = true
+          elsif item.content.value != blank
+            assign has_content = true
+          endif
         -%}
         
-        {%- if item_title != blank and item_content != blank -%}
+        {%- if item_title != blank and has_content -%}
           <div class="accordion__item js-accordion-item pt-16 pb-16">
             <div class="accordion__header">
               <button 
@@ -65,7 +78,7 @@
               tabindex="-1" 
               style="max-height: 0;"
             >
-              {{ item_content }}
+              {{ item.content }}
             </div>
           </div>
         {%- endif -%}
