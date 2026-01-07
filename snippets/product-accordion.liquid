@@ -8,6 +8,7 @@
     - title (single_line_text_field)
     - content (rich_text_field)
     - icon (optional, single_line_text_field) - icon name from theme library
+    - image (optional, file_reference) - image to display in the content
 {%- endcomment -%}
 
 {%- liquid
@@ -55,9 +56,23 @@
             When accessing from metaobject, the field itself is the metafield object
           endcomment
           assign item_content_metafield = item.content
+          
+          comment
+            Get image field - optional field for displaying images
+            Image field type should be "file_reference" or "file"
+            Try different access methods for image field
+          endcomment
+          assign item_image = null
+          if item.image != blank
+            if item.image.value != blank
+              assign item_image = item.image.value
+            else
+              assign item_image = item.image
+            endif
+          endif
         -%}
         
-        {%- if item_title != blank and item_content_metafield != blank -%}
+        {%- if item_title != blank and (item_content_metafield != blank or item_image != blank) -%}
           <div class="accordion__item js-accordion-item pt-16 pb-16">
             <div class="accordion__header">
               <button 
@@ -86,7 +101,20 @@
               tabindex="-1" 
               style="max-height: 0;"
             >
-              {{ item_content_metafield | metafield_tag }}
+              {%- comment -%} Display image if available {%- endcomment -%}
+              {%- if item_image != blank -%}
+                <div class="accordion-content__image mb-16">
+                  {%- assign image_alt = item_title | escape -%}
+                  {{ item_image | image_url: width: 800 | image_tag: alt: image_alt, loading: 'lazy', decoding: 'async', class: 'accordion-content__img', widths: '400, 600, 800, 1000' }}
+                </div>
+              {%- endif -%}
+              
+              {%- comment -%} Display rich text content {%- endcomment -%}
+              {%- if item_content_metafield != blank -%}
+                <div class="accordion-content__text">
+                  {{ item_content_metafield | metafield_tag }}
+                </div>
+              {%- endif -%}
             </div>
           </div>
         {%- endif -%}
@@ -139,6 +167,16 @@
         max-width: 100%;
         height: auto;
         margin: 16px 0;
+        border-radius: 8px;
+        display: block;
+      }
+      .product-accordion .accordion-content__image {
+        width: 100%;
+        margin-bottom: 16px;
+      }
+      .product-accordion .accordion-content__img {
+        width: 100%;
+        height: auto;
         border-radius: 8px;
         display: block;
       }
