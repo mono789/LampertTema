@@ -116,7 +116,7 @@
               {%- if item_image != blank -%}
                 <div class="accordion-content__image mb-16">
                   {%- assign image_alt = item_title | escape -%}
-                  {{ item_image | image_url: width: 800 | image_tag: alt: image_alt, loading: 'lazy', decoding: 'async', class: 'accordion-content__img', widths: '400, 600, 800, 1000' }}
+                  {{ item_image | image_url: width: 600 | image_tag: alt: image_alt, loading: 'lazy', decoding: 'async', class: 'accordion-content__img', widths: '300, 400, 500, 600' }}
                 </div>
               {%- endif -%}
               
@@ -186,6 +186,7 @@
         margin-bottom: 16px;
       }
       .product-accordion .accordion-content__img {
+        max-width: 600px;
         width: 100%;
         height: auto;
         border-radius: 8px;
