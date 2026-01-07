@@ -115,8 +115,29 @@
               {%- comment -%} Display image if available {%- endcomment -%}
               {%- if item_image != blank -%}
                 <div class="accordion-content__image mb-16">
-                  {%- assign image_alt = item_title | escape -%}
-                  {{ item_image | image_url: width: 600 | image_tag: alt: image_alt, loading: 'lazy', decoding: 'async', class: 'accordion-content__img', widths: '300, 400, 500, 600' }}
+                  {%- liquid
+                    assign image_alt = item_title | escape
+                    comment
+                      Use the image's natural width, but cap at 600px max
+                      This preserves small images at their original size
+                      Check if image has width property, otherwise use a reasonable default
+                    endcomment
+                    assign image_width = 600
+                    if item_image.width and item_image.width > 0
+                      assign image_width = item_image.width
+                      if image_width > 600
+                        assign image_width = 600
+                      endif
+                    endif
+                  -%}
+                  <img 
+                    src="{{ item_image | image_url: width: image_width }}" 
+                    alt="{{ image_alt }}"
+                    loading="lazy"
+                    decoding="async"
+                    class="accordion-content__img"
+                    width="{{ image_width }}"
+                  >
                 </div>
               {%- endif -%}
               
@@ -178,7 +199,6 @@
         max-width: 100%;
         height: auto;
         margin: 16px 0;
-        border-radius: 8px;
         display: block;
       }
       .product-accordion .accordion-content__image {
@@ -189,7 +209,6 @@
         max-width: 600px;
         width: auto;
         height: auto;
-        border-radius: 8px;
         display: block;
       }
     </style>
