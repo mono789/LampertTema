@@ -95,7 +95,7 @@
                 {%- if item_icon != blank -%}
                   {%- render 'icon-loader', icon: item_icon, class: 'mr-12', size: 24 -%}
                 {%- endif -%}
-                <span class="h6 m-zero flex-1 ml-12 ta-left">{{ item_title | escape }}</span>
+                <span class="h6 m-zero flex-1 ml-6 ta-left">{{ item_title | escape }}</span>
                 <span class="accordion__toggle zi-1 d-flex">
                   <span class="zi-1 btn btn-small btn-icon">
                     {% render 'icon-plus', class: 'accordion__icon--plus p-absolute' %}
@@ -105,7 +105,7 @@
               </button>
             </div>
             <div 
-              class="js-accordion-content accordion-content mb-24 {% if item_icon != blank %}pl-48{% else %}pl-12{% endif %} rte" 
+              class="js-accordion-content accordion-content mb-24 {% if item_icon != blank %}pl-24{% else %}pl-12{% endif %} rte" 
               id="{{ item_id }}-content" 
               role="region" 
               aria-describedby="{{ item_id }}-title" 
