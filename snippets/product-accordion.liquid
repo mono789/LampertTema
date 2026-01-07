@@ -32,24 +32,22 @@
         {%- liquid
           comment
             Access metaobject fields
-            Rich text fields in metaobjects are automatically converted to HTML when rendered directly
+            For single_line_text_field: can use .value or direct access
+            For rich_text_field: use metafield_tag filter to convert JSON to HTML
           endcomment
           assign item_title = item.title.value | default: item.title | default: ''
           assign item_icon = item.icon.value | default: item.icon | default: ''
           assign item_id = 'product-accordion-item-' | append: forloop.index | append: '-' | append: product.id
           
           comment
-            Check if content exists - rich text can be checked via item.content
+            Get rich text content - access directly from metaobject
+            Rich text fields need metafield_tag filter to convert JSON to HTML
+            When accessing from metaobject, the field itself is the metafield object
           endcomment
-          assign has_content = false
-          if item.content != blank
-            assign has_content = true
-          elsif item.content.value != blank
-            assign has_content = true
-          endif
+          assign item_content_metafield = item.content
         -%}
         
-        {%- if item_title != blank and has_content -%}
+        {%- if item_title != blank and item_content_metafield != blank -%}
           <div class="accordion__item js-accordion-item pt-16 pb-16">
             <div class="accordion__header">
               <button 
@@ -78,7 +76,7 @@
               tabindex="-1" 
               style="max-height: 0;"
             >
-              {{ item.content }}
+              {{ item_content_metafield | metafield_tag }}
             </div>
           </div>
         {%- endif -%}
