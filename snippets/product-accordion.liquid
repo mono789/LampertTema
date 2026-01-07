@@ -70,9 +70,20 @@
               assign item_image = item.image
             endif
           endif
+          
+          comment
+            Check if we have content to display
+          endcomment
+          assign has_content = false
+          if item_content_metafield != blank
+            assign has_content = true
+          endif
+          if item_image != blank
+            assign has_content = true
+          endif
         -%}
         
-        {%- if item_title != blank and (item_content_metafield != blank or item_image != blank) -%}
+        {%- if item_title != blank and has_content -%}
           <div class="accordion__item js-accordion-item pt-16 pb-16">
             <div class="accordion__header">
               <button 
