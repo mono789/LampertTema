@@ -1,0 +1,120 @@
+{%- comment -%}
+  Product Accordion Component
+  Uses metafields to allow admin to add multiple collapsible items
+  
+  Metafield structure:
+  - product.metafields.custom.product_accordion_items (list.metaobject_reference)
+  - Each metaobject should have:
+    - title (single_line_text_field)
+    - content (rich_text_field)
+    - icon (optional, single_line_text_field) - icon name from theme library
+{%- endcomment -%}
+
+{%- liquid
+  assign accordion_metafield = product.metafields.custom.product_accordion_items
+  assign accordion_enabled = section.settings.enable_product_accordion | default: true
+  
+  if accordion_metafield != blank
+    if accordion_metafield.list?
+      assign accordion_items = accordion_metafield.value
+    else
+      assign accordion_items = empty
+    endif
+  else
+    assign accordion_items = empty
+  endif
+-%}
+
+{%- if accordion_enabled and accordion_items != blank and accordion_items.size > 0 -%}
+  <div class="product-accordion mt-24" data-product-accordion>
+    <sht-accordion data-properties='{"multiple": true}'>
+      {%- for item in accordion_items -%}
+        {%- liquid
+          assign item_title = item.title | default: ''
+          assign item_content = item.content | default: ''
+          assign item_icon = item.icon | default: ''
+          assign item_id = 'product-accordion-item-' | append: forloop.index | append: '-' | append: product.id
+        -%}
+        
+        {%- if item_title != blank and item_content != blank -%}
+          <div class="accordion__item js-accordion-item pt-16 pb-16">
+            <div class="accordion__header">
+              <button 
+                class="btn-plain w-100 js-accordion-trigger d-flex middle-xs p-relative pt-16 pb-16 p-zero c-pointer" 
+                id="{{ item_id }}-title" 
+                aria-expanded="false" 
+                aria-controls="{{ item_id }}-content"
+              >
+                {%- if item_icon != blank -%}
+                  {%- render 'icon-loader', icon: item_icon, class: 'mr-12', size: 24 -%}
+                {%- endif -%}
+                <span class="h6 m-zero flex-1 ml-12 ta-left">{{ item_title | escape }}</span>
+                <span class="accordion__toggle zi-1 d-flex">
+                  <span class="zi-1 btn btn-small btn-icon">
+                    {% render 'icon-plus', class: 'accordion__icon--plus p-absolute' %}
+                    {% render 'icon-minus', class: 'accordion__icon--minus p-absolute' %}
+                  </span>
+                </span>
+              </button>
+            </div>
+            <div 
+              class="js-accordion-content accordion-content mb-24 {% if item_icon != blank %}pl-48{% else %}pl-12{% endif %} rte" 
+              id="{{ item_id }}-content" 
+              role="region" 
+              aria-describedby="{{ item_id }}-title" 
+              tabindex="-1" 
+              style="max-height: 0;"
+            >
+              {{ item_content }}
+            </div>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </sht-accordion>
+  </div>
+
+  {%- unless product_accordion_styles_loaded -%}
+    {%- assign product_accordion_styles_loaded = true -%}
+    <style>
+      .product-accordion {
+        width: 100%;
+      }
+      .product-accordion .accordion__item {
+        border-top: 1px solid rgba(var(--color-normal-text-rgb), 0.1);
+      }
+      .product-accordion .accordion__item:last-child {
+        border-bottom: 1px solid rgba(var(--color-normal-text-rgb), 0.1);
+      }
+      .product-accordion .accordion__header button {
+        transition: all 0.3s ease;
+      }
+      .product-accordion .accordion__header button:hover {
+        opacity: 0.8;
+      }
+      .product-accordion .accordion-content {
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+      .product-accordion .accordion-content.rte {
+        line-height: 1.6;
+      }
+      .product-accordion .accordion-content.rte p {
+        margin-bottom: 12px;
+      }
+      .product-accordion .accordion-content.rte ul,
+      .product-accordion .accordion-content.rte ol {
+        margin-left: 20px;
+        margin-bottom: 12px;
+      }
+      .product-accordion .accordion-content.rte a {
+        text-decoration: underline;
+        color: inherit;
+      }
+      .product-accordion .accordion-content.rte strong,
+      .product-accordion .accordion-content.rte b {
+        font-weight: 600;
+      }
+    </style>
+  {%- endunless -%}
+{%- endif -%}
+
