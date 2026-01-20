@@ -40,6 +40,7 @@
         },
         "image_slide_KMjiDW": {
           "type": "image_slide",
+          "disabled": true,
           "settings": {
             "image_desktop": "shopify://shop_images/Sin_titulo-7-02.png",
             "image_mobile": "shopify://shop_images/3_2.jpg",
