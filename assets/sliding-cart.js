@@ -26,6 +26,7 @@ class SlidingCart {
     this.isUserInteracting = false;
     this.interactionTimeout = null;
     this.isRemovingItem = false; // Flag para prevenir múltiples eliminaciones simultáneas
+    this.isAddingToCart = false; // Flag para prevenir múltiples agregados simultáneos
     
     // Nuevo: Sistema de gestión de recomendaciones
     this.cartRecommendations = new Map(); // Recomendaciones por producto en el carrito
@@ -185,25 +186,51 @@ class SlidingCart {
     document.addEventListener('submit', (e) => {
       if (e.target.matches('[action*="/cart/add"]')) {
         e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
         this.handleAddToCart(e.target);
+        return false;
       }
-    });
+    }, true); // Usar capture phase para interceptar antes que otros listeners
 
     // Interceptar botones AJAX de añadir al carrito
     document.addEventListener('click', (e) => {
-      if (e.target.matches('.btn-add-to-cart, [data-add-to-cart]')) {
+      if (e.target.matches('.btn-add-to-cart, [data-add-to-cart]') || 
+          e.target.closest('.btn-add-to-cart, [data-add-to-cart]')) {
         e.preventDefault();
-        this.handleAjaxAddToCart(e.target);
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        const button = e.target.matches('.btn-add-to-cart, [data-add-to-cart]') 
+          ? e.target 
+          : e.target.closest('.btn-add-to-cart, [data-add-to-cart]');
+        this.handleAjaxAddToCart(button);
+        return false;
       }
-    });
+    }, true); // Usar capture phase para interceptar antes que otros listeners
   }
 
   // Manejar añadir al carrito via formulario
   async handleAddToCart(form) {
+    // Prevenir múltiples llamadas simultáneas
+    if (this.isAddingToCart) {
+      console.log('Ya hay un producto siendo agregado, ignorando...');
+      return;
+    }
+
     try {
+      this.isAddingToCart = true;
       const formData = new FormData(form);
       const variantId = formData.get('id');
-      const quantity = parseInt(formData.get('quantity')) || 1;
+      let quantity = parseInt(formData.get('quantity')) || 1;
+      
+      // Asegurar que la cantidad sea al menos 1 y no más de lo esperado
+      if (quantity < 1) quantity = 1;
+      if (quantity > 10) {
+        console.warn('Cantidad inusualmente alta detectada:', quantity, 'Limitando a 1');
+        quantity = 1;
+      }
+      
+      console.log('Agregando al carrito - Variant ID:', variantId, 'Cantidad:', quantity);
       
       // Verificar si el producto ya está en el carrito
       const cartResponse = await fetch('/cart.js');
@@ -252,15 +279,33 @@ class SlidingCart {
     } catch (error) {
       console.error('Error adding to cart:', error);
       this.showToast('Error al añadir producto', 'error');
+    } finally {
+      this.isAddingToCart = false;
     }
   }
 
   // Manejar añadir al carrito AJAX
   async handleAjaxAddToCart(button) {
+    // Prevenir múltiples llamadas simultáneas
+    if (this.isAddingToCart) {
+      console.log('Ya hay un producto siendo agregado, ignorando...');
+      return;
+    }
+
     try {
+      this.isAddingToCart = true;
       const productId = button.dataset.productId;
       const variantId = button.dataset.variantId;
-      const quantity = parseInt(button.dataset.quantity) || 1;
+      let quantity = parseInt(button.dataset.quantity) || 1;
+      
+      // Asegurar que la cantidad sea al menos 1 y no más de lo esperado
+      if (quantity < 1) quantity = 1;
+      if (quantity > 10) {
+        console.warn('Cantidad inusualmente alta detectada:', quantity, 'Limitando a 1');
+        quantity = 1;
+      }
+      
+      console.log('Agregando al carrito (AJAX) - Product ID:', productId, 'Variant ID:', variantId, 'Cantidad:', quantity);
       
       // Verificar si el producto ya está en el carrito
       const cartResponse = await fetch('/cart.js');
@@ -314,6 +359,8 @@ class SlidingCart {
     } catch (error) {
       console.error('Error adding to cart:', error);
       this.showToast('Error al añadir producto', 'error');
+    } finally {
+      this.isAddingToCart = false;
     }
   }
 
