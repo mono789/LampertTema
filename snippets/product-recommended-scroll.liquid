@@ -328,26 +328,137 @@
         const variantData = {};
         
         // Get main product variant selector
-        const getMainProductSelectedOptions = () => {
+        const getMainProductSelectedOptions = (changedSelect = null) => {
           const mainProductForm = document.querySelector('[data-type="add-to-cart-form"]');
           if (!mainProductForm) return null;
           
+          // Helper function to filter out recommended product selects
+          const isMainProductSelect = (element) => {
+            // Exclude if it's a recommended product select
+            if (element.classList.contains('js-recommended-variant-select')) return false;
+            if (element.closest('.recommended-scroll-card-wrapper')) return false;
+            if (element.id && element.id.includes('recommended-form-')) return false;
+            if (element.dataset.productId) return false; // Recommended products have data-product-id
+            return true;
+          };
+          
           // Try to get from variant selects/radios first (most reliable)
-          const mainProductSelects = mainProductForm.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked');
-          if (mainProductSelects.length > 0) {
+          // Search in the entire document but within the product section context
+          const productSection = mainProductForm.closest('[data-section]') || document;
+          const variantSelectsContainer = productSection.querySelector('sht-variant-selects, sht-variant-radios');
+          
+          // Try multiple search strategies
+          let mainProductSelects = [];
+          
+          // Strategy 1: Search within custom elements
+          if (variantSelectsContainer) {
+            const found = variantSelectsContainer.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked, select[name*="option"], input[type="radio"][name*="option"]:checked');
+            mainProductSelects = Array.from(found).filter(isMainProductSelect);
+          }
+          
+          // Strategy 2: Search in the entire product section, but exclude recommended products area
+          if (mainProductSelects.length === 0) {
+            const found = productSection.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked, select[name*="option"], input[type="radio"][name*="option"]:checked');
+            mainProductSelects = Array.from(found).filter(isMainProductSelect);
+          }
+          
+          // Strategy 3: Search in the entire document (fallback)
+          if (mainProductSelects.length === 0) {
+            const found = document.querySelectorAll('.js-variant-select-item, .js-variant-radio-item:checked, select[name*="option"], input[type="radio"][name*="option"]:checked');
+            mainProductSelects = Array.from(found).filter(isMainProductSelect);
+          }
+          
+          // If we have a specific select that changed, use it directly
+          if (changedSelect && (changedSelect.tagName === 'SELECT' || (changedSelect.tagName === 'INPUT' && changedSelect.type === 'radio'))) {
+            // Make sure it's not a recommended product select
+            if (!isMainProductSelect(changedSelect)) {
+              return null;
+            }
             const selectedOptions = [];
-            // Sort selects by their option index if available
-            const sortedSelects = Array.from(mainProductSelects).sort((a, b) => {
+            
+            // Get all selects/radios for this product to build the full options array
+            const allSelects = Array.from(productSection.querySelectorAll('.js-variant-select-item, select[name*="option"]'));
+            const allRadios = Array.from(productSection.querySelectorAll('.js-variant-radio-item, input[type="radio"][name*="option"]'));
+            
+            // Filter to only main product selects
+            const filteredSelects = allSelects.filter(isMainProductSelect);
+            const filteredRadios = allRadios.filter(isMainProductSelect);
+            
+            // Combine and sort by DOM order or option index
+            const allVariantInputs = [...filteredSelects, ...filteredRadios].sort((a, b) => {
               const aIndex = parseInt(a.dataset.optionIndex || a.closest('[data-option-index]')?.dataset.optionIndex || '0');
               const bIndex = parseInt(b.dataset.optionIndex || b.closest('[data-option-index]')?.dataset.optionIndex || '0');
+              if (aIndex !== bIndex) return aIndex - bIndex;
+              // If same index, maintain DOM order
+              const position = a.compareDocumentPosition(b);
+              return position & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+            });
+            
+            allVariantInputs.forEach((input, idx) => {
+              let value = null;
+              if (input.tagName === 'SELECT') {
+                value = input.value;
+              } else if (input.tagName === 'INPUT' && input.type === 'radio') {
+                if (input.checked) {
+                  value = input.value;
+                }
+              }
+              if (value) {
+                selectedOptions.push(value);
+              }
+            });
+            
+            if (selectedOptions.length > 0) {
+              return selectedOptions;
+            }
+          }
+          
+          if (mainProductSelects.length > 0) {
+            const selectedOptions = [];
+            // Sort selects by their option index if available, or by DOM position
+            const sortedSelects = Array.from(mainProductSelects).sort((a, b) => {
+              // Try to get option index from data attribute
+              let aIndex = parseInt(a.dataset.optionIndex || a.closest('[data-option-index]')?.dataset.optionIndex || '');
+              let bIndex = parseInt(b.dataset.optionIndex || b.closest('[data-option-index]')?.dataset.optionIndex || '');
+              
+              // If no data-option-index, try to extract from name attribute (e.g., "options[Dispositivo]" -> index 0)
+              if (isNaN(aIndex) && a.name) {
+                const nameMatch = a.name.match(/options\[([^\]]+)\]/);
+                if (nameMatch) {
+                  // Find position in options_with_values by comparing with all selects
+                  const allSelects = Array.from(mainProductSelects);
+                  aIndex = allSelects.indexOf(a);
+                }
+              }
+              if (isNaN(bIndex) && b.name) {
+                const nameMatch = b.name.match(/options\[([^\]]+)\]/);
+                if (nameMatch) {
+                  const allSelects = Array.from(mainProductSelects);
+                  bIndex = allSelects.indexOf(b);
+                }
+              }
+              
+              // Fallback to DOM position
+              if (isNaN(aIndex)) aIndex = Array.from(a.parentElement?.children || []).indexOf(a);
+              if (isNaN(bIndex)) bIndex = Array.from(b.parentElement?.children || []).indexOf(b);
+              
               return aIndex - bIndex;
             });
             
-            sortedSelects.forEach(select => {
-              if (select.tagName === 'SELECT' && select.value) {
-                selectedOptions.push(select.value);
-              } else if (select.tagName === 'INPUT' && select.checked && select.value) {
-                selectedOptions.push(select.value);
+            sortedSelects.forEach((select, idx) => {
+              let optionValue = null;
+              if (select.tagName === 'SELECT') {
+                optionValue = select.value;
+                if (optionValue) {
+                  selectedOptions.push(optionValue);
+                }
+              } else if (select.tagName === 'INPUT' && select.type === 'radio') {
+                if (select.checked) {
+                  optionValue = select.value;
+                  if (optionValue) {
+                    selectedOptions.push(optionValue);
+                  }
+                }
               }
             });
             
@@ -359,20 +470,66 @@
           // Fallback: try to get from variant ID and find options
           const variantIdInput = mainProductForm.querySelector('input[name="id"]');
           if (variantIdInput && variantIdInput.value) {
-            const variantId = variantIdInput.value;
+            const variantId = parseInt(variantIdInput.value);
             // Try to find variant data in the page
-            const variantScripts = document.querySelectorAll('script[type="application/json"]');
+            // First, try to find script within variant container
+            let variantScripts = [];
+            if (variantSelectsContainer) {
+              variantScripts = Array.from(variantSelectsContainer.querySelectorAll('script[type="application/json"]'));
+            }
+            // If not found, search in product section
+            if (variantScripts.length === 0) {
+              variantScripts = Array.from(productSection.querySelectorAll('script[type="application/json"]'));
+            }
+            // If still not found, search in entire document
+            if (variantScripts.length === 0) {
+              variantScripts = Array.from(document.querySelectorAll('script[type="application/json"]'));
+            }
             for (let script of variantScripts) {
               try {
-                const variants = JSON.parse(script.textContent);
-                if (Array.isArray(variants)) {
-                  const variant = variants.find(v => v.id == variantId);
-                  if (variant && variant.options && Array.isArray(variant.options)) {
-                    return variant.options;
+                const data = JSON.parse(script.textContent);
+                
+                // Check if it's an array of variants
+                if (Array.isArray(data)) {
+                  const variant = data.find(v => {
+                    const vId = parseInt(v.id) || v.id;
+                    const targetId = parseInt(variantId) || variantId;
+                    return vId == targetId;
+                  });
+                  if (variant) {
+                    // Try different possible property names for options
+                    if (variant.options && Array.isArray(variant.options)) {
+                      return variant.options;
+                    } else if (variant.option1 || variant.option2 || variant.option3) {
+                      // Build options array from option1, option2, option3 (Shopify standard format)
+                      const options = [];
+                      if (variant.option1) options.push(variant.option1);
+                      if (variant.option2) options.push(variant.option2);
+                      if (variant.option3) options.push(variant.option3);
+                      return options.length > 0 ? options : null;
+                    }
+                  }
+                } else if (data.variants && Array.isArray(data.variants)) {
+                  // Check if data has a variants property
+                  const variant = data.variants.find(v => {
+                    const vId = parseInt(v.id) || v.id;
+                    const targetId = parseInt(variantId) || variantId;
+                    return vId == targetId;
+                  });
+                  if (variant) {
+                    if (variant.options && Array.isArray(variant.options)) {
+                      return variant.options;
+                    } else if (variant.option1 || variant.option2 || variant.option3) {
+                      const options = [];
+                      if (variant.option1) options.push(variant.option1);
+                      if (variant.option2) options.push(variant.option2);
+                      if (variant.option3) options.push(variant.option3);
+                      return options.length > 0 ? options : null;
+                    }
                   }
                 }
               } catch (e) {
-                // Continue searching
+                // Silently ignore parsing errors
               }
             }
           }
@@ -391,112 +548,314 @@
         });
         
         // Sync recommended products with main product variant
-        const syncRecommendedProductsWithMain = () => {
-          const mainProductOptions = getMainProductSelectedOptions();
-          if (!mainProductOptions || mainProductOptions.length === 0) return;
+        const syncRecommendedProductsWithMain = (changedSelect = null) => {
+          const mainProductOptions = getMainProductSelectedOptions(changedSelect);
+          console.log('[DEBUG] Main product options:', mainProductOptions);
+          if (!mainProductOptions || mainProductOptions.length === 0) {
+            return;
+          }
           
-          document.querySelectorAll('.recommended-scroll-card-wrapper').forEach(card => {
+          const recommendedCards = document.querySelectorAll('.recommended-scroll-card-wrapper');
+          
+          recommendedCards.forEach((card, cardIdx) => {
             const productId = parseInt(card.dataset.productId);
             const variants = variantData[productId];
-            if (!variants || variants.length === 0) return;
+            if (!variants || variants.length === 0) {
+              return;
+            }
             
             // Find matching variant in recommended product
-            const matchingVariant = variants.find(variant => {
-              if (!variant.options || variant.options.length !== mainProductOptions.length) return false;
-              // Check if options match (case-insensitive comparison)
-              return variant.options.every((opt, idx) => {
-                const mainOpt = mainProductOptions[idx];
-                if (!opt || !mainOpt) return false;
-                const optStr = opt.toString().trim().toLowerCase();
+            // Match if the recommended variant CONTAINS the main product variant (flexible matching)
+            // Example: Main "iPhone 14 Pro" matches Recommended "iPhone 13 Pro Max / 14 Pro"
+            const matchingVariant = variants.find((variant, variantIdx) => {
+              // Construct options array from option1, option2, option3 if options doesn't exist
+              let currentVariantOptions = variant.options;
+              if (!currentVariantOptions && (variant.option1 || variant.option2 || variant.option3)) {
+                currentVariantOptions = [];
+                if (variant.option1) currentVariantOptions.push(variant.option1);
+                if (variant.option2) currentVariantOptions.push(variant.option2);
+                if (variant.option3) currentVariantOptions.push(variant.option3);
+              }
+              
+              if (!currentVariantOptions || currentVariantOptions.length === 0) {
+                return false;
+              }
+              
+              // Extract model numbers from a string (e.g., "14 Pro" from "iPhone 14 Pro")
+              // This allows matching "iPhone 14 Pro" with "iPhone 13 Pro Max / 14 Pro"
+              const extractModelNumbers = (str) => {
+                const models = [];
+                
+                // First, extract full patterns with suffixes: "15 Pro", "14 Pro Max", "16 Plus"
+                const fullPattern = /(\d+\s+(?:pro|plus|max)(?:\s+(?:max|plus))?)/gi;
+                let match;
+                while ((match = fullPattern.exec(str)) !== null) {
+                  models.push(match[1].toLowerCase().trim());
+                }
+                
+                // Also extract standalone numbers (but only if no full matches found)
+                if (models.length === 0) {
+                  const numberPattern = /(\d+)/g;
+                  while ((match = numberPattern.exec(str)) !== null) {
+                    models.push(match[1].toLowerCase().trim());
+                  }
+                }
+                
+                return models;
+              };
+              
+              // Compare ALL options from main product with ALL options from recommended variant
+              // This handles cases where:
+              // - Main: "iPhone 14 Pro" (1 option)
+              // - Recommended: "Transparente" + "iPhone 14 Pro" (2 options)
+              // We need to find if ANY recommended option matches ANY main product option
+              
+              let matches = false;
+              
+              // For each main product option, check if it matches any recommended variant option
+              for (let mainIdx = 0; mainIdx < mainProductOptions.length; mainIdx++) {
+                const mainOpt = mainProductOptions[mainIdx];
+                if (!mainOpt) continue;
+                
                 const mainOptStr = mainOpt.toString().trim().toLowerCase();
-                return optStr === mainOptStr;
-              });
+                const mainModels = extractModelNumbers(mainOptStr);
+                
+                // Check if this main option matches any recommended option
+                for (let recIdx = 0; recIdx < currentVariantOptions.length; recIdx++) {
+                  const recommendedOpt = currentVariantOptions[recIdx];
+                  if (!recommendedOpt) continue;
+                  
+                  const recommendedOptStr = recommendedOpt.toString().trim().toLowerCase();
+                  const recommendedModels = extractModelNumbers(recommendedOptStr);
+                  
+                  // Strategy 1: Compare extracted model numbers (with suffix awareness)
+                  if (mainModels.length > 0 && recommendedModels.length > 0) {
+                    const modelMatch = mainModels.some(mainModel => {
+                      return recommendedModels.some(recModel => {
+                        // Check if main model has a suffix (pro, plus, max)
+                        const mainHasSuffix = /\s*(pro|plus|max)/i.test(mainModel);
+                        const recHasSuffix = /\s*(pro|plus|max)/i.test(recModel);
+                        
+                        // Exact match
+                        if (recModel === mainModel) {
+                          return true;
+                        }
+                        
+                        // If main model has a suffix (e.g., "15 pro"), require that recommended also contains that suffix
+                        // This prevents "15 Pro" from matching "15"
+                        if (mainHasSuffix) {
+                          // Main is "15 pro" - only match if recommended contains "15 pro" (not just "15")
+                          // Check if recommended model includes the full main model (number + suffix)
+                          return recModel.includes(mainModel);
+                        }
+                        
+                        // If main model is just a number (e.g., "15"), it can match "15" or "15 pro"
+                        // But "15 pro" should NOT match "15" (handled above)
+                        if (!mainHasSuffix) {
+                          // Main is just "15" - can match "15" or "15 pro" in recommended
+                          return recModel === mainModel || recModel.startsWith(mainModel + ' ');
+                        }
+                        
+                        return false;
+                      });
+                    });
+                    if (modelMatch) {
+                      matches = true;
+                      console.log(`[DEBUG] Variant ${variantIdx} MATCHED - model numbers:`, {
+                        main: mainOptStr,
+                        recommended: recommendedOptStr,
+                        mainModels: mainModels,
+                        recommendedModels: recommendedModels
+                      });
+                      break;
+                    }
+                  }
+                  
+                  // Strategy 2: Check if one contains the other as substring (strict)
+                  // Check if recommended contains main (e.g., "13 Pro Max / 14 Pro" contains "14 Pro")
+                  if (recommendedOptStr.includes(mainOptStr)) {
+                    // CRITICAL: If main has a suffix (pro, plus, max), ensure recommended also has it
+                    // This prevents "15 Pro" from matching "15"
+                    const mainHasSuffix = /\s*(pro|plus|max)\s*$/i.test(mainOptStr);
+                    if (mainHasSuffix) {
+                      // Main is "15 pro" - verify that recommended actually contains "15 pro" (not just "15")
+                      // Check if the match is complete (not partial)
+                      const matchIndex = recommendedOptStr.indexOf(mainOptStr);
+                      const beforeMatch = recommendedOptStr.substring(0, matchIndex);
+                      const afterMatch = recommendedOptStr.substring(matchIndex + mainOptStr.length);
+                      
+                      // Verify the match is at a word boundary
+                      // Before should end with space/slash/dash or be empty
+                      // After should start with space/slash/dash or be empty
+                      const validBefore = matchIndex === 0 || /[\s\/\-]$/.test(beforeMatch);
+                      const validAfter = afterMatch === '' || /^[\s\/\-]/.test(afterMatch);
+                      
+                      if (validBefore && validAfter) {
+                        matches = true;
+                        console.log(`[DEBUG] Variant ${variantIdx} MATCHED - recommended contains main with suffix:`, {
+                          main: mainOptStr,
+                          recommended: recommendedOptStr,
+                          mainModels: mainModels,
+                          recommendedModels: recommendedModels
+                        });
+                        break;
+                      }
+                    } else {
+                      // Main doesn't have suffix - can match more flexibly
+                      const matchIndex = recommendedOptStr.indexOf(mainOptStr);
+                      const afterMatch = recommendedOptStr.substring(matchIndex + mainOptStr.length);
+                      if (matchIndex >= 0 && (afterMatch === '' || /^[\s\/\-]/.test(afterMatch))) {
+                        matches = true;
+                        console.log(`[DEBUG] Variant ${variantIdx} MATCHED - recommended contains main:`, {
+                          main: mainOptStr,
+                          recommended: recommendedOptStr
+                        });
+                        break;
+                      }
+                    }
+                  }
+                  
+                  // Also check if main contains recommended (for reverse cases, but be strict)
+                  // CRITICAL: If main has suffix (pro/plus/max) and recommended doesn't, don't match
+                  // Example: "15 Plus" should NOT match "15"
+                  if (mainOptStr.includes(recommendedOptStr)) {
+                    const recommendedHasSuffix = /\s*(pro|plus|max)\s*$/i.test(recommendedOptStr);
+                    const mainHasSuffix = /\s*(pro|plus|max)\s*$/i.test(mainOptStr);
+                    
+                    // If main has suffix but recommended doesn't, don't match
+                    // This prevents "15 Plus" from matching "15"
+                    if (mainHasSuffix && !recommendedHasSuffix) {
+                      // Main is "15 Plus" but recommended is "15" - don't match
+                      // Skip this match
+                    } else if (recommendedHasSuffix && !mainHasSuffix) {
+                      // Recommended is "15 Pro" but main is "15" - don't match
+                      // This prevents "15" from matching "15 Pro"
+                    } else if (recommendedOptStr.length > 5) {
+                      // Both have suffix or neither has suffix, and recommended is long enough
+                      matches = true;
+                      console.log(`[DEBUG] Variant ${variantIdx} MATCHED - main contains recommended:`, {
+                        main: mainOptStr,
+                        recommended: recommendedOptStr
+                      });
+                      break;
+                    }
+                  }
+                  
+                  // Strategy 3: Exact match
+                  if (recommendedOptStr === mainOptStr) {
+                    matches = true;
+                    console.log(`[DEBUG] Variant ${variantIdx} MATCHED - exact match:`, {
+                      main: mainOptStr,
+                      recommended: recommendedOptStr
+                    });
+                    break;
+                  }
+                }
+                
+                if (matches) break;
+              }
+              
+              if (!matches) {
+                console.log(`[DEBUG] Variant ${variantIdx} NO MATCH - options:`, currentVariantOptions);
+              }
+              return matches;
             });
             
             if (matchingVariant && matchingVariant.available) {
+              // Construct options array if needed
+              let variantOptions = matchingVariant.options;
+              if (!variantOptions && (matchingVariant.option1 || matchingVariant.option2 || matchingVariant.option3)) {
+                variantOptions = [];
+                if (matchingVariant.option1) variantOptions.push(matchingVariant.option1);
+                if (matchingVariant.option2) variantOptions.push(matchingVariant.option2);
+                if (matchingVariant.option3) variantOptions.push(matchingVariant.option3);
+              }
+              
               // Update selects in recommended product
+              // Update ALL selects with ALL options from the matching variant
+              // This ensures products with multiple options (e.g., "Transparente" + "15 Pro") update correctly
               const selects = card.querySelectorAll('.js-recommended-variant-select');
-              selects.forEach((select, idx) => {
-                if (matchingVariant.options[idx]) {
-                  const optionValue = matchingVariant.options[idx].toString().trim();
-                  // Find and select matching option
+              console.log(`[DEBUG] Card ${cardIdx + 1} - Updating ${selects.length} selects with variant options:`, variantOptions);
+              
+              // Update each select with the corresponding option from the matching variant
+              selects.forEach((select, selectIdx) => {
+                // Get the option index for this select (from data attribute or use index)
+                const optionIndex = parseInt(select.dataset.optionIndex || selectIdx);
+                
+                // Get the corresponding option value from the matching variant
+                if (variantOptions && variantOptions[optionIndex]) {
+                  const optionValue = variantOptions[optionIndex].toString().trim();
+                  
+                  // Find and select matching option in the select
                   const options = select.querySelectorAll('option');
                   let found = false;
                   options.forEach(opt => {
-                    if (!found && opt.value) {
-                      const optValue = opt.value.toString().trim().toLowerCase();
-                      const targetValue = optionValue.toLowerCase();
-                      if (optValue === targetValue && !opt.disabled) {
+                    if (!found && opt.value && !opt.disabled) {
+                      const optValue = opt.value.toString().trim();
+                      const targetValue = optionValue;
+                      
+                      // Case-insensitive comparison
+                      if (optValue.toLowerCase() === targetValue.toLowerCase()) {
                         if (select.value !== opt.value) {
+                          console.log(`[DEBUG] Card ${cardIdx + 1}, select ${selectIdx} -> "${opt.value}"`);
                           select.value = opt.value;
-                          found = true;
                           // Trigger change event to update image, price, etc.
-                          select.dispatchEvent(new Event('change', { bubbles: true }));
+                          // Use a small delay to ensure all selects are updated before triggering events
+                          setTimeout(() => {
+                            select.dispatchEvent(new Event('change', { bubbles: true }));
+                          }, selectIdx * 10); // Stagger events slightly
                         }
+                        found = true;
                       }
                     }
                   });
+                  
+                  if (!found) {
+                    console.log(`[DEBUG] Card ${cardIdx + 1}, select ${selectIdx} - Could not find option "${optionValue}"`);
+                  }
                 }
               });
+            } else {
+              console.log(`[DEBUG] Card ${cardIdx + 1} - No matching variant or not available`);
             }
           });
         };
         
-        // Listen for changes in main product variant
+        // Listen for changes in main product variant ONLY
         const mainProductForm = document.querySelector('[data-type="add-to-cart-form"]');
         if (mainProductForm) {
-          // Listen to variant selects/radios changes
+          // Listen to variant selects/radios changes within main product form ONLY
           mainProductForm.addEventListener('change', (e) => {
-            if (e.target.matches('.js-variant-select-item, .js-variant-radio-item')) {
-              setTimeout(syncRecommendedProductsWithMain, 100);
+            // Only sync if it's a main product variant selector (not recommended products)
+            if (e.target.matches('.js-variant-select-item, .js-variant-radio-item') && !e.target.classList.contains('js-recommended-variant-select')) {
+              setTimeout(() => syncRecommendedProductsWithMain(e.target), 200);
             }
           });
           
-          // Also listen to variant ID input changes (for programmatic changes)
-          const variantIdInput = mainProductForm.querySelector('input[name="id"]');
-          if (variantIdInput) {
-            const observer = new MutationObserver(() => {
-              setTimeout(syncRecommendedProductsWithMain, 100);
+          // Listen to custom elements for variant changes
+          const variantRadios = document.querySelector('sht-variant-radios');
+          const variantSelects = document.querySelector('sht-variant-selects');
+          
+          if (variantRadios) {
+            variantRadios.addEventListener('change', () => {
+              setTimeout(syncRecommendedProductsWithMain, 200);
             });
-            observer.observe(variantIdInput, { attributes: true, attributeFilter: ['value'] });
+          }
+          
+          if (variantSelects) {
+            variantSelects.addEventListener('change', () => {
+              setTimeout(syncRecommendedProductsWithMain, 200);
+            });
           }
         }
         
         // Initial sync on page load
-        setTimeout(syncRecommendedProductsWithMain, 500);
-        
-        // Update main product variant when recommended product variant changes
-        const updateMainProductVariant = (selectedOptions) => {
-          const mainProductForm = document.querySelector('[data-type="add-to-cart-form"]');
-          if (!mainProductForm) return;
-          
-          const mainProductSelects = mainProductForm.querySelectorAll('.js-variant-select-item, .js-variant-radio-item');
-          if (mainProductSelects.length === 0) return;
-          
-          // Try to find matching options in main product
-          mainProductSelects.forEach((select, idx) => {
-            if (selectedOptions[idx]) {
-              const optionValue = selectedOptions[idx].toString().toLowerCase();
-              
-              if (select.tagName === 'SELECT') {
-                const options = select.querySelectorAll('option');
-                options.forEach(opt => {
-                  if (opt.value && opt.value.toString().toLowerCase() === optionValue && !opt.disabled) {
-                    select.value = opt.value;
-                    select.dispatchEvent(new Event('change', { bubbles: true }));
-                  }
-                });
-              } else if (select.tagName === 'INPUT' && select.type === 'radio') {
-                if (select.value && select.value.toString().toLowerCase() === optionValue && !select.disabled) {
-                  select.checked = true;
-                  select.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-              }
-            }
-          });
-        };
+        setTimeout(() => {
+          syncRecommendedProductsWithMain();
+        }, 500);
         
         // Handle variant selection change in recommended products
+        // This does NOT trigger any sync - it only updates the recommended product itself
         document.addEventListener('change', function(e) {
           if (!e.target.classList.contains('js-recommended-variant-select')) return;
           
@@ -513,9 +872,6 @@
           card.querySelectorAll('.js-recommended-variant-select').forEach(s => {
             selectedOptions.push(s.value);
           });
-          
-          // Update main product variant if possible
-          updateMainProductVariant(selectedOptions);
           
           // Find matching variant
           const variants = variantData[productId];
@@ -540,12 +896,10 @@
                 image.style.opacity = '0';
                 setTimeout(() => {
                   image.src = matchedVariant.image;
-                  // Generate srcset with different sizes
                   const baseUrl = matchedVariant.image;
                   const url120 = baseUrl.replace(/width=\d+/i, 'width=120').replace(/_(\d+)x(\d+)/i, '_120x120');
                   const url160 = baseUrl.replace(/width=\d+/i, 'width=160').replace(/_(\d+)x(\d+)/i, '_160x160');
                   image.srcset = url120 + ' 120w, ' + url160 + ' 160w, ' + baseUrl + ' 360w';
-                  // Maintain width and height attributes (images are square 1:1 aspect ratio)
                   if (!image.width) image.width = 360;
                   if (!image.height) image.height = 360;
                   image.style.opacity = '1';

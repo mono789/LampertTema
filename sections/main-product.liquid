@@ -100,7 +100,7 @@
           {%- if block.type == 'basic_description' -%}
             <div class="product__description product__description--left-column wb-break-word rte mt-24" {{ block.shopify_attributes }}>
               <span class="d-block mb-16 h5">{{ 'products.product.description' | t }}</span>{{ product.description }}
-            </div>
+    </div>
           {%- endif -%}
         {%- endfor -%}
       </div>
@@ -350,6 +350,8 @@
                     {%- endform -%}
                   </sht-prd-frm>
                 </div>
+                {%- comment -%} Product Accordion - Below Buy Now Button {%- endcomment -%}
+                {%- render 'product-accordion', product: product, section: section -%}
               </div>
             </sht-sticky-prd-info>
             {%- when 'extra_information' -%}
@@ -901,6 +903,17 @@
       "type": "url",
       "id": "recommended_scroll_view_all_link",
       "label": "View all link"
+    },
+    {
+      "type": "header",
+      "content": "Product Accordion"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_product_accordion",
+      "label": "Enable product accordion",
+      "default": true,
+      "info": "Show accordion below the 'Buy Now' button. Configure items using product metafields: custom.product_accordion_items (list of metafield objects with 'title', 'content', and optional 'icon' fields)"
     },
     {
       "type": "range",

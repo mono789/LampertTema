@@ -25,6 +25,13 @@ class SlidingCart {
     this.recommendations = new Map();
     this.isUserInteracting = false;
     this.interactionTimeout = null;
+    this.isRemovingItem = false; // Flag para prevenir múltiples eliminaciones simultáneas
+    this.isAddingToCart = false; // Flag para prevenir múltiples agregados simultáneos
+    
+    // Cache del carrito para optimizar apertura
+    this.cartCache = null; // Cache del estado del carrito
+    this.cartCacheTimestamp = 0; // Timestamp de la última actualización del cache
+    this.cartCacheMaxAge = 5000; // Máximo tiempo en ms antes de refrescar (5 segundos)
     
     // Nuevo: Sistema de gestión de recomendaciones
     this.cartRecommendations = new Map(); // Recomendaciones por producto en el carrito
@@ -184,29 +191,67 @@ class SlidingCart {
     document.addEventListener('submit', (e) => {
       if (e.target.matches('[action*="/cart/add"]')) {
         e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
         this.handleAddToCart(e.target);
+        return false;
       }
-    });
+    }, true); // Usar capture phase para interceptar antes que otros listeners
 
     // Interceptar botones AJAX de añadir al carrito
     document.addEventListener('click', (e) => {
-      if (e.target.matches('.btn-add-to-cart, [data-add-to-cart]')) {
+      if (e.target.matches('.btn-add-to-cart, [data-add-to-cart]') || 
+          e.target.closest('.btn-add-to-cart, [data-add-to-cart]')) {
         e.preventDefault();
-        this.handleAjaxAddToCart(e.target);
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        const button = e.target.matches('.btn-add-to-cart, [data-add-to-cart]') 
+          ? e.target 
+          : e.target.closest('.btn-add-to-cart, [data-add-to-cart]');
+        this.handleAjaxAddToCart(button);
+        return false;
       }
-    });
+    }, true); // Usar capture phase para interceptar antes que otros listeners
   }
 
   // Manejar añadir al carrito via formulario
   async handleAddToCart(form) {
+    // Prevenir múltiples llamadas simultáneas
+    if (this.isAddingToCart) {
+      console.log('Ya hay un producto siendo agregado, ignorando...');
+      return;
+    }
+
     try {
+      this.isAddingToCart = true;
       const formData = new FormData(form);
       const variantId = formData.get('id');
-      const quantity = parseInt(formData.get('quantity')) || 1;
+      let quantity = parseInt(formData.get('quantity')) || 1;
       
-      // Verificar si el producto ya está en el carrito
-      const cartResponse = await fetch('/cart.js');
-      const cart = await cartResponse.json();
+      // Asegurar que la cantidad sea al menos 1 y no más de lo esperado
+      if (quantity < 1) quantity = 1;
+      if (quantity > 10) {
+        console.warn('Cantidad inusualmente alta detectada:', quantity, 'Limitando a 1');
+        quantity = 1;
+      }
+      
+      console.log('Agregando al carrito - Variant ID:', variantId, 'Cantidad:', quantity);
+      
+      // Verificar si el producto ya está en el carrito (usar cache si está disponible y es reciente)
+      let cart;
+      const now = Date.now();
+      const cacheAge = now - this.cartCacheTimestamp;
+      
+      if (this.cartCache && cacheAge < 2000) { // Usar cache si tiene menos de 2 segundos
+        cart = this.cartCache;
+        console.log('Usando cache del carrito para verificación');
+      } else {
+        const cartResponse = await fetch('/cart.js');
+        cart = await cartResponse.json();
+        // Actualizar cache
+        this.cartCache = cart;
+        this.cartCacheTimestamp = now;
+      }
       
       const existingItem = cart.items.find(item => item.variant_id.toString() === variantId.toString());
       
@@ -225,9 +270,14 @@ class SlidingCart {
         });
         
         if (updateResponse.ok) {
-          await this.refreshCart();
+          // Mostrar el carrito inmediatamente
           this.showCart();
           this.showToast(`Cantidad actualizada a ${newQuantity}`, 'success');
+          
+          // Actualizar en segundo plano
+          this.refreshCart().catch(err => {
+            console.warn('Error refreshing cart in background:', err);
+          });
         } else {
           this.showToast('Error al actualizar cantidad', 'error');
         }
@@ -240,10 +290,20 @@ class SlidingCart {
 
         if (response.ok) {
           const product = await response.json();
-          await this.refreshCart();
-          await this.showCart();
-          this.loadProductRecommendations(product.product_id);
+          
+          // Mostrar el carrito inmediatamente sin esperar
+          this.showCart();
           this.showToast('Producto añadido al carrito', 'success');
+          
+          // Actualizar el carrito y cargar recomendaciones en segundo plano
+          this.refreshCart().then(() => {
+            // Cargar recomendaciones en segundo plano sin bloquear
+            this.loadProductRecommendations(product.product_id).catch(err => {
+              console.warn('Error loading recommendations in background:', err);
+            });
+          }).catch(err => {
+            console.warn('Error refreshing cart in background:', err);
+          });
         } else {
           this.showToast('Error al añadir producto', 'error');
         }
@@ -251,19 +311,45 @@ class SlidingCart {
     } catch (error) {
       console.error('Error adding to cart:', error);
       this.showToast('Error al añadir producto', 'error');
+    } finally {
+      this.isAddingToCart = false;
     }
   }
 
   // Manejar añadir al carrito AJAX
   async handleAjaxAddToCart(button) {
+    // Prevenir múltiples llamadas simultáneas
+    if (this.isAddingToCart) {
+      console.log('Ya hay un producto siendo agregado, ignorando...');
+      return;
+    }
+
     try {
+      this.isAddingToCart = true;
       const productId = button.dataset.productId;
       const variantId = button.dataset.variantId;
-      const quantity = parseInt(button.dataset.quantity) || 1;
+      let quantity = parseInt(button.dataset.quantity) || 1;
       
-      // Verificar si el producto ya está en el carrito
-      const cartResponse = await fetch('/cart.js');
-      const cart = await cartResponse.json();
+      // Asegurar que la cantidad sea al menos 1 y no más de lo esperado
+      if (quantity < 1) quantity = 1;
+      
+      console.log('Agregando al carrito (AJAX) - Product ID:', productId, 'Variant ID:', variantId, 'Cantidad:', quantity);
+      
+      // Verificar si el producto ya está en el carrito (usar cache si está disponible y es reciente)
+      let cart;
+      const now = Date.now();
+      const cacheAge = now - this.cartCacheTimestamp;
+      
+      if (this.cartCache && cacheAge < 2000) { // Usar cache si tiene menos de 2 segundos
+        cart = this.cartCache;
+        console.log('Usando cache del carrito para verificación');
+      } else {
+        const cartResponse = await fetch('/cart.js');
+        cart = await cartResponse.json();
+        // Actualizar cache
+        this.cartCache = cart;
+        this.cartCacheTimestamp = now;
+      }
       
       const existingItem = cart.items.find(item => item.variant_id.toString() === variantId.toString());
       
@@ -282,9 +368,14 @@ class SlidingCart {
         });
         
         if (updateResponse.ok) {
-          await this.refreshCart();
+          // Mostrar el carrito inmediatamente
           this.showCart();
           this.showToast(`Cantidad actualizada a ${newQuantity}`, 'success');
+          
+          // Actualizar en segundo plano
+          this.refreshCart().catch(err => {
+            console.warn('Error refreshing cart in background:', err);
+          });
         } else {
           this.showToast('Error al actualizar cantidad', 'error');
         }
@@ -302,10 +393,19 @@ class SlidingCart {
         });
 
         if (response.ok) {
-          await this.refreshCart();
-          await this.showCart();
-          this.loadProductRecommendations(productId);
+          // Mostrar el carrito inmediatamente sin esperar
+          this.showCart();
           this.showToast('Producto añadido al carrito', 'success');
+          
+          // Actualizar el carrito y cargar recomendaciones en segundo plano
+          this.refreshCart().then(() => {
+            // Cargar recomendaciones en segundo plano sin bloquear
+            this.loadProductRecommendations(productId).catch(err => {
+              console.warn('Error loading recommendations in background:', err);
+            });
+          }).catch(err => {
+            console.warn('Error refreshing cart in background:', err);
+          });
         } else {
           this.showToast('Error al añadir producto', 'error');
         }
@@ -313,6 +413,8 @@ class SlidingCart {
     } catch (error) {
       console.error('Error adding to cart:', error);
       this.showToast('Error al añadir producto', 'error');
+    } finally {
+      this.isAddingToCart = false;
     }
   }
 
@@ -322,16 +424,40 @@ class SlidingCart {
     const cart = document.getElementById('sliding-cart');
     
     if (overlay && cart) {
-      overlay.classList.add('active');
-      cart.classList.add('active');
-      document.body.classList.add('cart-open');
+      // Mostrar el carrito inmediatamente con datos cacheados si están disponibles
+      const now = Date.now();
+      const cacheAge = now - this.cartCacheTimestamp;
+      const useCache = this.cartCache && cacheAge < this.cartCacheMaxAge;
       
-      this.isOpen = true;
-      this.setAutoClose();
+      if (useCache) {
+        // Usar cache para mostrar inmediatamente
+        this.updateCartItems(this.cartCache.items);
+        this.updateCartTotal(this.cartCache.total_price);
+        
+        // Mostrar el carrito inmediatamente
+        overlay.classList.add('active');
+        cart.classList.add('active');
+        document.body.classList.add('cart-open');
+        this.isOpen = true;
+        this.setAutoClose();
+        
+        // Actualizar en segundo plano sin bloquear la UI
+        this.refreshCart(true); // true = actualización silenciosa en segundo plano
+      } else {
+        // Si no hay cache o está muy viejo, refrescar antes de mostrar
+        await this.refreshCart();
+        
+        overlay.classList.add('active');
+        cart.classList.add('active');
+        document.body.classList.add('cart-open');
+        this.isOpen = true;
+        this.setAutoClose();
+      }
       
       // Inicializar recomendaciones si es la primera vez que se abre
       if (this.combinedRecommendations.length === 0) {
-        await this.initializeCartRecommendations();
+        // Cargar recomendaciones en segundo plano sin bloquear
+        this.initializeCartRecommendations();
       }
     }
   }
@@ -430,22 +556,47 @@ class SlidingCart {
   }
 
   // Refrescar contenido del carrito
-  async refreshCart() {
+  async refreshCart(silent = false) {
     try {
       const response = await fetch('/cart.js');
       const cart = await response.json();
       
-      this.updateCartItems(cart.items);
-      this.updateCartTotal(cart.total_price);
+      // Actualizar cache
+      this.cartCache = cart;
+      this.cartCacheTimestamp = Date.now();
       
-      // Actualizar recomendaciones si hay productos en el carrito
-      if (cart.items.length > 0) {
-        await this.combineCartRecommendations();
-        this.displayRecommendations(this.combinedRecommendations);
+      // Actualizar UI solo si no es una actualización silenciosa o si el carrito está abierto
+      if (!silent || this.isOpen) {
+        this.updateCartItems(cart.items);
+        this.updateCartTotal(cart.total_price);
+        
+        // Actualizar recomendaciones si hay productos en el carrito
+        if (cart.items.length > 0) {
+          // Cargar recomendaciones en segundo plano para no bloquear
+          this.combineCartRecommendations().then(() => {
+            if (this.isOpen) {
+              this.displayRecommendations(this.combinedRecommendations);
+            }
+          }).catch(err => {
+            console.warn('Error loading recommendations:', err);
+          });
+        } else {
+          // Si no hay productos, limpiar recomendaciones
+          this.displayRecommendations([]);
+        }
       }
     } catch (error) {
       console.error('Error refreshing cart:', error);
+      // En caso de error, invalidar el cache para forzar una actualización la próxima vez
+      this.cartCache = null;
+      this.cartCacheTimestamp = 0;
     }
+  }
+
+  // Invalidar el cache del carrito (útil después de cambios)
+  invalidateCartCache() {
+    this.cartCache = null;
+    this.cartCacheTimestamp = 0;
   }
 
   // Actualizar items del carrito
@@ -526,27 +677,41 @@ class SlidingCart {
     }
   }
 
-  // Cargar recomendaciones de productos - MEJORADA para múltiples productos
+  // Cargar recomendaciones de productos - MEJORADA para múltiples productos (optimizada para no bloquear)
   async loadProductRecommendations(productId) {
     try {
       console.log(`Cargando recomendaciones para producto: ${productId}`);
       
-      // Obtener recomendaciones para este producto específico
-      const productRecommendations = await this.getProductRecommendations(productId);
+      // Si el carrito no está abierto, no cargar recomendaciones todavía
+      if (!this.isOpen) {
+        console.log('Carrito cerrado, recomendaciones se cargarán cuando se abra');
+        return;
+      }
       
-      // Almacenar las recomendaciones de este producto en el carrito
-      this.cartRecommendations.set(productId, productRecommendations);
-      
-      // Combinar todas las recomendaciones del carrito
-      await this.combineCartRecommendations();
-      
-      // Mostrar las recomendaciones combinadas
-      this.displayRecommendations(this.combinedRecommendations);
+      // Obtener recomendaciones para este producto específico (sin await para no bloquear)
+      this.getProductRecommendations(productId).then(productRecommendations => {
+        // Almacenar las recomendaciones de este producto en el carrito
+        this.cartRecommendations.set(productId, productRecommendations);
+        
+        // Combinar todas las recomendaciones del carrito
+        return this.combineCartRecommendations();
+      }).then(() => {
+        // Solo mostrar si el carrito sigue abierto
+        if (this.isOpen) {
+          this.displayRecommendations(this.combinedRecommendations);
+        }
+      }).catch(error => {
+        console.error('Error loading recommendations:', error);
+        // Si falla, intentar mostrar recomendaciones existentes
+        if (this.isOpen && this.combinedRecommendations.length > 0) {
+          this.displayRecommendations(this.combinedRecommendations);
+        }
+      });
       
     } catch (error) {
       console.error('Error loading recommendations:', error);
       // Si falla, intentar mostrar recomendaciones existentes
-      if (this.combinedRecommendations.length > 0) {
+      if (this.isOpen && this.combinedRecommendations.length > 0) {
         this.displayRecommendations(this.combinedRecommendations);
       }
     }
@@ -1182,9 +1347,6 @@ class SlidingCart {
         this.updateQuantity(e.target.dataset.key, 1);
       } else if (e.target.matches('.qty-minus')) {
         this.updateQuantity(e.target.dataset.key, -1);
-      } else if (e.target.matches('.remove-item') || e.target.closest('.remove-item')) {
-        const removeButton = e.target.matches('.remove-item') ? e.target : e.target.closest('.remove-item');
-        this.removeItem(removeButton.dataset.key);
       }
     });
 
@@ -1212,7 +1374,7 @@ class SlidingCart {
       }
     });
 
-    // Event listener específico para botones de eliminar (backup)
+    // Event listener específico para botones de eliminar
     document.addEventListener('click', (e) => {
       const removeButton = e.target.closest('.remove-item');
       if (removeButton) {
@@ -1220,10 +1382,11 @@ class SlidingCart {
         e.stopPropagation();
         const key = removeButton.dataset.key;
         console.log('Botón de eliminar clickeado, key:', key);
-        if (key) {
+        if (key && key.trim() !== '') {
           this.removeItem(key);
         } else {
-          console.error('No se encontró data-key en el botón de eliminar');
+          console.error('No se encontró data-key válido en el botón de eliminar');
+          this.showToast('Error: No se pudo identificar el producto a eliminar', 'error');
         }
       }
     });
@@ -1316,7 +1479,21 @@ class SlidingCart {
 
   // Remover item del carrito
   async removeItem(key) {
+    // Validar que el key existe y no está vacío
+    if (!key || key.trim() === '') {
+      console.error('Error: key inválido para eliminar item');
+      this.showToast('Error: No se pudo identificar el producto a eliminar', 'error');
+      return;
+    }
+
+    // Prevenir múltiples llamadas simultáneas
+    if (this.isRemovingItem) {
+      console.log('Ya hay una eliminación en proceso, ignorando...');
+      return;
+    }
+
     try {
+      this.isRemovingItem = true;
       console.log('Intentando eliminar item con key:', key);
       
       // Mostrar feedback antes de eliminar
@@ -1328,7 +1505,7 @@ class SlidingCart {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id: key,
+          id: String(key).trim(),
           quantity: 0
         })
       });
@@ -1346,12 +1523,31 @@ class SlidingCart {
         // El toast ya se muestra en showRemovedFeedback, no es necesario duplicarlo
       } else {
         const errorText = await response.text();
-        console.error('Error del servidor:', errorText);
-        this.showToast('Error al eliminar el producto', 'error');
+        console.error('Error del servidor:', response.status, errorText);
+        
+        // Intentar parsear el error si es JSON
+        let errorMessage = 'Error al eliminar el producto';
+        try {
+          const errorJson = JSON.parse(errorText);
+          if (errorJson.description) {
+            errorMessage = errorJson.description;
+          } else if (errorJson.message) {
+            errorMessage = errorJson.message;
+          }
+        } catch (e) {
+          // Si no es JSON, usar el texto tal cual
+          if (errorText) {
+            errorMessage = errorText;
+          }
+        }
+        
+        this.showToast(errorMessage, 'error');
       }
     } catch (error) {
       console.error('Error removing item:', error);
-      this.showToast('Error al eliminar el producto', 'error');
+      this.showToast('Error al eliminar el producto: ' + error.message, 'error');
+    } finally {
+      this.isRemovingItem = false;
     }
   }
 
