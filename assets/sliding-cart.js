@@ -322,6 +322,9 @@ class SlidingCart {
     const cart = document.getElementById('sliding-cart');
     
     if (overlay && cart) {
+      // Refrescar el contenido del carrito cada vez que se abre
+      await this.refreshCart();
+      
       overlay.classList.add('active');
       cart.classList.add('active');
       document.body.classList.add('cart-open');
