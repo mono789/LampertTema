@@ -28,6 +28,11 @@ class SlidingCart {
     this.isRemovingItem = false; // Flag para prevenir múltiples eliminaciones simultáneas
     this.isAddingToCart = false; // Flag para prevenir múltiples agregados simultáneos
     
+    // Cache del carrito para optimizar apertura
+    this.cartCache = null; // Cache del estado del carrito
+    this.cartCacheTimestamp = 0; // Timestamp de la última actualización del cache
+    this.cartCacheMaxAge = 5000; // Máximo tiempo en ms antes de refrescar (5 segundos)
+    
     // Nuevo: Sistema de gestión de recomendaciones
     this.cartRecommendations = new Map(); // Recomendaciones por producto en el carrito
     this.combinedRecommendations = []; // Recomendaciones combinadas del carrito completo
@@ -366,19 +371,40 @@ class SlidingCart {
     const cart = document.getElementById('sliding-cart');
     
     if (overlay && cart) {
-      // Refrescar el contenido del carrito cada vez que se abre
-      await this.refreshCart();
+      // Mostrar el carrito inmediatamente con datos cacheados si están disponibles
+      const now = Date.now();
+      const cacheAge = now - this.cartCacheTimestamp;
+      const useCache = this.cartCache && cacheAge < this.cartCacheMaxAge;
       
-      overlay.classList.add('active');
-      cart.classList.add('active');
-      document.body.classList.add('cart-open');
-      
-      this.isOpen = true;
-      this.setAutoClose();
+      if (useCache) {
+        // Usar cache para mostrar inmediatamente
+        this.updateCartItems(this.cartCache.items);
+        this.updateCartTotal(this.cartCache.total_price);
+        
+        // Mostrar el carrito inmediatamente
+        overlay.classList.add('active');
+        cart.classList.add('active');
+        document.body.classList.add('cart-open');
+        this.isOpen = true;
+        this.setAutoClose();
+        
+        // Actualizar en segundo plano sin bloquear la UI
+        this.refreshCart(true); // true = actualización silenciosa en segundo plano
+      } else {
+        // Si no hay cache o está muy viejo, refrescar antes de mostrar
+        await this.refreshCart();
+        
+        overlay.classList.add('active');
+        cart.classList.add('active');
+        document.body.classList.add('cart-open');
+        this.isOpen = true;
+        this.setAutoClose();
+      }
       
       // Inicializar recomendaciones si es la primera vez que se abre
       if (this.combinedRecommendations.length === 0) {
-        await this.initializeCartRecommendations();
+        // Cargar recomendaciones en segundo plano sin bloquear
+        this.initializeCartRecommendations();
       }
     }
   }
@@ -477,22 +503,47 @@ class SlidingCart {
   }
 
   // Refrescar contenido del carrito
-  async refreshCart() {
+  async refreshCart(silent = false) {
     try {
       const response = await fetch('/cart.js');
       const cart = await response.json();
       
-      this.updateCartItems(cart.items);
-      this.updateCartTotal(cart.total_price);
+      // Actualizar cache
+      this.cartCache = cart;
+      this.cartCacheTimestamp = Date.now();
       
-      // Actualizar recomendaciones si hay productos en el carrito
-      if (cart.items.length > 0) {
-        await this.combineCartRecommendations();
-        this.displayRecommendations(this.combinedRecommendations);
+      // Actualizar UI solo si no es una actualización silenciosa o si el carrito está abierto
+      if (!silent || this.isOpen) {
+        this.updateCartItems(cart.items);
+        this.updateCartTotal(cart.total_price);
+        
+        // Actualizar recomendaciones si hay productos en el carrito
+        if (cart.items.length > 0) {
+          // Cargar recomendaciones en segundo plano para no bloquear
+          this.combineCartRecommendations().then(() => {
+            if (this.isOpen) {
+              this.displayRecommendations(this.combinedRecommendations);
+            }
+          }).catch(err => {
+            console.warn('Error loading recommendations:', err);
+          });
+        } else {
+          // Si no hay productos, limpiar recomendaciones
+          this.displayRecommendations([]);
+        }
       }
     } catch (error) {
       console.error('Error refreshing cart:', error);
+      // En caso de error, invalidar el cache para forzar una actualización la próxima vez
+      this.cartCache = null;
+      this.cartCacheTimestamp = 0;
     }
+  }
+
+  // Invalidar el cache del carrito (útil después de cambios)
+  invalidateCartCache() {
+    this.cartCache = null;
+    this.cartCacheTimestamp = 0;
   }
 
   // Actualizar items del carrito
