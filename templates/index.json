@@ -12,6 +12,15 @@
     "galeria_lampert_c88Ahz": {
       "type": "galeria-lampert",
       "blocks": {
+        "image_slide_nkAhN4": {
+          "type": "image_slide",
+          "disabled": true,
+          "settings": {
+            "image_desktop": "shopify://shop_images/DS_STICKPAD.png",
+            "image_mobile": "shopify://shop_images/DS_STICKPAD_2.png",
+            "link": ""
+          }
+        },
         "image_slide_8HTKdd": {
           "type": "image_slide",
           "settings": {
@@ -31,6 +40,7 @@
         },
         "image_slide_KMjiDW": {
           "type": "image_slide",
+          "disabled": true,
           "settings": {
             "image_desktop": "shopify://shop_images/Sin_titulo-7-02.png",
             "image_mobile": "shopify://shop_images/3_2.jpg",
@@ -39,6 +49,7 @@
         }
       },
       "block_order": [
+        "image_slide_nkAhN4",
         "image_slide_8HTKdd",
         "image_slide_6WTc9n",
         "image_slide_KMjiDW"
