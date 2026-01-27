@@ -300,10 +300,6 @@ class SlidingCart {
       
       // Asegurar que la cantidad sea al menos 1 y no más de lo esperado
       if (quantity < 1) quantity = 1;
-      if (quantity > 10) {
-        console.warn('Cantidad inusualmente alta detectada:', quantity, 'Limitando a 1');
-        quantity = 1;
-      }
       
       console.log('Agregando al carrito (AJAX) - Product ID:', productId, 'Variant ID:', variantId, 'Cantidad:', quantity);
       
