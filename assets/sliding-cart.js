@@ -25,6 +25,7 @@ class SlidingCart {
     this.recommendations = new Map();
     this.isUserInteracting = false;
     this.interactionTimeout = null;
+    this.isRemovingItem = false; // Flag para prevenir múltiples eliminaciones simultáneas
     
     // Nuevo: Sistema de gestión de recomendaciones
     this.cartRecommendations = new Map(); // Recomendaciones por producto en el carrito
@@ -1185,9 +1186,6 @@ class SlidingCart {
         this.updateQuantity(e.target.dataset.key, 1);
       } else if (e.target.matches('.qty-minus')) {
         this.updateQuantity(e.target.dataset.key, -1);
-      } else if (e.target.matches('.remove-item') || e.target.closest('.remove-item')) {
-        const removeButton = e.target.matches('.remove-item') ? e.target : e.target.closest('.remove-item');
-        this.removeItem(removeButton.dataset.key);
       }
     });
 
@@ -1215,7 +1213,7 @@ class SlidingCart {
       }
     });
 
-    // Event listener específico para botones de eliminar (backup)
+    // Event listener específico para botones de eliminar
     document.addEventListener('click', (e) => {
       const removeButton = e.target.closest('.remove-item');
       if (removeButton) {
@@ -1223,10 +1221,11 @@ class SlidingCart {
         e.stopPropagation();
         const key = removeButton.dataset.key;
         console.log('Botón de eliminar clickeado, key:', key);
-        if (key) {
+        if (key && key.trim() !== '') {
           this.removeItem(key);
         } else {
-          console.error('No se encontró data-key en el botón de eliminar');
+          console.error('No se encontró data-key válido en el botón de eliminar');
+          this.showToast('Error: No se pudo identificar el producto a eliminar', 'error');
         }
       }
     });
@@ -1319,7 +1318,21 @@ class SlidingCart {
 
   // Remover item del carrito
   async removeItem(key) {
+    // Validar que el key existe y no está vacío
+    if (!key || key.trim() === '') {
+      console.error('Error: key inválido para eliminar item');
+      this.showToast('Error: No se pudo identificar el producto a eliminar', 'error');
+      return;
+    }
+
+    // Prevenir múltiples llamadas simultáneas
+    if (this.isRemovingItem) {
+      console.log('Ya hay una eliminación en proceso, ignorando...');
+      return;
+    }
+
     try {
+      this.isRemovingItem = true;
       console.log('Intentando eliminar item con key:', key);
       
       // Mostrar feedback antes de eliminar
@@ -1331,7 +1344,7 @@ class SlidingCart {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id: key,
+          id: String(key).trim(),
           quantity: 0
         })
       });
@@ -1349,12 +1362,31 @@ class SlidingCart {
         // El toast ya se muestra en showRemovedFeedback, no es necesario duplicarlo
       } else {
         const errorText = await response.text();
-        console.error('Error del servidor:', errorText);
-        this.showToast('Error al eliminar el producto', 'error');
+        console.error('Error del servidor:', response.status, errorText);
+        
+        // Intentar parsear el error si es JSON
+        let errorMessage = 'Error al eliminar el producto';
+        try {
+          const errorJson = JSON.parse(errorText);
+          if (errorJson.description) {
+            errorMessage = errorJson.description;
+          } else if (errorJson.message) {
+            errorMessage = errorJson.message;
+          }
+        } catch (e) {
+          // Si no es JSON, usar el texto tal cual
+          if (errorText) {
+            errorMessage = errorText;
+          }
+        }
+        
+        this.showToast(errorMessage, 'error');
       }
     } catch (error) {
       console.error('Error removing item:', error);
-      this.showToast('Error al eliminar el producto', 'error');
+      this.showToast('Error al eliminar el producto: ' + error.message, 'error');
+    } finally {
+      this.isRemovingItem = false;
     }
   }
 
