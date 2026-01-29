@@ -580,19 +580,6 @@
         "badge_shape": "badge--star"
       }
     },
-    "encabezado_lampert_yaMxHq": {
-      "type": "encabezado-lampert",
-      "name": "Ultra safe combo",
-      "settings": {
-        "main_title": "Ultra Safe Combo",
-        "link_text": "Ver todos",
-        "link_url": "shopify://collections/ultra-safe-combo",
-        "padding_top": 20,
-        "padding_bottom": 0,
-        "s_content_font_size": 21,
-        "subtext_font_size": 21
-      }
-    },
     "encabezado_lampert_8EhrCw": {
       "type": "encabezado-lampert",
       "name": "COMPRA POR CATEGORÍA",
@@ -833,7 +820,6 @@
     "featured_product_carousel_BVcF9w",
     "encabezado_lampert_mxrkTt",
     "featured_product_carousel_iHjwVL",
-    "encabezado_lampert_yaMxHq",
     "encabezado_lampert_8EhrCw",
     "scrolling_images_mB7WGX",
     "collapsible_content_TEiMBA",
