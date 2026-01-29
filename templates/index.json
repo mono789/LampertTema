@@ -476,28 +476,6 @@
         "badge_shape": "badge--star"
       }
     },
-    "galeria_lampert_CpBA67": {
-      "type": "galeria-lampert",
-      "blocks": {
-        "image_slide_tG77Ae": {
-          "type": "image_slide",
-          "settings": {
-            "image_desktop": "shopify://shop_images/Diseno_sin_titulo_2.png",
-            "image_mobile": "shopify://shop_images/mockup_lampert.png",
-            "link": "shopify://collections/complementos-para-tu-case"
-          }
-        }
-      },
-      "block_order": [
-        "image_slide_tG77Ae"
-      ],
-      "custom_css": [],
-      "name": "Galería de Imágenes y Video",
-      "settings": {
-        "autoplay_interval": 7000,
-        "section_width": 100
-      }
-    },
     "featured_product_carousel_BVcF9w": {
       "type": "featured-product-carousel",
       "name": "Complementos para tu case",
@@ -636,49 +614,6 @@
         "padding_bottom": 0,
         "s_content_font_size": 21,
         "subtext_font_size": 21
-      }
-    },
-    "featured_product_carousel_gGBH8G": {
-      "type": "featured-product-carousel",
-      "custom_css": [
-        ".s-content a {color: black;}"
-      ],
-      "name": "Ultra safe combo",
-      "settings": {
-        "color_scheme": "",
-        "subheading": "",
-        "heading": "",
-        "description": "",
-        "items_per_row_on_desktop": "4",
-        "content_align": "ta-left",
-        "show_navigation": true,
-        "remove_padding_top": false,
-        "remove_padding_bottom": false,
-        "product_list": [
-          "ultra-safe-combo-case-body-strap-cardholder",
-          "ultra-safe-combo-basic",
-          "ultra-safe-combo-case-black-leopard-screen-protector-camera-lens-protector",
-          "ultra-safe-combo-clear-case-side-black-screen-protector-camera-lens-protector",
-          "ultra-safe-combo-case-red-snake-screen-protector-camera-lens-protector",
-          "ultra-safe-combo-basic-case-screen-protector",
-          "ultra-safe-combo-clear-case-screen-protector",
-          "ultra-safe-combo-basic-case-camera-lens-protector",
-          "ultra-safe-combo-basic-case-camera-lens-protector-1",
-          "ultra-safe-combo-case-rose-marble-screen-protector-camera-lens-protector",
-          "safe-pack-basic-case-screen-protector-camera-lens-protector"
-        ],
-        "show_ranking": false,
-        "ranking_badge_shape": "ribbon",
-        "ranking_badge_color": "color-accent-1",
-        "image_ratio": "1/1",
-        "image_overlay_opacity": 0,
-        "section_mask_overlay_color": "",
-        "section_content_overlay_color": "",
-        "star_rating_overlay": "",
-        "badge_text": "",
-        "badge_color": "color-accent-1",
-        "badge_position": "p-badge--bottom-right",
-        "badge_shape": "badge--star"
       }
     },
     "encabezado_lampert_8EhrCw": {
@@ -918,12 +853,10 @@
     "content_collage_pRU8Gy",
     "encabezado_lampert_EGkd7H",
     "featured_product_carousel_fQPQBY",
-    "galeria_lampert_CpBA67",
     "featured_product_carousel_BVcF9w",
     "encabezado_lampert_mxrkTt",
     "featured_product_carousel_iHjwVL",
     "encabezado_lampert_yaMxHq",
-    "featured_product_carousel_gGBH8G",
     "encabezado_lampert_8EhrCw",
     "scrolling_images_mB7WGX",
     "collapsible_content_TEiMBA",
