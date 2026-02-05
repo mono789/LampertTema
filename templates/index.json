@@ -12,14 +12,6 @@
     "galeria_lampert_c88Ahz": {
       "type": "galeria-lampert",
       "blocks": {
-        "image_slide_nqrakB": {
-          "type": "image_slide",
-          "settings": {
-            "image_desktop": "shopify://shop_images/Essential.png",
-            "image_mobile": "shopify://shop_images/Image_2.png",
-            "link": ""
-          }
-        },
         "image_slide_nkAhN4": {
           "type": "image_slide",
           "disabled": true,
@@ -35,6 +27,14 @@
             "image_desktop": "shopify://shop_images/Banner_Lampert_2.jpg",
             "image_mobile": "shopify://shop_images/Banner_mobile.jpg",
             "link": "shopify://collections/expresso-collection"
+          }
+        },
+        "image_slide_nqrakB": {
+          "type": "image_slide",
+          "settings": {
+            "image_desktop": "shopify://shop_images/Essential.png",
+            "image_mobile": "shopify://shop_images/Image_2.png",
+            "link": ""
           }
         },
         "image_slide_6WTc9n": {
@@ -57,9 +57,9 @@
         }
       },
       "block_order": [
-        "image_slide_nqrakB",
         "image_slide_nkAhN4",
         "image_slide_8HTKdd",
+        "image_slide_nqrakB",
         "image_slide_6WTc9n",
         "image_slide_KMjiDW"
       ],
@@ -324,10 +324,19 @@
             "image_mobile": "shopify://shop_images/BANNER_MOVIL_INTERNO.png",
             "link": "shopify://collections/summer-vibes"
           }
+        },
+        "image_slide_YETyyP": {
+          "type": "image_slide",
+          "settings": {
+            "image_desktop": "shopify://shop_images/Essential.png",
+            "image_mobile": "shopify://shop_images/Image_2.png",
+            "link": ""
+          }
         }
       },
       "block_order": [
-        "image_slide_nq6FCb"
+        "image_slide_nq6FCb",
+        "image_slide_YETyyP"
       ],
       "custom_css": [],
       "name": "Galería de Imágenes y Video",
