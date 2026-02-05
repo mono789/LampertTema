@@ -375,8 +375,8 @@
         "image_slide_8cAHcM": {
           "type": "image_slide",
           "settings": {
-            "image_desktop": "shopify://shop_images/Essential.png",
-            "image_mobile": "shopify://shop_images/Image_2.png",
+            "image_desktop": "shopify://shop_images/Stick_Pad_02.png",
+            "image_mobile": "shopify://shop_images/Stick_Pad_Mobile_1.png",
             "link": ""
           }
         },
