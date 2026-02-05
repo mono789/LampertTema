@@ -12,6 +12,14 @@
     "galeria_lampert_c88Ahz": {
       "type": "galeria-lampert",
       "blocks": {
+        "image_slide_nqrakB": {
+          "type": "image_slide",
+          "settings": {
+            "image_desktop": "shopify://shop_images/Image.png",
+            "image_mobile": "shopify://shop_images/Image_2.png",
+            "link": ""
+          }
+        },
         "image_slide_nkAhN4": {
           "type": "image_slide",
           "disabled": true,
@@ -49,6 +57,7 @@
         }
       },
       "block_order": [
+        "image_slide_nqrakB",
         "image_slide_nkAhN4",
         "image_slide_8HTKdd",
         "image_slide_6WTc9n",
@@ -385,7 +394,7 @@
     "galeria_lampert_ejTpb7": {
       "type": "galeria-lampert",
       "blocks": {
-        "video_slide_VDeyRx": {
+        "video_slide_YwqTgQ": {
           "type": "video_slide",
           "disabled": true,
           "settings": {
@@ -396,7 +405,7 @@
         }
       },
       "block_order": [
-        "video_slide_VDeyRx"
+        "video_slide_YwqTgQ"
       ],
       "disabled": true,
       "name": "Galería de Imágenes y Video",
