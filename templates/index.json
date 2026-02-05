@@ -324,19 +324,10 @@
             "image_mobile": "shopify://shop_images/BANNER_MOVIL_INTERNO.png",
             "link": "shopify://collections/summer-vibes"
           }
-        },
-        "image_slide_rKa3Hq": {
-          "type": "image_slide",
-          "settings": {
-            "image_desktop": "shopify://shop_images/Essential.png",
-            "image_mobile": "shopify://shop_images/Image_2.png",
-            "link": ""
-          }
         }
       },
       "block_order": [
-        "image_slide_nq6FCb",
-        "image_slide_rKa3Hq"
+        "image_slide_nq6FCb"
       ],
       "custom_css": [],
       "name": "Galería de Imágenes y Video",
