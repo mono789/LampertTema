@@ -372,8 +372,17 @@
     "galeria_lampert_a4pCth": {
       "type": "galeria-lampert",
       "blocks": {
+        "image_slide_8cAHcM": {
+          "type": "image_slide",
+          "settings": {
+            "image_desktop": "shopify://shop_images/Essential.png",
+            "image_mobile": "shopify://shop_images/Image_2.png",
+            "link": ""
+          }
+        },
         "image_slide_D7DNPJ": {
           "type": "image_slide",
+          "disabled": true,
           "settings": {
             "image_desktop": "shopify://shop_images/DESKTOP_red.jpg",
             "image_mobile": "shopify://shop_images/mobile_red.jpg",
@@ -382,9 +391,9 @@
         }
       },
       "block_order": [
+        "image_slide_8cAHcM",
         "image_slide_D7DNPJ"
       ],
-      "disabled": true,
       "name": "Galería de Imágenes y Video",
       "settings": {
         "autoplay_interval": 7000,
@@ -407,7 +416,6 @@
       "block_order": [
         "video_slide_YwqTgQ"
       ],
-      "disabled": true,
       "name": "Galería de Imágenes y Video",
       "settings": {
         "autoplay_interval": 7000,
