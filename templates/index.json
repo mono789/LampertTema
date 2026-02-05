@@ -325,7 +325,7 @@
             "link": "shopify://collections/summer-vibes"
           }
         },
-        "image_slide_YETyyP": {
+        "image_slide_rKa3Hq": {
           "type": "image_slide",
           "settings": {
             "image_desktop": "shopify://shop_images/Essential.png",
@@ -336,7 +336,7 @@
       },
       "block_order": [
         "image_slide_nq6FCb",
-        "image_slide_YETyyP"
+        "image_slide_rKa3Hq"
       ],
       "custom_css": [],
       "name": "Galería de Imágenes y Video",
