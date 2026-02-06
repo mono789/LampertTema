@@ -197,6 +197,7 @@
       "blocks": {
         "image_slide_kCBGeW": {
           "type": "image_slide",
+          "disabled": true,
           "settings": {
             "image_desktop": "shopify://shop_images/Essential.png",
             "image_mobile": "shopify://shop_images/Image_2.png",
@@ -477,6 +478,37 @@
         "badge_color": "color-accent-1",
         "badge_position": "p-badge--bottom-right",
         "badge_shape": "badge--star"
+      }
+    },
+    "galeria_lampert_NF3HU9": {
+      "type": "galeria-lampert",
+      "blocks": {
+        "video_slide_BNVQbh": {
+          "type": "video_slide",
+          "disabled": true,
+          "settings": {
+            "video_mobile_file": "shopify://files/videos/copy_FCCD9B0E-62C2-47D9-856B-07AF8902E73A.MOV",
+            "video_url": "",
+            "video_url_mobile": ""
+          }
+        },
+        "image_slide_wBFDaT": {
+          "type": "image_slide",
+          "settings": {
+            "image_desktop": "shopify://shop_images/Essential.png",
+            "image_mobile": "shopify://shop_images/Image_2.png",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "video_slide_BNVQbh",
+        "image_slide_wBFDaT"
+      ],
+      "name": "Galería de Imágenes y Video",
+      "settings": {
+        "autoplay_interval": 7000,
+        "section_width": 100
       }
     },
     "featured_product_carousel_BVcF9w": {
@@ -843,6 +875,7 @@
     "galeria_lampert_ejTpb7",
     "encabezado_lampert_EGkd7H",
     "featured_product_carousel_GmdT3L",
+    "galeria_lampert_NF3HU9",
     "featured_product_carousel_BVcF9w",
     "encabezado_lampert_mxrkTt",
     "featured_product_carousel_iHjwVL",
