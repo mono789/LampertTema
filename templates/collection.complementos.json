@@ -49,9 +49,10 @@
       "type": "imagen-boton-Lampert",
       "name": "Imagen con botón Lampert",
       "settings": {
-        "desktop_image": "shopify://shop_images/BANNER-01-02-01_1.png",
+        "desktop_image": "shopify://shop_images/Essential.png",
+        "mobile_image": "shopify://shop_images/Image_2.png",
         "button_text": "",
-        "link_url": "shopify://collections/expresso-collection"
+        "link_url": "shopify://collections/complementos"
       }
     },
     "breadcrumb": {
