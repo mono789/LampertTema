@@ -131,11 +131,22 @@
         "badge_position": "p-badge--top-right",
         "badge_shape": "badge--star"
       }
+    },
+    "imagen_boton_lampert_DyzqGd": {
+      "type": "imagen-boton-Lampert",
+      "name": "Imagen con botón Lampert",
+      "settings": {
+        "desktop_image": "shopify://shop_images/BANNER-01-02-01_1.png",
+        "mobile_image": "shopify://shop_images/BANNER-01-02-02_1.png",
+        "button_text": "COMPRAR AHORA",
+        "link_url": ""
+      }
     }
   },
   "order": [
     "announcement-bar",
     "header",
-    "custom_html_GURDG4"
+    "custom_html_GURDG4",
+    "imagen_boton_lampert_DyzqGd"
   ]
 }
