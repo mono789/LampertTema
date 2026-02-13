@@ -138,7 +138,7 @@
       "settings": {
         "desktop_image": "shopify://shop_images/BANNER-01-02-01_1.png",
         "mobile_image": "shopify://shop_images/BANNER-01-02-02_1.png",
-        "button_text": "COMPRAR AHORA",
+        "button_text": "",
         "link_url": ""
       }
     }
