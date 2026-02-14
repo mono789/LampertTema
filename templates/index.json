@@ -87,7 +87,7 @@
             "product": "ultra-safe-case-basics-burgundy",
             "show_rating": false,
             "product_overlay_opacity": 30,
-            "product_mask_overlay_color": "#ffffff",
+            "product_mask_overlay_color": "#000000",
             "product_content_overlay_color": "#ffffff",
             "star_rating_color": "#ffb82d"
           }
@@ -897,7 +897,7 @@
         "enable_fullwidth_banner": true,
         "section_overlay_opacity": 30,
         "section_mask_overlay_color": "#000000",
-        "section_content_overlay_color": "#FFFFFF",
+        "section_content_overlay_color": "#ffffff",
         "height_desktop": "70vh",
         "height_mobile": "70vh",
         "remove_padding_top": true,
