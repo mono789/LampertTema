@@ -12,6 +12,14 @@
     "galeria_lampert_c88Ahz": {
       "type": "galeria-lampert",
       "blocks": {
+        "image_slide_Kg8bxi": {
+          "type": "image_slide",
+          "settings": {
+            "image_desktop": "shopify://shop_images/Burgundy_Desktop.png",
+            "image_mobile": "shopify://shop_images/Burgundy_Mobile.png",
+            "link": ""
+          }
+        },
         "image_slide_nkAhN4": {
           "type": "image_slide",
           "disabled": true,
@@ -57,6 +65,7 @@
         }
       },
       "block_order": [
+        "image_slide_Kg8bxi",
         "image_slide_nkAhN4",
         "image_slide_8HTKdd",
         "image_slide_nqrakB",
@@ -860,6 +869,45 @@
         "badge_position": "p-badge--top-right",
         "badge_shape": "badge--star"
       }
+    },
+    "image_banner_TbtGpq": {
+      "type": "image-banner",
+      "blocks": {
+        "content_Jy6HJd": {
+          "type": "content",
+          "settings": {
+            "content_position": "center-xs middle-xs ta-center",
+            "subheading": "Highlight text",
+            "heading": "Image banner",
+            "description": "<p>Use this text to share brand information with your customers. Introduce a new product, share an announcement or welcome customers.</p>",
+            "primary_button_label": "Button label",
+            "primary_button_link": "",
+            "secondary_button_label": "Button label",
+            "secondary_button_link": ""
+          }
+        }
+      },
+      "block_order": [
+        "content_Jy6HJd"
+      ],
+      "name": "t:sections.image_banner.name",
+      "settings": {
+        "color_scheme": "",
+        "enable_large_heading": false,
+        "enable_fullwidth_banner": true,
+        "section_overlay_opacity": 30,
+        "section_mask_overlay_color": "#000000",
+        "section_content_overlay_color": "#FFFFFF",
+        "height_desktop": "70vh",
+        "height_mobile": "70vh",
+        "remove_padding_top": true,
+        "remove_padding_bottom": true,
+        "badge_text": "",
+        "badge_color": "color-accent-1",
+        "badge_position": "p-badge--top-right",
+        "badge_shape": "badge--star",
+        "image_banner_link": ""
+      }
     }
   },
   "order": [
@@ -883,6 +931,7 @@
     "encabezado_lampert_8EhrCw",
     "scrolling_images_mB7WGX",
     "collapsible_content_TEiMBA",
-    "dcdd0878-aa69-4ae0-b5be-0106af1e9e29"
+    "dcdd0878-aa69-4ae0-b5be-0106af1e9e29",
+    "image_banner_TbtGpq"
   ]
 }
