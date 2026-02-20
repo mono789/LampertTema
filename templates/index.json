@@ -890,6 +890,7 @@
       "block_order": [
         "content_Jy6HJd"
       ],
+      "disabled": true,
       "name": "t:sections.image_banner.name",
       "settings": {
         "color_scheme": "",
