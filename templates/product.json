@@ -21,6 +21,7 @@
       "blocks": {
         "content_xWXWcJ": {
           "type": "content",
+          "disabled": true,
           "settings": {
             "content_position": "center-xs middle-xs ta-center",
             "subheading": "Highlight text",
