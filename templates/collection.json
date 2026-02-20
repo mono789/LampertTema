@@ -49,7 +49,8 @@
       "type": "imagen-boton-Lampert",
       "name": "Imagen con botón Lampert",
       "settings": {
-        "desktop_image": "shopify://shop_images/BANNER-01-02-01_1.png",
+        "desktop_image": "shopify://shop_images/Burgundy_Desktop.png",
+        "mobile_image": "shopify://shop_images/Movil_white.png",
         "button_text": "",
         "link_url": "shopify://collections/expresso-collection"
       }
