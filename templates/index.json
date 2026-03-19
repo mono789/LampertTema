@@ -24,8 +24,8 @@
           "type": "image_slide",
           "disabled": true,
           "settings": {
-            "image_desktop": "shopify://shop_images/DS_STICKPAD.png",
-            "image_mobile": "shopify://shop_images/DS_STICKPAD_2.png",
+            "image_desktop": "shopify://shop_images/Banner_desktop_S26_1.png",
+            "image_mobile": "shopify://shop_images/Banner_mobile_s26.png",
             "link": "shopify://products/stick-pad"
           }
         },
