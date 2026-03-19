@@ -12,21 +12,21 @@
     "galeria_lampert_c88Ahz": {
       "type": "galeria-lampert",
       "blocks": {
+        "image_slide_nkAhN4": {
+          "type": "image_slide",
+          "name": "S26 Ultra",
+          "settings": {
+            "image_desktop": "shopify://shop_images/Banner_desktop_S26_1.png",
+            "image_mobile": "shopify://shop_images/Banner_mobile_s26.png",
+            "link": "shopify://products/stick-pad"
+          }
+        },
         "image_slide_Kg8bxi": {
           "type": "image_slide",
           "settings": {
             "image_desktop": "shopify://shop_images/Burgundy_Desktop.png",
             "image_mobile": "shopify://shop_images/Movil_white.png",
             "link": ""
-          }
-        },
-        "image_slide_nkAhN4": {
-          "type": "image_slide",
-          "disabled": true,
-          "settings": {
-            "image_desktop": "shopify://shop_images/Banner_desktop_S26_1.png",
-            "image_mobile": "shopify://shop_images/Banner_mobile_s26.png",
-            "link": "shopify://products/stick-pad"
           }
         },
         "image_slide_8HTKdd": {
@@ -65,8 +65,8 @@
         }
       },
       "block_order": [
-        "image_slide_Kg8bxi",
         "image_slide_nkAhN4",
+        "image_slide_Kg8bxi",
         "image_slide_8HTKdd",
         "image_slide_nqrakB",
         "image_slide_6WTc9n",
