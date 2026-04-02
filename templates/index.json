@@ -162,42 +162,6 @@
         "badge_shape": "badge--star"
       }
     },
-    "featured_collections_NJjxTf": {
-      "type": "featured-collections",
-      "blocks": {
-        "collection_QPegPV": {
-          "type": "collection",
-          "settings": {
-            "collection": "archivo-lampert",
-            "heading": "Collection"
-          }
-        }
-      },
-      "block_order": [
-        "collection_QPegPV"
-      ],
-      "name": "t:sections.featured_collection.name",
-      "settings": {
-        "color_scheme": "",
-        "subheading": "",
-        "heading": "Archivo lampert",
-        "description": "",
-        "items_per_row_on_desktop": "4",
-        "items_per_row_on_mobile": "1",
-        "content_alignment": "ta-left",
-        "items_to_show": 4,
-        "enable_carousel": true,
-        "show_navigation": true,
-        "remove_padding_top": false,
-        "remove_padding_bottom": false,
-        "show_view_all_button": true,
-        "button_text": "See all products",
-        "badge_text": "",
-        "badge_color": "color-accent-1",
-        "badge_position": "p-badge--top-right",
-        "badge_shape": "badge--star"
-      }
-    },
     "featured_product_carousel_gaVUbb": {
       "type": "featured-product-carousel",
       "name": "Best sellers",
@@ -951,7 +915,6 @@
     "galeria_lampert_c88Ahz",
     "content_collage_pRU8Gy",
     "featured_product_carousel_fQPQBY",
-    "featured_collections_NJjxTf",
     "featured_product_carousel_gaVUbb",
     "galeria_lampert_rzdCfa",
     "featured_product_carousel_XHgX4W",
