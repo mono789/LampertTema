@@ -26,7 +26,7 @@
         "enable_fullwidth_banner": true,
         "section_overlay_opacity": 30,
         "section_mask_overlay_color": "#000000",
-        "section_content_overlay_color": "#FFFFFF",
+        "section_content_overlay_color": "#ffffff",
         "height_desktop": "70vh",
         "height_mobile": "70vh",
         "remove_padding_top": true,
@@ -147,13 +147,6 @@
         "essential_upsell_app_block_jyADBp": {
           "type": "shopify://apps/essential-upsell/blocks/app-block/50627fd9-24fd-4250-8614-accc12826d80",
           "settings": {}
-        },
-        "custom_text_XMKXzg": {
-          "type": "custom_text",
-          "settings": {
-            "text": "Compra segura: garantía de 6 meses",
-            "text_style": "body"
-          }
         }
       },
       "block_order": [
@@ -169,8 +162,7 @@
         "extra_information",
         "pickup_availability",
         "product_cross_sell",
-        "essential_upsell_app_block_jyADBp",
-        "custom_text_XMKXzg"
+        "essential_upsell_app_block_jyADBp"
       ],
       "custom_css": [
         ".ord-7 .subtext {display: none;}",
