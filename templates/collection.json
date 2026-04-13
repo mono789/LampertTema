@@ -50,7 +50,7 @@
       "name": "Imagen con botón Lampert",
       "settings": {
         "desktop_image": "shopify://shop_images/Banner_desktop_WLB.png",
-        "mobile_image": "shopify://shop_images/Movil_white.png",
+        "mobile_image": "shopify://shop_images/Banner_mobile_WLB.png",
         "button_text": "",
         "link_url": "shopify://collections/expresso-collection"
       }
