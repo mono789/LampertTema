@@ -12,6 +12,15 @@
     "galeria_lampert_c88Ahz": {
       "type": "galeria-lampert",
       "blocks": {
+        "image_slide_6WTc9n": {
+          "type": "image_slide",
+          "name": "Nude collection",
+          "settings": {
+            "image_desktop": "shopify://shop_images/Banner_desktop_WLB_c839d84b-121f-4e44-935d-f3fa8a8b56d1.png",
+            "image_mobile": "shopify://shop_images/Banner_mobile_WLB.png",
+            "link": "shopify://collections/nude-collection"
+          }
+        },
         "image_slide_nkAhN4": {
           "type": "image_slide",
           "name": "S26 Ultra",
@@ -19,6 +28,14 @@
             "image_desktop": "shopify://shop_images/Banner_desktop.png",
             "image_mobile": "shopify://shop_images/Banner_mobile_8a01819a-d7df-402d-9694-a9ed860fce66.png",
             "link": "shopify://products/case-cuero-lampert-galaxy-s26-ultra"
+          }
+        },
+        "image_slide_nqrakB": {
+          "type": "image_slide",
+          "settings": {
+            "image_desktop": "shopify://shop_images/Essential_Desktop_1.png",
+            "image_mobile": "shopify://shop_images/Image_2.png",
+            "link": "shopify://collections/complementos"
           }
         },
         "image_slide_Kg8bxi": {
@@ -37,23 +54,6 @@
             "link": "shopify://collections/expresso-collection"
           }
         },
-        "image_slide_nqrakB": {
-          "type": "image_slide",
-          "settings": {
-            "image_desktop": "shopify://shop_images/Essential_Desktop_1.png",
-            "image_mobile": "shopify://shop_images/Image_2.png",
-            "link": "shopify://collections/complementos"
-          }
-        },
-        "image_slide_6WTc9n": {
-          "type": "image_slide",
-          "disabled": true,
-          "settings": {
-            "image_desktop": "shopify://shop_images/Mistery-Gift_2.jpg",
-            "image_mobile": "shopify://shop_images/2_1_69267d1f-af12-4e1a-a1bf-43c1290b3f5a.jpg",
-            "link": "shopify://collections/black-days-1"
-          }
-        },
         "image_slide_KMjiDW": {
           "type": "image_slide",
           "disabled": true,
@@ -65,11 +65,11 @@
         }
       },
       "block_order": [
+        "image_slide_6WTc9n",
         "image_slide_nkAhN4",
+        "image_slide_nqrakB",
         "image_slide_Kg8bxi",
         "image_slide_8HTKdd",
-        "image_slide_nqrakB",
-        "image_slide_6WTc9n",
         "image_slide_KMjiDW"
       ],
       "name": "Galería de Imágenes y Video",
