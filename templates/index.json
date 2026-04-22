@@ -12,13 +12,12 @@
     "galeria_lampert_c88Ahz": {
       "type": "galeria-lampert",
       "blocks": {
-        "image_slide_6WTc9n": {
+        "image_slide_KMjiDW": {
           "type": "image_slide",
-          "name": "Nude collection",
           "settings": {
-            "image_desktop": "shopify://shop_images/Banner_desktop_WLB_2.png",
-            "image_mobile": "shopify://shop_images/Banner_mobile_WLB-1.png",
-            "link": "shopify://collections/nude-collection"
+            "image_desktop": "shopify://shop_images/Banner_desktop_WLB-1.png",
+            "image_mobile": "shopify://shop_images/Banner_mobile_WLB-2.png",
+            "link": "shopify://collections/origin"
           }
         },
         "image_slide_nkAhN4": {
@@ -38,6 +37,15 @@
             "link": "shopify://collections/complementos"
           }
         },
+        "image_slide_6WTc9n": {
+          "type": "image_slide",
+          "name": "Nude collection",
+          "settings": {
+            "image_desktop": "shopify://shop_images/Banner_desktop_WLB_2.png",
+            "image_mobile": "shopify://shop_images/Banner_mobile_WLB-1.png",
+            "link": "shopify://collections/nude-collection"
+          }
+        },
         "image_slide_Kg8bxi": {
           "type": "image_slide",
           "disabled": true,
@@ -49,28 +57,21 @@
         },
         "image_slide_8HTKdd": {
           "type": "image_slide",
+          "disabled": true,
           "settings": {
             "image_desktop": "shopify://shop_images/Banner_Lampert_2.jpg",
             "image_mobile": "shopify://shop_images/Banner_mobile.jpg",
             "link": "shopify://collections/expresso-collection"
           }
-        },
-        "image_slide_KMjiDW": {
-          "type": "image_slide",
-          "settings": {
-            "image_desktop": "shopify://shop_images/Banner_desktop_WLB-1.png",
-            "image_mobile": "shopify://shop_images/Banner_mobile_WLB-2.png",
-            "link": "shopify://collections/origin"
-          }
         }
       },
       "block_order": [
-        "image_slide_6WTc9n",
+        "image_slide_KMjiDW",
         "image_slide_nkAhN4",
         "image_slide_nqrakB",
+        "image_slide_6WTc9n",
         "image_slide_Kg8bxi",
-        "image_slide_8HTKdd",
-        "image_slide_KMjiDW"
+        "image_slide_8HTKdd"
       ],
       "name": "Galería de Imágenes y Video",
       "settings": {
