@@ -40,6 +40,7 @@
         },
         "image_slide_Kg8bxi": {
           "type": "image_slide",
+          "disabled": true,
           "settings": {
             "image_desktop": "shopify://shop_images/Burgundy_Desktop.png",
             "image_mobile": "shopify://shop_images/Movil_white.png",
@@ -56,10 +57,9 @@
         },
         "image_slide_KMjiDW": {
           "type": "image_slide",
-          "disabled": true,
           "settings": {
-            "image_desktop": "shopify://shop_images/Sin_titulo-7-02.png",
-            "image_mobile": "shopify://shop_images/3_2.jpg",
+            "image_desktop": "shopify://shop_images/Banner_desktop_WLB-1.png",
+            "image_mobile": "shopify://shop_images/Banner_mobile_WLB-2.png",
             "link": "shopify://collections/origin"
           }
         }
