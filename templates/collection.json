@@ -45,6 +45,12 @@
         "badge_shape": "badge--star"
       }
     },
+    "breadcrumb": {
+      "type": "breadcrumb",
+      "settings": {
+        "color_scheme": ""
+      }
+    },
     "imagen_boton_lampert_td6AXn": {
       "type": "imagen-boton-Lampert",
       "disabled": true,
@@ -64,12 +70,6 @@
         "mobile_image": "shopify://shop_images/Banner_mobile_WLB-1.png",
         "button_text": "",
         "link_url": "shopify://collections/nude-collection"
-      }
-    },
-    "breadcrumb": {
-      "type": "breadcrumb",
-      "settings": {
-        "color_scheme": ""
       }
     },
     "galeria_lampert_xtYzCy": {
@@ -154,9 +154,9 @@
     "galeria_lampert_VBmcQB",
     "galeria_lampert_bHNbF8",
     "custom_html_NYWjDH",
+    "breadcrumb",
     "imagen_boton_lampert_td6AXn",
     "imagen_boton_lampert_FNUKDQ",
-    "breadcrumb",
     "galeria_lampert_xtYzCy",
     "header",
     "imagen_boton_lampert_HKTdBh",
