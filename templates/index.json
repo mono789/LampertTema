@@ -86,7 +86,7 @@
       "settings": {
         "color_scheme": "",
         "subheading": "",
-        "heading": "NUDE COLLECTION",
+        "heading": "Two States",
         "description": "",
         "items_per_row_on_desktop": "4",
         "content_align": "ta-left",
@@ -94,16 +94,13 @@
         "remove_padding_top": false,
         "remove_padding_bottom": false,
         "product_list": [
-          "ultra-safe-case-marble-bond-copia-1",
-          "ultra-safe-case-fractal-core-bond-copia-1",
-          "ultra-safe-case-fractal-core-copia",
-          "ultra-safe-case-fractal-core-bond-copia",
-          "ultra-safe-case-umbra-bond-copia",
+          "static-orange-copia",
+          "static-cocoa-copia",
+          "static-rose-copia",
           "ultra-safe-case-rose-bond-copia",
-          "ultra-safe-case-fractal-core-bond-copia-2",
-          "ultra-safe-case-colab-laura-sanchez-espresso-bond-copia",
-          "ultra-safe-case-marble-bond-copia",
-          "ultra-safe-case-colab-laura-sanchez-bond-copia"
+          "static-navy-copia",
+          "flow-rose-copia",
+          "flow-cocoa-copia"
         ],
         "show_ranking": false,
         "ranking_badge_shape": "ribbon",
