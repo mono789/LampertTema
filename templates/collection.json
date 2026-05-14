@@ -47,12 +47,23 @@
     },
     "imagen_boton_lampert_td6AXn": {
       "type": "imagen-boton-Lampert",
+      "disabled": true,
       "name": "Imagen con botón Lampert",
       "settings": {
         "desktop_image": "shopify://shop_images/Banner_desktop_WLB-1.jpg",
         "mobile_image": "shopify://shop_images/Banner_mobile-2.jpg",
         "button_text": "",
         "link_url": "shopify://collections/two-states"
+      }
+    },
+    "imagen_boton_lampert_FNUKDQ": {
+      "type": "imagen-boton-Lampert",
+      "name": "Imagen con botón Lampert",
+      "settings": {
+        "desktop_image": "shopify://shop_images/Banner_desktop_WLB-1.png",
+        "mobile_image": "shopify://shop_images/Banner_mobile_WLB-1.png",
+        "button_text": "",
+        "link_url": "shopify://collections/nude-collection"
       }
     },
     "breadcrumb": {
@@ -144,6 +155,7 @@
     "galeria_lampert_bHNbF8",
     "custom_html_NYWjDH",
     "imagen_boton_lampert_td6AXn",
+    "imagen_boton_lampert_FNUKDQ",
     "breadcrumb",
     "galeria_lampert_xtYzCy",
     "header",
