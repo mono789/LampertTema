@@ -14,9 +14,10 @@
       "blocks": {
         "image_slide_KMjiDW": {
           "type": "image_slide",
+          "name": "Two states",
           "settings": {
-            "image_desktop": "shopify://shop_images/Banner_desktop_WLB-1.png",
-            "image_mobile": "shopify://shop_images/Banner_mobile_WLB-2.png",
+            "image_desktop": "shopify://shop_images/Banner_desktop_WLB-2.jpg",
+            "image_mobile": "shopify://shop_images/Banner_mobile-3.jpg",
             "link": "shopify://collections/nude-collection"
           }
         },
