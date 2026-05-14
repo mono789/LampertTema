@@ -192,11 +192,6 @@
         "disabled": false,
         "settings": {}
       },
-      "8208493610395315515": {
-        "type": "shopify://apps/dondy-whatsapp-chat-marketing/blocks/app-block/7f5a70cb-e171-4cc7-ac02-e2220203abd6",
-        "disabled": false,
-        "settings": {}
-      },
       "10717172801598694508": {
         "type": "shopify://apps/wizybot-chatgpt-chatbot/blocks/chat_extension/342307e8-9005-417d-81a8-9b6fe426c2e2",
         "disabled": false,
@@ -328,6 +323,11 @@
         "settings": {
           "hide_in_editor": true
         }
+      },
+      "8208493610395315515": {
+        "type": "shopify://apps/dondy-whatsapp/blocks/app-block/7f5a70cb-e171-4cc7-ac02-e2220203abd6",
+        "disabled": true,
+        "settings": {}
       }
     },
     "color_schemes": {
