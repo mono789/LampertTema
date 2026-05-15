@@ -32,6 +32,7 @@
         },
         "image_slide_nqrakB": {
           "type": "image_slide",
+          "disabled": true,
           "settings": {
             "image_desktop": "shopify://shop_images/Essential_Desktop_1.png",
             "image_mobile": "shopify://shop_images/Image_2.png",
