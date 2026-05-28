@@ -95,6 +95,39 @@
         "remove_padding_top": false,
         "remove_padding_bottom": false,
         "product_list": [
+          "ultra-safe-case-undergold-helios-sun-copia",
+          "ultra-safe-case-helios-phases",
+          "ultra-safe-case-undergold-genesis-copia",
+          "ultra-safe-case-helios-sun"
+        ],
+        "show_ranking": false,
+        "ranking_badge_shape": "ribbon",
+        "ranking_badge_color": "color-accent-1",
+        "image_ratio": "1/1",
+        "image_overlay_opacity": 30,
+        "section_mask_overlay_color": "",
+        "section_content_overlay_color": "",
+        "star_rating_overlay": "",
+        "badge_text": "",
+        "badge_color": "color-accent-1",
+        "badge_position": "p-badge--bottom-right",
+        "badge_shape": "badge--star"
+      }
+    },
+    "featured_product_carousel_nRwU4T": {
+      "type": "featured-product-carousel",
+      "name": "Best sellers",
+      "settings": {
+        "color_scheme": "",
+        "subheading": "",
+        "heading": "",
+        "description": "",
+        "items_per_row_on_desktop": "4",
+        "content_align": "ta-left",
+        "show_navigation": true,
+        "remove_padding_top": false,
+        "remove_padding_bottom": false,
+        "product_list": [
           "static-orange-copia",
           "static-cocoa-copia",
           "static-rose-copia",
@@ -610,6 +643,7 @@
   "order": [
     "galeria_lampert_c88Ahz",
     "featured_product_carousel_3QbGkB",
+    "featured_product_carousel_nRwU4T",
     "content_collage_pRU8Gy",
     "featured_product_carousel_fQPQBY",
     "galeria_lampert_rzdCfa",
