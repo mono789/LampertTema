@@ -39,7 +39,7 @@
       "name": "Imagen con botón Lampert",
       "settings": {
         "desktop_image": "shopify://shop_images/Banner_desktop_undergold.jpg",
-        "mobile_image": "shopify://shop_images/IMG_7171.jpg",
+        "mobile_image": "shopify://shop_images/under_mobile.jpg",
         "button_text": "",
         "link_url": ""
       }
