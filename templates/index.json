@@ -25,8 +25,8 @@
           "type": "image_slide",
           "name": "S26 Ultra",
           "settings": {
-            "image_desktop": "shopify://shop_images/Banner_desktop.png",
-            "image_mobile": "shopify://shop_images/Banner_mobile_8a01819a-d7df-402d-9694-a9ed860fce66.png",
+            "image_desktop": "shopify://shop_images/Banner_desktop_undergold.jpg",
+            "image_mobile": "shopify://shop_images/under_mobile.jpg",
             "link": "shopify://products/ultra-safe-case-lampert-essentials-01"
           }
         },
