@@ -28,7 +28,7 @@
       ],
       "settings": {
         "color_scheme": "",
-        "show_collection_image": false,
+        "show_collection_image": true,
         "show_description": true,
         "remove_padding_top": true,
         "remove_padding_bottom": true
