@@ -67,7 +67,7 @@
       "name": "Imagen con botón Lampert",
       "settings": {
         "desktop_image": "shopify://shop_images/Banner_desktop_WLSSB_jpg_d225f909-66b1-4014-b3f9-6463f50c8b3c.jpg",
-        "mobile_image": "shopify://shop_images/Banner_mobile_WLB-1.png",
+        "mobile_image": "shopify://shop_images/Banner_desktop_WLSSB_jpg_d225f909-66b1-4014-b3f9-6463f50c8b3c.jpg",
         "button_text": "",
         "link_url": "shopify://collections/nude-collection"
       }
