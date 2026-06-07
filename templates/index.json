@@ -12,6 +12,14 @@
     "galeria_lampert_c88Ahz": {
       "type": "galeria-lampert",
       "blocks": {
+        "image_slide_nqrakB": {
+          "type": "image_slide",
+          "settings": {
+            "image_desktop": "shopify://shop_images/Banner_desktop_WLSSB_jpg_d225f909-66b1-4014-b3f9-6463f50c8b3c.jpg",
+            "image_mobile": "shopify://shop_images/IMG_2722.jpg",
+            "link": "shopify://collections/complementos"
+          }
+        },
         "image_slide_KMjiDW": {
           "type": "image_slide",
           "name": "Two states",
@@ -28,15 +36,6 @@
             "image_desktop": "shopify://shop_images/Banner_desktop_undergold.jpg",
             "image_mobile": "shopify://shop_images/under_mobile.jpg",
             "link": "shopify://products/ultra-safe-case-lampert-essentials-01"
-          }
-        },
-        "image_slide_nqrakB": {
-          "type": "image_slide",
-          "disabled": true,
-          "settings": {
-            "image_desktop": "shopify://shop_images/Essential_Desktop_1.png",
-            "image_mobile": "shopify://shop_images/Image_2.png",
-            "link": "shopify://collections/complementos"
           }
         },
         "image_slide_6WTc9n": {
@@ -68,9 +67,9 @@
         }
       },
       "block_order": [
+        "image_slide_nqrakB",
         "image_slide_KMjiDW",
         "image_slide_nkAhN4",
-        "image_slide_nqrakB",
         "image_slide_6WTc9n",
         "image_slide_Kg8bxi",
         "image_slide_8HTKdd"
