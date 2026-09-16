@@ -45,17 +45,7 @@
                     class="search__result-item js-predictive-search-item clm anm anm-fadeInUp"
                     style="{{ col_product_item }}; --delay: {{ forloop.index | times: 0.05 -}}s"
                     role="option">
-                    {% render 'card-product',
-                      product: product,
-                      item_per_row: limit | divided_by: 2,
-                      show_vendor: show_vendor,
-                      show_color_swatch: false,
-                      show_sale_badge: false,
-                      enable_quick_buy: false,
-                      ratio: '0.8/1',
-                      card_content_inner: false,
-                      section: section
-                    %}
+                    {% render 'card-product', product: product, item_per_row: limit, divided_by: 2, show_vendor: show_vendor, show_color_swatch: false, show_sale_badge: false, enable_quick_buy: false, ratio: '0.8/1', card_content_inner: false, section: section %}
                   </li>
                 {%- endfor -%}
               </ul>
@@ -149,4 +139,27 @@
       {%- endif -%}
     </div>
   </div>
-{%- endif -%}
+{%- endif -%}{%- comment -%}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: |-
+    {% render 'card-product',
+                          product: product,
+                          item_per_row: limit | divided_by: 2,
+                          show_vendor: show_vendor,
+                          show_color_swatch: false,
+                          show_sale_badge: false,
+                          enable_quick_buy: false,
+                          ratio: '0.8/1',
+                          card_content_inner: false,
+                          section: section
+                        %}
+  to: "{% render 'card-product', product: product, item_per_row: limit, divided_by:
+    2, show_vendor: show_vendor, show_color_swatch: false, show_sale_badge: false,
+    enable_quick_buy: false, ratio: '0.8/1', card_content_inner: false, section: section
+    %}"
+  position: 2831..3074
+{%- endcomment -%}

@@ -260,7 +260,7 @@
           </div>
         </div>
         {%- liquid
-          render 'js-loader', files: "read-more.js" | split: ', '
+          render 'js-loader', files: "read-more.js", split: ', '
         -%}
       {%- endif -%}
     </article>
@@ -413,3 +413,13 @@
   ]
 }
 {% endschema %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: 'render ''js-loader'', files: "read-more.js" | split: '', '''
+  to: 'render ''js-loader'', files: "read-more.js", split: '', '''
+  position: 14299..14353
+{% endcomment %}

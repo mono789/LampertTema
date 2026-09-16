@@ -679,7 +679,7 @@
   render 'main-product-gallery-dialog', product: product, place_holder: place_holder, rand: section_id, ratio: ratio_thubnails, object_fit: object_fit, media_background: section.settings.media_background
 -%}
 {%- liquid
-  render 'js-loader', files: "component-add-to-cart.js" | split: ', '
+  render 'js-loader', files: "component-add-to-cart.js", split: ', '
   render 'product-google-snippet', product: product
 -%}
 {% schema %}
@@ -3805,3 +3805,13 @@
 
 
 
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: 'render ''js-loader'', files: "component-add-to-cart.js" | split: '', '''
+  to: 'render ''js-loader'', files: "component-add-to-cart.js", split: '', '''
+  position: 52078..52144
+{% endcomment %}
